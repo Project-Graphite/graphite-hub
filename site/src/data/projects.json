@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "slug": "test",
+    "name": "Test",
+    "summary": "A throwaway deployment used to exercise the pipeline from repository template through registry entry to a live subdomain.",
+    "tags": [
+      "static"
+    ],
+    "repo": "project-graphite/test",
+    "repoUrl": "https://github.com/project-graphite/test",
+    "authors": [
+      "AmrMsCLL"
+    ],
+    "status": "live",
+    "featured": false,
+    "url": "https://test.project-graphite.com",
+    "topology": {
+      "kind": "pages",
+      "database": "none",
+      "services": [
+        {
+          "name": "static",
+          "route": "/",
+          "port": null,
+          "size": "small"
+        }
+      ]
+    }
+  }
+]
