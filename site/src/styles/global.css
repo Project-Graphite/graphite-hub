@@ -1,0 +1,71 @@
+:root {
+  --paper: #f7f6f3;
+  --surface: #ffffff;
+  --line: #ddd9d2;
+  --line-soft: #ebe7e0;
+  --ink: #16161a;
+  --muted: #6b6b74;
+  --faint: #96969f;
+  --live: #2f9e5f;
+  --wip: #c08a2e;
+  --dormant: #9a9aa2;
+  --radius: 10px;
+  --measure: 64rem;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #0c0c0e;
+    --surface: #131316;
+    --line: #26262c;
+    --line-soft: #1c1c21;
+    --ink: #e8e8ea;
+    --muted: #8b8b95;
+    --faint: #6a6a74;
+    --live: #46b97a;
+    --wip: #d7a54a;
+    --dormant: #6e6e78;
+  }
+}
+
+:root[data-theme='dark'] {
+    --paper: #0c0c0e;
+    --surface: #131316;
+    --line: #26262c;
+    --line-soft: #1c1c21;
+    --ink: #e8e8ea;
+    --muted: #8b8b95;
+    --faint: #6a6a74;
+    --live: #46b97a;
+    --wip: #d7a54a;
+    --dormant: #6e6e78;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+.shell {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding-inline: 24px;
+}
+
+.mono {
+  font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  font-size: 0.82em;
+  letter-spacing: -0.01em;
+}

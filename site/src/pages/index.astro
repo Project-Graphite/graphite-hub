@@ -1,0 +1,57 @@
+---
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import data from '../data/projects.json';
+import type { Project } from '../types';
+
+const projects = data as Project[];
+---
+
+<Base
+  title="Project Graphite"
+  description="Projects built and deployed under one roof, each with its own repository, subdomain and running deployment."
+>
+  <section class="intro">
+    <h1>Things that get built here, and stay built.</h1>
+    <p>
+      Every project has its own repository, its own subdomain and a real deployment. The diagram on
+      each card is generated from what is actually running, not drawn by hand.
+    </p>
+  </section>
+
+  {projects.length === 0 ? (
+    <p class="empty mono">Nothing registered yet.</p>
+  ) : (
+    <div>
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </div>
+  )}
+</Base>
+
+<style>
+  .intro {
+    padding-block: 88px 20px;
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 15ch;
+    font-size: clamp(2rem, 5.2vw, 3.1rem);
+    line-height: 1.08;
+    letter-spacing: -0.038em;
+    font-weight: 640;
+  }
+
+  .intro p {
+    margin: 22px 0 0;
+    color: var(--muted);
+    max-width: 52ch;
+  }
+
+  .empty {
+    color: var(--faint);
+    padding-block: 64px 0;
+    border-top: 1px solid var(--line-soft);
+    margin-top: 40px;
+  }
+</style>

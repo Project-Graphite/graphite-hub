@@ -1,0 +1,37 @@
+name: PR
+
+on: pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  secrets:
+    name: Secrets
+    uses: project-graphite/actions/.github/workflows/reusable-gitleaks.yml@v1
+
+  conventions:
+    name: Conventions
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    uses: project-graphite/actions/.github/workflows/reusable-pr-checks.yml@v1

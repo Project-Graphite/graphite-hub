@@ -1,0 +1,155 @@
+---
+import Topology from './Topology.astro';
+import type { Project } from '../types';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+
+const statusLabel: Record<string, string> = {
+  live: 'live',
+  wip: 'in progress',
+  archived: 'archived',
+  'source-only': 'source only',
+};
+
+const host = project.url ? project.url.replace('https://', '') : `${project.slug}.project-graphite.com`;
+---
+
+<article class="card">
+  <div class="body">
+    <div class="heading">
+      <h2>{project.name}</h2>
+      <span class:list={['status', project.status]}>
+        <span class="dot"></span>{statusLabel[project.status]}
+      </span>
+    </div>
+
+    <p class="summary">{project.summary}</p>
+
+    <ul class="tags mono">
+      {project.tags.map((tag) => <li>{tag}</li>)}
+    </ul>
+
+    <div class="foot">
+      <span class="authors mono">{project.authors.join(' · ')}</span>
+      <span class="links mono">
+        {project.url && <a href={project.url}>visit ↗</a>}
+        <a href={project.repoUrl}>source ↗</a>
+      </span>
+    </div>
+  </div>
+
+  {project.topology && (
+    <div class="diagram">
+      <Topology topology={project.topology} host={host} />
+    </div>
+  )}
+</article>
+
+<style>
+  .card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 23rem);
+    gap: 36px;
+    align-items: center;
+    padding-block: 44px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 46ch;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.45rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--dormant);
+  }
+
+  .status.live .dot { background: var(--live); }
+  .status.wip .dot { background: var(--wip); }
+
+  .summary {
+    margin: 14px 0 0;
+    color: var(--muted);
+    max-width: 46ch;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 18px 0 0;
+    padding: 0;
+  }
+
+  .tags li {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 10px;
+    color: var(--faint);
+  }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 24px;
+    max-width: 46ch;
+    color: var(--faint);
+  }
+
+  .links {
+    display: flex;
+    gap: 18px;
+  }
+
+  .links a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 1px;
+  }
+
+  .links a:hover {
+    border-bottom-color: var(--ink);
+  }
+
+  @media (max-width: 860px) {
+    .card {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    .diagram {
+      order: -1;
+    }
+  }
+</style>

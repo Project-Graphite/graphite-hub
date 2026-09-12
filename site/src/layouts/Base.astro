@@ -1,0 +1,87 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="shell masthead-inner">
+        <a class="wordmark" href="/">Project Graphite</a>
+        <a class="nav-link mono" href="https://github.com/project-graphite">github ↗</a>
+      </div>
+    </header>
+
+    <main class="shell">
+      <slot />
+    </main>
+
+    <footer class="shell footer">
+      <p class="mono">Every project here is registered, built and deployed from one place.</p>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .masthead {
+    border-bottom: 1px solid var(--line-soft);
+    position: sticky;
+    top: 0;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+
+  .masthead-inner {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 18px;
+  }
+
+  .wordmark {
+    font-weight: 620;
+    letter-spacing: -0.022em;
+    font-size: 1.02rem;
+    text-decoration: none;
+  }
+
+  .nav-link {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .nav-link:hover {
+    color: var(--ink);
+  }
+
+  .footer {
+    border-top: 1px solid var(--line-soft);
+    margin-top: 96px;
+    padding-block: 28px 56px;
+    color: var(--faint);
+  }
+
+  .footer p {
+    margin: 0;
+  }
+</style>
