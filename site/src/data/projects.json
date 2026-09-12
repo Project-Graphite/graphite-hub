@@ -1,19 +1,20 @@
 [
   {
     "slug": "test",
-    "name": "Test",
-    "summary": "A throwaway deployment used to exercise the pipeline from repository template through registry entry to a live subdomain.",
+    "name": "2048",
+    "summary": "Gabriele Cirulli's 2048, vendored unmodified and deployed to exercise the pipeline from repository template through registry entry to a live subdomain.",
     "tags": [
-      "static"
+      "static",
+      "javascript"
     ],
     "repo": "project-graphite/test",
     "repoUrl": "https://github.com/project-graphite/test",
     "authors": [
-      "AmrMsCLL"
+      "gabrielecirulli"
     ],
     "status": "live",
     "featured": false,
-    "url": "https://test.project-graphite.com",
+    "url": "https://2048.project-graphite.com",
     "topology": {
       "kind": "pages",
       "database": "none",
