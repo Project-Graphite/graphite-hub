@@ -1,7 +1,7 @@
 # portfolio
 
-The site at [project-graphite.com](https://project-graphite.com). React, Vite, TypeScript,
-deployed to Cloudflare Pages.
+The site at [project-graphite.com](https://project-graphite.com). React, Vite, TypeScript and
+Tailwind, deployed to Cloudflare Pages.
 
 ## What makes it different
 
@@ -45,8 +45,14 @@ python ../platform/scripts/compile.py src/data/projects.json
 | `site/src/types.ts` | Shape of a compiled registry entry |
 | `site/src/styles/global.css` | Palette and shell. Light and dark are both defined here. |
 
-Component styles are CSS Modules alongside each component. The palette lives in `global.css` as
-custom properties, because the SVG needs the same tokens the layout does.
+Styling is Tailwind utilities in the markup. The palette is declared once as an `@theme` block in
+`global.css`, which generates both the CSS custom properties and the matching utilities — so
+`bg-paper`, `text-muted`, `stroke-line` and `fill-surface` all read the same tokens, and the SVG
+themes with the layout rather than alongside it.
+
+Light and dark swap by redefining those custom properties under `prefers-color-scheme` and
+`[data-theme]`. Every utility follows automatically, so there is not a single `dark:` prefix in the
+codebase.
 
 ## Commands
 

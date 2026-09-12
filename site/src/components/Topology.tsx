@@ -1,6 +1,5 @@
 import { Fragment } from 'react';
 import type { TopologyData } from '../types';
-import styles from './Topology.module.css';
 
 const BOX_W = 136;
 const BOX_H = 58;
@@ -12,6 +11,12 @@ const ROW_Y = 78;
 const BUS_Y = ROW_Y + BOX_H + 20;
 const DB_Y = BUS_Y + 22;
 const DB_H = 26;
+
+const PILL = 'fill-none stroke-line stroke-1';
+const PILL_LABEL = 'fill-muted font-mono text-[11px]';
+const EDGE = 'fill-none stroke-line stroke-1';
+const EDGE_SOFT = 'fill-none stroke-line-soft stroke-1 [stroke-dasharray:3_3]';
+const NODE = 'fill-surface stroke-line stroke-1';
 
 interface Props {
   topology: TopologyData;
@@ -45,7 +50,7 @@ export default function Topology({ topology, host }: Props) {
 
   return (
     <svg
-      className={styles.topology}
+      className="block h-auto w-full max-w-full overflow-visible"
       viewBox={`0 0 ${width} ${height}`}
       role="img"
       preserveAspectRatio="xMidYMid meet"
@@ -55,20 +60,20 @@ export default function Topology({ topology, host }: Props) {
       {routed.length > 0 && (
         <>
           <rect
-            className={styles.pill}
+            className={PILL}
             x={centre - ingressW / 2}
             y={0}
             width={ingressW}
             height={INGRESS_H}
             rx={INGRESS_H / 2}
           />
-          <text className={styles.pillLabel} x={centre} y={17} textAnchor="middle">
+          <text className={PILL_LABEL} x={centre} y={17} textAnchor="middle">
             {host}
           </text>
           {routed.map((service) => (
             <path
               key={`ingress-${service.name}`}
-              className={styles.edge}
+              className={EDGE}
               d={`M ${centre} ${INGRESS_H} V ${elbowY} H ${service.cx} V ${ROW_Y}`}
             />
           ))}
@@ -80,27 +85,14 @@ export default function Topology({ topology, host }: Props) {
           {placed.map((service) => (
             <path
               key={`bus-${service.name}`}
-              className={`${styles.edge} ${styles.edgeSoft}`}
+              className={EDGE_SOFT}
               d={`M ${service.cx} ${ROW_Y + BOX_H} V ${BUS_Y}`}
             />
           ))}
-          <path
-            className={`${styles.edge} ${styles.edgeSoft}`}
-            d={`M ${placed[0].cx} ${BUS_Y} H ${placed[count - 1].cx}`}
-          />
-          <path
-            className={`${styles.edge} ${styles.edgeSoft}`}
-            d={`M ${centre} ${BUS_Y} V ${DB_Y}`}
-          />
-          <rect
-            className={styles.pill}
-            x={centre - 62}
-            y={DB_Y}
-            width={124}
-            height={DB_H}
-            rx={DB_H / 2}
-          />
-          <text className={styles.pillLabel} x={centre} y={DB_Y + 17} textAnchor="middle">
+          <path className={EDGE_SOFT} d={`M ${placed[0].cx} ${BUS_Y} H ${placed[count - 1].cx}`} />
+          <path className={EDGE_SOFT} d={`M ${centre} ${BUS_Y} V ${DB_Y}`} />
+          <rect className={PILL} x={centre - 62} y={DB_Y} width={124} height={DB_H} rx={DB_H / 2} />
+          <text className={PILL_LABEL} x={centre} y={DB_Y + 17} textAnchor="middle">
             {topology.database}
           </text>
         </>
@@ -109,17 +101,27 @@ export default function Topology({ topology, host }: Props) {
       {placed.map((service) => (
         <Fragment key={service.name}>
           <rect
-            className={service.route === null ? `${styles.node} ${styles.internal}` : styles.node}
+            className={service.route === null ? `${NODE} [stroke-dasharray:4_3]` : NODE}
             x={service.x}
             y={ROW_Y}
             width={BOX_W}
             height={BOX_H}
             rx={8}
           />
-          <text className={styles.nodeName} x={service.cx} y={ROW_Y + 25} textAnchor="middle">
+          <text
+            className="fill-ink font-mono text-[13px] font-medium"
+            x={service.cx}
+            y={ROW_Y + 25}
+            textAnchor="middle"
+          >
             {service.name}
           </text>
-          <text className={styles.nodeMeta} x={service.cx} y={ROW_Y + 43} textAnchor="middle">
+          <text
+            className="fill-faint font-mono text-[11px]"
+            x={service.cx}
+            y={ROW_Y + 43}
+            textAnchor="middle"
+          >
             {service.route === null
               ? 'internal'
               : service.port === null
