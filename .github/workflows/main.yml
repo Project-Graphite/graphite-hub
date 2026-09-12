@@ -1,0 +1,51 @@
+name: Main
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build
+      - name: Every registry route produced a page
+        run: |
+          set -euo pipefail
+          expected="$(node -e "
+            const r = require('./src/data/registry.json');
+            const paths = ['/', ...r.people.map(p => p.path), ...r.projects.map(p => p.path)];
+            console.log(paths.join('\n'));
+          ")"
+          missing=0
+          while IFS= read -r route; do
+            file="dist${route%/}/index.html"
+            [ "$route" = "/" ] && file="dist/index.html"
+            if [ ! -f "$file" ]; then
+              echo "::error::No page rendered for ${route} (expected ${file})"
+              missing=1
+            fi
+          done <<< "$expected"
+          [ -f dist/404.html ] || { echo "::error::dist/404.html is missing"; missing=1; }
+          exit "$missing"
+
+  secrets:
+    name: Secrets
+    uses: project-graphite/actions/.github/workflows/reusable-gitleaks.yml@v1
