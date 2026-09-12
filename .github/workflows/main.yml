@@ -26,25 +26,7 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run build
-      - name: Every registry route produced a page
-        run: |
-          set -euo pipefail
-          expected="$(node -e "
-            const r = require('./src/data/registry.json');
-            const paths = ['/', ...r.people.map(p => p.path), ...r.projects.map(p => p.path)];
-            console.log(paths.join('\n'));
-          ")"
-          missing=0
-          while IFS= read -r route; do
-            file="dist${route%/}/index.html"
-            [ "$route" = "/" ] && file="dist/index.html"
-            if [ ! -f "$file" ]; then
-              echo "::error::No page rendered for ${route} (expected ${file})"
-              missing=1
-            fi
-          done <<< "$expected"
-          [ -f dist/404.html ] || { echo "::error::dist/404.html is missing"; missing=1; }
-          exit "$missing"
+      - run: node scripts/check-routes.mjs
 
   secrets:
     name: Secrets
