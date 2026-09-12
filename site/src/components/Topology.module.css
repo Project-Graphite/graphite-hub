@@ -1,0 +1,53 @@
+.topology {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.pill {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.pillLabel {
+  fill: var(--muted);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+}
+
+.edge {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.edgeSoft {
+  stroke: var(--line-soft);
+  stroke-dasharray: 3 3;
+}
+
+.node {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.internal {
+  stroke-dasharray: 4 3;
+}
+
+.nodeName {
+  fill: var(--ink);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.nodeMeta {
+  fill: var(--faint);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+}

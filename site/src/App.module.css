@@ -1,0 +1,69 @@
+.masthead {
+  border-bottom: 1px solid var(--line-soft);
+  position: sticky;
+  top: 0;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+.mastheadInner {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 18px;
+}
+
+.wordmark {
+  font-weight: 620;
+  letter-spacing: -0.022em;
+  font-size: 1.02rem;
+  text-decoration: none;
+}
+
+.navLink {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: var(--ink);
+}
+
+.intro {
+  padding-block: 88px 20px;
+}
+
+.intro h1 {
+  margin: 0;
+  max-width: 15ch;
+  font-size: clamp(2rem, 5.2vw, 3.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.038em;
+  font-weight: 640;
+}
+
+.intro p {
+  margin: 22px 0 0;
+  color: var(--muted);
+  max-width: 52ch;
+}
+
+.empty {
+  color: var(--faint);
+  padding-block: 64px 0;
+  border-top: 1px solid var(--line-soft);
+  margin-top: 40px;
+}
+
+.footer {
+  border-top: 1px solid var(--line-soft);
+  margin-top: 96px;
+  padding-block: 28px 56px;
+  color: var(--faint);
+}
+
+.footer p {
+  margin: 0;
+}

@@ -30,33 +30,45 @@
 }
 
 :root[data-theme='dark'] {
-    --paper: #0c0c0e;
-    --surface: #131316;
-    --line: #26262c;
-    --line-soft: #1c1c21;
-    --ink: #e8e8ea;
-    --muted: #8b8b95;
-    --faint: #6a6a74;
-    --live: #46b97a;
-    --wip: #d7a54a;
-    --dormant: #6e6e78;
+  --paper: #0c0c0e;
+  --surface: #131316;
+  --line: #26262c;
+  --line-soft: #1c1c21;
+  --ink: #e8e8ea;
+  --muted: #8b8b95;
+  --faint: #6a6a74;
+  --live: #46b97a;
+  --wip: #d7a54a;
+  --dormant: #6e6e78;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
-a { color: inherit; }
+a {
+  color: inherit;
+}
 
 .shell {
   max-width: var(--measure);

@@ -1,14 +1,14 @@
 # portfolio
 
-The site at [project-graphite.com](https://project-graphite.com). Astro, static, deployed to
-Cloudflare Pages.
+The site at [project-graphite.com](https://project-graphite.com). React, Vite, TypeScript,
+deployed to Cloudflare Pages.
 
 ## What makes it different
 
 Each project card carries a diagram of what is **actually deployed** — the services, the routes
 they answer on, their ports, and the database they share. None of it is drawn by hand. It is
-generated at build time from the same registry entry that creates the deployment, so a card cannot
-drift from reality: change the deployment and the diagram changes with it.
+generated from the same registry entry that creates the deployment, so a card cannot drift from
+reality: change the deployment and the diagram changes with it.
 
 A service with no public route is drawn with a dashed outline, because that is what it is.
 
@@ -18,7 +18,8 @@ A service with no public route is drawn with a dashed outline, because that is w
 from `projects/*.yml` and commits it here whenever the registry changes, which triggers a rebuild.
 
 To add or change a project, edit its registry entry in `platform`. Editing this file directly will
-be overwritten on the next sync.
+be overwritten on the next sync. It is in `.prettierignore` for the same reason — its formatting
+belongs to the compiler.
 
 ## Running it
 
@@ -28,34 +29,49 @@ npm install
 npm run dev
 ```
 
-To preview against real topology, copy a compiled `projects.json` over `site/src/data/`:
+To preview against real topology rather than the committed data:
 
 ```sh
-python ../platform/scripts/compile.py site/src/data/projects.json
+python ../platform/scripts/compile.py src/data/projects.json
 ```
 
 ## Layout
 
 | Path | What it is |
 | :--- | :--- |
-| `site/src/components/Topology.astro` | The SVG diagram. Computes its own geometry from the service list. |
-| `site/src/components/ProjectCard.astro` | One project row |
-| `site/src/pages/index.astro` | The index |
+| `site/src/components/Topology.tsx` | The SVG diagram. Computes its own geometry from the service list. |
+| `site/src/components/ProjectCard.tsx` | One project row |
+| `site/src/App.tsx` | Shell and index |
 | `site/src/types.ts` | Shape of a compiled registry entry |
 | `site/src/styles/global.css` | Palette and shell. Light and dark are both defined here. |
 
+Component styles are CSS Modules alongside each component. The palette lives in `global.css` as
+custom properties, because the SVG needs the same tokens the layout does.
+
+## Commands
+
+| Command | What it does |
+| :--- | :--- |
+| `npm run dev` | Dev server |
+| `npm run build` | Type-check then build to `dist/` |
+| `npm run lint` | ESLint |
+| `npm run format:check` | Prettier |
+
 ## Deployment
 
-Cloudflare Pages, configured to match the registry entry in `platform`:
+Cloudflare Pages, matching the registry entry in `platform`:
 
 | Setting | Value |
 | :--- | :--- |
 | Root directory | `site` |
 | Build command | `npm run build` |
 | Output directory | `dist` |
+| `NODE_VERSION` | `22` |
+
+Every push to `main` deploys. Every pull request gets its own preview URL.
 
 ## Not built yet
 
 Per-project detail pages. The registry holds a one-line summary and nothing longer, so a detail
-page would be a thin wrapper around text already on the card. They are worth adding once there are
-write-ups to put on them.
+page would be a thin wrapper around text already on the card. Worth adding once there are write-ups
+to put on them — that is the point at which a router earns its place.
