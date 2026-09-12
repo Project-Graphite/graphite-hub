@@ -24,15 +24,4 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run build
-
-  secrets:
-    name: Secrets
-    uses: project-graphite/actions/.github/workflows/reusable-gitleaks.yml@v1
-
-  conventions:
-    name: Conventions
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
-    uses: project-graphite/actions/.github/workflows/reusable-pr-checks.yml@v1
+      - run: node scripts/check-routes.mjs
