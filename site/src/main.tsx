@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
+import { hydrateRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './styles/global.css';
 
@@ -9,8 +10,11 @@ if (!container) {
   throw new Error('No #root element in index.html');
 }
 
-createRoot(container).render(
+hydrateRoot(
+  container,
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </StrictMode>,
 );

@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom';
 import Topology from './Topology';
+import { personByGithub } from '../registry';
 import type { Project } from '../types';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -21,7 +23,11 @@ export default function ProjectCard({ project }: Props) {
     <article className="grid grid-cols-[minmax(0,1fr)_minmax(0,23rem)] items-center gap-9 border-b border-line-soft py-11 max-[860px]:grid-cols-1 max-[860px]:gap-7">
       <div>
         <div className="flex max-w-[46ch] items-baseline justify-between gap-4">
-          <h2 className="m-0 text-[1.45rem] font-semibold tracking-[-0.025em]">{project.name}</h2>
+          <h2 className="m-0 text-[1.45rem] font-semibold tracking-[-0.025em]">
+            <Link to={project.path} className="text-ink no-underline hover:underline">
+              {project.name}
+            </Link>
+          </h2>
           <span
             className="group inline-flex items-center gap-[7px] whitespace-nowrap text-[0.8rem] text-muted"
             data-status={project.status}
@@ -42,7 +48,25 @@ export default function ProjectCard({ project }: Props) {
         </ul>
 
         <div className="mt-6 flex max-w-[46ch] flex-wrap items-center justify-between gap-3 font-mono text-[0.82em] text-faint">
-          <span>{project.authors.join(' · ')}</span>
+          <span className="flex flex-wrap gap-x-1.5">
+            {project.authors.map((author, index) => {
+              const person = personByGithub(author);
+              return (
+                <span key={author}>
+                  {index > 0 && <span className="mr-1.5">·</span>}
+                  {person ? (
+                    <Link to={person.path} className="text-faint hover:text-ink">
+                      {person.name}
+                    </Link>
+                  ) : (
+                    <a href={`https://github.com/${author}`} className="text-faint hover:text-ink">
+                      {author}
+                    </a>
+                  )}
+                </span>
+              );
+            })}
+          </span>
           <span className="flex gap-[18px] [&_a]:border-b [&_a]:border-line [&_a]:pb-px [&_a]:text-ink [&_a]:no-underline [&_a:hover]:border-ink">
             {project.url && <a href={project.url}>visit ↗</a>}
             <a href={project.repoUrl}>source ↗</a>

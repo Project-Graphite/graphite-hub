@@ -1,0 +1,56 @@
+{
+  "people": [
+    {
+      "handle": "amr",
+      "github": "AmrMsCLL",
+      "githubUrl": "https://github.com/AmrMsCLL",
+      "name": "Amr El-Sheraey",
+      "headline": "Full-stack engineer, Cairo",
+      "bio": "Computer Science and AI graduate of FCAI, Cairo University, building document-intelligence software at Syntheia. A normal week touches a TypeScript API, a React front end, a Python ML service and a Helm chart. Most useful where those meet, and most interested in whichever part I have not done before.",
+      "links": [
+        {
+          "label": "github",
+          "url": "https://github.com/AmrMsCLL"
+        },
+        {
+          "label": "linkedin",
+          "url": "https://www.linkedin.com/in/amrsherieycll"
+        }
+      ],
+      "path": "/amr"
+    }
+  ],
+  "projects": [
+    {
+      "slug": "2048",
+      "name": "2048",
+      "summary": "Gabriele Cirulli's 2048, vendored unmodified and deployed to exercise the pipeline from repository template through registry entry to a live subdomain.",
+      "tags": [
+        "static",
+        "javascript"
+      ],
+      "repo": "project-graphite/2048",
+      "repoUrl": "https://github.com/project-graphite/2048",
+      "owner": "amr",
+      "authors": [
+        "gabrielecirulli"
+      ],
+      "status": "live",
+      "featured": false,
+      "url": "https://2048.project-graphite.com",
+      "path": "/amr/2048",
+      "topology": {
+        "kind": "pages",
+        "database": "none",
+        "services": [
+          {
+            "name": "static",
+            "route": "/",
+            "port": null,
+            "size": "small"
+          }
+        ]
+      }
+    }
+  ]
+}
