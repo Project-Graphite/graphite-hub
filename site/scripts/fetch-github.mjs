@@ -7,7 +7,7 @@ const cached = JSON.parse(await readFile(OUTPUT, 'utf8').catch(() => '{}'));
 
 const headers = {
   Accept: 'application/vnd.github+json',
-  'User-Agent': 'project-graphite-portfolio',
+  'User-Agent': 'project-graphite-hub',
 };
 
 if (process.env.GITHUB_TOKEN) {
