@@ -1,4 +1,4 @@
-# portfolio
+# Graphite Hub
 
 The site at [project-graphite.com](https://project-graphite.com). React, Vite, TypeScript and
 Tailwind, prerendered to static HTML and deployed to Cloudflare Pages.
