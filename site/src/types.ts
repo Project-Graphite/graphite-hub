@@ -1,16 +1,3 @@
-export interface Service {
-  name: string;
-  route: string | null;
-  port: number | null;
-  size: string;
-}
-
-export interface TopologyData {
-  kind: string;
-  database: string;
-  services: Service[];
-}
-
 export interface Project {
   slug: string;
   name: string;
@@ -24,12 +11,16 @@ export interface Project {
   featured: boolean;
   url: string | null;
   path: string;
-  topology: TopologyData | null;
 }
 
 export interface PersonLink {
   label: string;
   url: string;
+}
+
+export interface StackGroup {
+  group: string;
+  items: string[];
 }
 
 export interface Person {
@@ -39,8 +30,16 @@ export interface Person {
   name: string;
   headline: string | null;
   bio: string | null;
+  stack: StackGroup[];
   links: PersonLink[];
   path: string;
+}
+
+export interface GithubProfile {
+  avatarUrl: string;
+  publicRepos: number;
+  followers: number;
+  joined: string;
 }
 
 export interface Registry {

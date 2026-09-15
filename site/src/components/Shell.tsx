@@ -13,7 +13,7 @@ export default function Shell() {
           </Link>
           <a
             href="https://github.com/project-graphite"
-            className="font-mono text-[0.82em] text-muted no-underline hover:text-ink"
+            className="mono-sm text-muted no-underline hover:text-ink"
           >
             github ↗
           </a>
@@ -24,7 +24,7 @@ export default function Shell() {
         <Outlet />
       </main>
 
-      <footer className="shell mt-24 border-t border-line-soft pt-7 pb-14 font-mono text-[0.82em] text-faint">
+      <footer className="shell mono-sm mt-24 border-t border-line-soft pt-7 pb-14 text-faint">
         <p className="m-0">Every project here is registered, built and deployed from one place.</p>
       </footer>
     </>

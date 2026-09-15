@@ -1,6 +1,9 @@
+import { Fragment } from 'react';
 import { useParams } from 'react-router-dom';
 import ProjectCard from '../components/ProjectCard';
-import { personByHandle, projectsOwnedBy } from '../registry';
+import Section from '../components/Section';
+import TagList from '../components/TagList';
+import { githubProfiles, personByHandle, projectsOwnedBy } from '../registry';
 import NotFound from './NotFound';
 
 export default function Person() {
@@ -11,42 +14,85 @@ export default function Person() {
     return <NotFound />;
   }
 
+  const profile = githubProfiles[person.github];
   const owned = projectsOwnedBy(person.handle);
 
   return (
     <>
       <section className="pt-[88px] pb-5">
-        <p className="m-0 font-mono text-[0.82em] text-faint">/{person.handle}</p>
-        <h1 className="mt-3 mb-0 max-w-[18ch] text-[clamp(1.9rem,4.6vw,2.8rem)] leading-[1.1] font-[640] tracking-[-0.036em]">
-          {person.name}
-        </h1>
-        {person.headline && <p className="mt-3 mb-0 text-muted">{person.headline}</p>}
-        {person.bio && <p className="mt-5 mb-0 max-w-[56ch] text-muted">{person.bio}</p>}
+        <p className="mono-sm m-0 text-faint">/{person.handle}</p>
 
-        <div className="mt-6 flex flex-wrap gap-x-[18px] gap-y-2 font-mono text-[0.82em]">
+        <div className="mt-3 flex items-center gap-5">
+          <img
+            src={profile.avatarUrl}
+            alt=""
+            width={64}
+            height={64}
+            className="size-16 shrink-0 rounded-full border border-line-soft"
+          />
+          <div>
+            <h1 className="page-title max-w-[18ch]">{person.name}</h1>
+            {person.headline && <p className="mt-2 mb-0 text-muted">{person.headline}</p>}
+          </div>
+        </div>
+
+        {person.bio && <p className="mt-6 mb-0 max-w-[56ch] text-muted">{person.bio}</p>}
+
+        <div className="mono-sm mt-6 flex flex-wrap gap-x-[18px] gap-y-2">
           {person.links.map((link) => (
-            <a
-              key={link.url}
-              href={link.url}
-              className="border-b border-line pb-px text-ink no-underline hover:border-ink"
-            >
+            <a key={link.url} href={link.url} className="rule-link">
               {link.label} ↗
             </a>
           ))}
         </div>
       </section>
 
-      {owned.length === 0 ? (
-        <p className="mt-10 border-t border-line-soft pt-16 font-mono text-[0.82em] text-faint">
-          Nothing registered under this name yet.
-        </p>
-      ) : (
-        <div className="mt-8 border-t border-line-soft">
-          {owned.map((project) => (
-            <ProjectCard key={project.path} project={project} />
-          ))}
-        </div>
+      <Section label="on github">
+        <dl className="mono-sm grid grid-cols-[auto_minmax(0,1fr)] gap-x-8 gap-y-3">
+          <dt className="text-faint">public repositories</dt>
+          <dd className="m-0">{profile.publicRepos}</dd>
+
+          <dt className="text-faint">followers</dt>
+          <dd className="m-0">{profile.followers}</dd>
+
+          <dt className="text-faint">since</dt>
+          <dd className="m-0">{profile.joined}</dd>
+
+          <dt className="text-faint">profile</dt>
+          <dd className="m-0">
+            <a href={person.githubUrl} className="text-ink hover:underline">
+              github.com/{person.github} ↗
+            </a>
+          </dd>
+        </dl>
+      </Section>
+
+      {person.stack.length > 0 && (
+        <Section label="stack">
+          <dl className="mono-sm grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-8 gap-y-3">
+            {person.stack.map((group) => (
+              <Fragment key={group.group}>
+                <dt className="text-faint">{group.group}</dt>
+                <dd className="m-0">
+                  <TagList tags={group.items} />
+                </dd>
+              </Fragment>
+            ))}
+          </dl>
+        </Section>
       )}
+
+      <Section label="projects">
+        {owned.length === 0 ? (
+          <p className="mono-sm m-0 text-faint">Nothing registered under this name yet.</p>
+        ) : (
+          <div>
+            {owned.map((project) => (
+              <ProjectCard key={project.path} project={project} />
+            ))}
+          </div>
+        )}
+      </Section>
     </>
   );
 }

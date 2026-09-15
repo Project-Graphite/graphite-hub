@@ -1,10 +1,12 @@
+import githubData from './data/github.json';
 import data from './data/registry.json';
-import type { Person, Project, Registry } from './types';
+import type { GithubProfile, Person, Project, Registry } from './types';
 
 const registry = data as Registry;
 
 export const people: Person[] = registry.people;
 export const projects: Project[] = registry.projects;
+export const githubProfiles = githubData as Record<string, GithubProfile>;
 
 export const routePaths: string[] = [
   '/',

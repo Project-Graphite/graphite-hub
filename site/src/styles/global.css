@@ -49,6 +49,30 @@
   padding-inline: 1.5rem;
 }
 
+@utility page-title {
+  margin: 0;
+  font-size: clamp(1.95rem, 4.6vw, 2.6rem);
+  font-weight: 640;
+  line-height: 1.1;
+  letter-spacing: -0.036em;
+}
+
+@utility mono-sm {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+}
+
+@utility rule-link {
+  border-bottom: 1px solid var(--color-line);
+  padding-bottom: 1px;
+  color: var(--color-ink);
+  text-decoration: none;
+
+  &:hover {
+    border-bottom-color: var(--color-ink);
+  }
+}
+
 :root {
   color-scheme: light dark;
 }
