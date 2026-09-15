@@ -20,9 +20,10 @@ A service with no public route is drawn with a dashed outline, because that is w
 | `/<handle>` | A person: who they are, and the projects listed under them |
 | `/<handle>/<slug>` | A project: what it is, who built it, and what is deployed |
 
-Namespaces come from `owner` in the registry, so `project-graphite.com/amr/windhawk-mods` is the page
-*about* Windhawk Mods. A deployed project runs at its own subdomain and the page links to it — serving an app
-under a path would mean every project had to be built knowing where it was mounted.
+Namespaces come from `owner` in the registry, so `project-graphite.com/amr/windhawk-mods` is
+the page *about* Windhawk Mods. A deployed project runs at its own subdomain and the page
+links to it — serving an app under a path would mean every project had to be built knowing
+where it was mounted.
 
 ## Prerendering
 
