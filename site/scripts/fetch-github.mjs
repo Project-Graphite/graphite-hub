@@ -3,6 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 const OUTPUT = 'src/data/github.json';
 
 const registry = JSON.parse(await readFile('src/data/registry.json', 'utf8'));
+const cached = JSON.parse(await readFile(OUTPUT, 'utf8').catch(() => '{}'));
 
 const headers = {
   Accept: 'application/vnd.github+json',
@@ -13,24 +14,44 @@ if (process.env.GITHUB_TOKEN) {
   headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
 }
 
-const profiles = {};
+const entries = await Promise.all(
+  registry.people.map(async (person) => {
+    try {
+      const response = await fetch(`https://api.github.com/users/${person.github}`, {
+        headers,
+        signal: AbortSignal.timeout(10_000),
+      });
 
-for (const person of registry.people) {
-  const response = await fetch(`https://api.github.com/users/${person.github}`, { headers });
+      if (!response.ok) {
+        throw new Error(`GitHub answered ${response.status}`);
+      }
 
-  if (!response.ok) {
-    throw new Error(`GitHub answered ${response.status} for ${person.github}`);
-  }
+      const user = await response.json();
+      return [
+        person.github,
+        {
+          avatarUrl: user.avatar_url,
+          publicRepos: user.public_repos,
+          followers: user.followers,
+          joined: user.created_at.slice(0, 4),
+        },
+      ];
+    } catch (error) {
+      console.warn(`Could not refresh ${person.github}: ${error.message}. Using cached data.`);
+      return [
+        person.github,
+        cached[person.github] ?? {
+          avatarUrl: `https://github.com/${encodeURIComponent(person.github)}.png?size=128`,
+          publicRepos: null,
+          followers: null,
+          joined: null,
+        },
+      ];
+    }
+  }),
+);
 
-  const user = await response.json();
-
-  profiles[person.github] = {
-    avatarUrl: user.avatar_url,
-    publicRepos: user.public_repos,
-    followers: user.followers,
-    joined: user.created_at.slice(0, 4),
-  };
-}
+const profiles = Object.fromEntries(entries);
 
 await writeFile(OUTPUT, JSON.stringify(profiles, null, 2) + '\n', 'utf8');
-console.log(`Fetched ${Object.keys(profiles).length} GitHub profiles to ${OUTPUT}.`);
+console.log(`Prepared ${Object.keys(profiles).length} GitHub profiles in ${OUTPUT}.`);

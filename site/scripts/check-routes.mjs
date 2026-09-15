@@ -19,10 +19,29 @@ for (const route of routes) {
   }
 }
 
-try {
-  await access(join('dist', '404.html'));
-} catch {
-  missing.push('the 404 page (expected dist/404.html)');
+for (const asset of ['404.html', 'robots.txt', 'sitemap.xml', '_headers', '_redirects']) {
+  try {
+    await access(join('dist', asset));
+  } catch {
+    missing.push(`${asset} (expected dist/${asset})`);
+  }
+}
+
+const redirects = await readFile(join('dist', '_redirects'), 'utf8');
+const sitemap = await readFile(join('dist', 'sitemap.xml'), 'utf8');
+const entries = [...registry.people, ...registry.projects];
+
+for (const entry of entries) {
+  const redirect = `${entry.legacyPath} ${entry.path} 301`;
+  if (!redirects.split('\n').includes(redirect)) {
+    missing.push(`legacy redirect: ${redirect}`);
+  }
+}
+
+for (const route of routes) {
+  if (!sitemap.includes(`<loc>https://project-graphite.com${route}</loc>`)) {
+    missing.push(`sitemap entry for ${route}`);
+  }
 }
 
 if (missing.length > 0) {
@@ -32,4 +51,4 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-console.log(`All ${routes.length} registry routes rendered, plus 404.html.`);
+console.log(`All ${routes.length} registry routes and discovery files are present.`);

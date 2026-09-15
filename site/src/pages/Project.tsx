@@ -2,13 +2,13 @@ import { Link, useParams } from 'react-router-dom';
 import Section from '../components/Section';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
-import { personByGithub, personByHandle, projectByPath } from '../registry';
+import { personByGithub, personByHandle, projectBySlug } from '../registry';
 import NotFound from './NotFound';
 
 export default function Project() {
-  const { handle, slug } = useParams();
-  const project = handle && slug ? projectByPath(handle, slug) : undefined;
-  const owner = handle ? personByHandle(handle) : undefined;
+  const { slug } = useParams();
+  const project = slug ? projectBySlug(slug) : undefined;
+  const owner = project ? personByHandle(project.owner) : undefined;
 
   if (!project || !owner) {
     return <NotFound />;
@@ -18,11 +18,7 @@ export default function Project() {
     <article>
       <section className="pt-[88px] pb-5">
         <p className="mono-sm m-0 text-faint">
-          <Link to={owner.path} className="text-faint hover:text-ink">
-            /{owner.handle}
-          </Link>
-          <span className="mx-1">/</span>
-          <span>{project.slug}</span>
+          <span>/projects/{project.slug}</span>
         </p>
 
         <div className="mt-3 flex max-w-[52ch] items-baseline justify-between gap-4">
@@ -58,7 +54,7 @@ export default function Project() {
             })}
           </dd>
 
-          <dt className="text-faint">listed under</dt>
+          <dt className="text-faint">maintained by</dt>
           <dd className="m-0">
             <Link to={owner.path} className="text-ink hover:underline">
               {owner.name}

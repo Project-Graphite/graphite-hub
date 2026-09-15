@@ -1,4 +1,4 @@
-import { personByHandle, projectByPath } from './registry';
+import { personByHandle, projectBySlug } from './registry';
 
 const SITE = 'Project Graphite';
 const ORIGIN = 'https://project-graphite.com';
@@ -12,7 +12,7 @@ export interface PageMeta {
 const INDEX: PageMeta = {
   title: SITE,
   description:
-    'Projects built and deployed under one roof, each with its own repository, subdomain and running deployment.',
+    'A shared portfolio for Project Graphite members, their work and the applications they deploy.',
   canonical: `${ORIGIN}/`,
 };
 
@@ -21,10 +21,10 @@ export function metaFor(path: string): PageMeta {
     return INDEX;
   }
 
-  const [handle, slug] = path.replace(/^\//, '').split('/');
+  const [section, slug] = path.replace(/^\//, '').split('/');
 
-  if (slug) {
-    const project = projectByPath(handle, slug);
+  if (section === 'projects' && slug) {
+    const project = projectBySlug(slug);
     if (project) {
       return {
         title: `${project.name} — ${SITE}`,
@@ -34,12 +34,19 @@ export function metaFor(path: string): PageMeta {
     }
   }
 
-  const person = personByHandle(handle);
-  if (person) {
+  if (section === 'members' && slug) {
+    const person = personByHandle(slug);
+    if (!person) {
+      return {
+        title: `Not found — ${SITE}`,
+        description: 'That page does not exist.',
+        canonical: `${ORIGIN}${path}`,
+      };
+    }
     return {
       title: `${person.name} — ${SITE}`,
       description:
-        person.headline ?? person.bio ?? `Projects listed under ${person.name} on ${SITE}.`,
+        person.headline ?? person.bio ?? `Projects credited to ${person.name} on ${SITE}.`,
       canonical: `${ORIGIN}${person.path}`,
     };
   }

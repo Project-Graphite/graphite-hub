@@ -14,6 +14,11 @@ export const routePaths: string[] = [
   ...projects.map((project) => project.path),
 ];
 
+export const legacyRedirects: Array<{ from: string; to: string }> = [
+  ...people.map((person) => ({ from: person.legacyPath, to: person.path })),
+  ...projects.map((project) => ({ from: project.legacyPath, to: project.path })),
+];
+
 export function personByHandle(handle: string): Person | undefined {
   return people.find((person) => person.handle === handle);
 }
@@ -22,10 +27,18 @@ export function personByGithub(github: string): Person | undefined {
   return people.find((person) => person.github.toLowerCase() === github.toLowerCase());
 }
 
-export function projectsOwnedBy(handle: string): Project[] {
-  return projects.filter((project) => project.owner === handle);
+export function projectsForPerson(person: Person): Project[] {
+  return projects.filter(
+    (project) =>
+      project.owner === person.handle ||
+      project.authors.some((author) => author.toLowerCase() === person.github.toLowerCase()),
+  );
 }
 
-export function projectByPath(handle: string, slug: string): Project | undefined {
+export function projectBySlug(slug: string): Project | undefined {
+  return projects.find((project) => project.slug === slug);
+}
+
+export function legacyProject(handle: string, slug: string): Project | undefined {
   return projects.find((project) => project.owner === handle && project.slug === slug);
 }

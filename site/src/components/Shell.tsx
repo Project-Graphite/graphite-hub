@@ -25,7 +25,7 @@ export default function Shell() {
       </main>
 
       <footer className="shell mono-sm mt-24 border-t border-line-soft pt-7 pb-14 text-faint">
-        <p className="m-0">Every project here is registered, built and deployed from one place.</p>
+        <p className="m-0">People, projects and deployment state — compiled from one registry.</p>
       </footer>
     </>
   );

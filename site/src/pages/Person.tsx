@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
 import TagList from '../components/TagList';
-import { githubProfiles, personByHandle, projectsOwnedBy } from '../registry';
+import { githubProfiles, personByHandle, projectsForPerson } from '../registry';
 import NotFound from './NotFound';
 
 export default function Person() {
@@ -15,17 +15,18 @@ export default function Person() {
   }
 
   const profile = githubProfiles[person.github];
-  const owned = projectsOwnedBy(person.handle);
+  const memberProjects = projectsForPerson(person);
+  const avatarUrl = profile?.avatarUrl ?? `https://github.com/${person.github}.png?size=128`;
 
   return (
     <>
       <section className="pt-[88px] pb-5">
-        <p className="mono-sm m-0 text-faint">/{person.handle}</p>
+        <p className="mono-sm m-0 text-faint">/members/{person.handle}</p>
 
         <div className="mt-3 flex items-center gap-5">
           <img
-            src={profile.avatarUrl}
-            alt=""
+            src={avatarUrl}
+            alt={`${person.name}'s GitHub avatar`}
             width={64}
             height={64}
             className="size-16 shrink-0 rounded-full border border-line-soft"
@@ -50,13 +51,13 @@ export default function Person() {
       <Section label="on github">
         <dl className="mono-sm grid grid-cols-[auto_minmax(0,1fr)] gap-x-8 gap-y-3">
           <dt className="text-faint">public repositories</dt>
-          <dd className="m-0">{profile.publicRepos}</dd>
+          <dd className="m-0">{profile?.publicRepos ?? '—'}</dd>
 
           <dt className="text-faint">followers</dt>
-          <dd className="m-0">{profile.followers}</dd>
+          <dd className="m-0">{profile?.followers ?? '—'}</dd>
 
           <dt className="text-faint">since</dt>
-          <dd className="m-0">{profile.joined}</dd>
+          <dd className="m-0">{profile?.joined ?? '—'}</dd>
 
           <dt className="text-faint">profile</dt>
           <dd className="m-0">
@@ -83,11 +84,11 @@ export default function Person() {
       )}
 
       <Section label="projects">
-        {owned.length === 0 ? (
-          <p className="mono-sm m-0 text-faint">Nothing registered under this name yet.</p>
+        {memberProjects.length === 0 ? (
+          <p className="mono-sm m-0 text-faint">No projects credited to this member yet.</p>
         ) : (
           <div>
-            {owned.map((project) => (
+            {memberProjects.map((project) => (
               <ProjectCard key={project.path} project={project} />
             ))}
           </div>

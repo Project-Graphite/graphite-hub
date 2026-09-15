@@ -11,6 +11,7 @@ export interface Project {
   featured: boolean;
   url: string | null;
   path: string;
+  legacyPath: string;
 }
 
 export interface PersonLink {
@@ -33,13 +34,14 @@ export interface Person {
   stack: StackGroup[];
   links: PersonLink[];
   path: string;
+  legacyPath: string;
 }
 
 export interface GithubProfile {
   avatarUrl: string;
-  publicRepos: number;
-  followers: number;
-  joined: string;
+  publicRepos: number | null;
+  followers: number | null;
+  joined: string | null;
 }
 
 export interface Registry {

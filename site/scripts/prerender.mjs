@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const DIST = 'dist';
+const ORIGIN = 'https://project-graphite.com';
 const OPEN = '<!--head-->';
 const CLOSE = '<!--/head-->';
 
@@ -28,7 +29,7 @@ if (open === -1 || close === -1) {
   throw new Error(`index.html is missing the ${OPEN} … ${CLOSE} markers`);
 }
 
-const { render, routePaths } = await import(
+const { legacyRedirects, render, routePaths } = await import(
   pathToFileURL(join(process.cwd(), 'dist-ssr', 'entry-server.js')).href
 );
 
@@ -44,3 +45,19 @@ for (const route of routePaths) {
   await writeFile(file, page, 'utf8');
   console.log(`prerendered ${route} -> ${file}`);
 }
+
+const sitemap = [
+  '<?xml version="1.0" encoding="UTF-8"?>',
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+  ...routePaths.map((route) => `  <url><loc>${ORIGIN}${route}</loc></url>`),
+  '</urlset>',
+  '',
+].join('\n');
+
+await writeFile(join(DIST, 'sitemap.xml'), sitemap, 'utf8');
+await writeFile(
+  join(DIST, '_redirects'),
+  legacyRedirects.map(({ from, to }) => `${from} ${to} 301`).join('\n') + '\n',
+  'utf8',
+);
+console.log(`generated sitemap.xml and ${legacyRedirects.length} legacy redirects`);

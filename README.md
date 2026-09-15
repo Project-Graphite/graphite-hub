@@ -5,25 +5,22 @@ Tailwind, prerendered to static HTML and deployed to Cloudflare Pages.
 
 ## What makes it different
 
-Each project card carries a diagram of what is **actually deployed** — the services, the routes
-they answer on, their ports, and the database they share. None of it is drawn by hand. It is
-generated from the same registry entry that creates the deployment, so a card cannot drift from
-reality: change the deployment and the diagram changes with it.
-
-A service with no public route is drawn with a dashed outline, because that is what it is.
+People, projects and deployment state come from the same validated registry. A project only gets a
+live link when that registry says it is live; source-only and in-progress work are labelled
+honestly. Member pages include every project they maintain or are credited on, including
+collaborative work.
 
 ## Routes
 
 | Path | What it is |
 | :--- | :--- |
 | `/` | Everything registered |
-| `/<handle>` | A person: who they are, and the projects listed under them |
-| `/<handle>/<slug>` | A project: what it is, who built it, and what is deployed |
+| `/members/<handle>` | A person: who they are, and the projects they maintain or built |
+| `/projects/<slug>` | A project: what it is, who built it, and where it runs |
 
-Namespaces come from `owner` in the registry, so `project-graphite.com/amr/windhawk-mods` is
-the page *about* Windhawk Mods. A deployed project runs at its own subdomain and the page
-links to it — serving an app under a path would mean every project had to be built knowing
-where it was mounted.
+The old short routes redirect permanently, so existing links continue to work. A deployed project
+runs at its own subdomain and its project page links to it — serving an app under a path would mean
+every project had to be built knowing where it was mounted.
 
 ## Prerendering
 
@@ -68,13 +65,13 @@ python ../platform/scripts/compile.py src/data/registry.json
 
 | Path | What it is |
 | :--- | :--- |
-| `site/src/components/Topology.tsx` | The SVG diagram. Computes its own geometry from the service list. |
 | `site/src/components/ProjectCard.tsx` | One project row |
 | `site/src/pages/` | Index, person, project and not-found pages |
 | `site/src/registry.ts` | Typed access to the compiled registry, and the route list |
 | `site/src/meta.ts` | Per-route title, description and canonical |
 | `site/src/entry-server.tsx` | Render entry used by prerendering |
 | `site/scripts/prerender.mjs` | Writes one HTML file per route |
+| `site/public/_headers` | Security and immutable-asset cache headers |
 | `site/src/types.ts` | Shape of a compiled registry entry |
 | `site/src/styles/global.css` | Palette and shell. Light and dark are both defined here. |
 
@@ -111,6 +108,6 @@ Every push to `main` deploys. Every pull request gets its own preview URL.
 
 ## Not built yet
 
-Long-form write-ups. Project pages are built entirely from the registry, which holds a summary and
-nothing longer. Adding an optional markdown file per project is the natural next step, and needs a
-markdown renderer.
+Long-form write-ups, screenshots and per-project social images. Project pages are built entirely
+from the registry, which currently holds a summary and nothing longer. See the docs repository's
+`codex-recs.md` for the remaining product and hosting backlog.

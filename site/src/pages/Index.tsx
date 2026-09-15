@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
-import { people, projects } from '../registry';
+import { githubProfiles, people, projects } from '../registry';
 
 export default function Index() {
   return (
@@ -9,20 +9,40 @@ export default function Index() {
       <section className="pt-[88px] pb-5">
         <h1 className="page-title max-w-[20ch]">Things that get built here, and stay built.</h1>
         <p className="mt-[22px] mb-0 max-w-[52ch] text-muted">
-          Every project has its own repository, its own subdomain and a real deployment. The page
-          for each one is generated from the entry that creates that deployment, so it cannot drift
-          from what is actually running.
+          A shared portfolio for the people behind Project Graphite. Every project has its own
+          repository; deployable web projects get a live subdomain, while source-only work is
+          labelled honestly.
         </p>
       </section>
 
       {people.length > 0 && (
         <Section label="people">
-          <div className="mono-sm flex flex-wrap gap-x-5 gap-y-2">
-            {people.map((person) => (
-              <Link key={person.handle} to={person.path} className="text-muted hover:text-ink">
-                /{person.handle}
-              </Link>
-            ))}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {people.map((person) => {
+              const profile = githubProfiles[person.github];
+              return (
+                <Link
+                  key={person.handle}
+                  to={person.path}
+                  className="flex items-center gap-4 rounded-lg border border-line-soft bg-surface p-4 text-ink no-underline hover:border-line"
+                >
+                  <img
+                    src={profile?.avatarUrl ?? `https://github.com/${person.github}.png?size=96`}
+                    alt=""
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                    className="size-12 rounded-full border border-line-soft"
+                  />
+                  <span>
+                    <strong className="block font-semibold">{person.name}</strong>
+                    <span className="mt-1 block text-sm text-muted">
+                      {person.headline ?? `@${person.github}`}
+                    </span>
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </Section>
       )}
