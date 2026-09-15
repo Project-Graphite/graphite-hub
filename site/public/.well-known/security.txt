@@ -1,0 +1,5 @@
+Contact: https://github.com/Project-Graphite/.github/security/advisories/new
+Expires: 2027-09-16T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://project-graphite.com/.well-known/security.txt
+Policy: https://github.com/Project-Graphite/.github/blob/main/SECURITY.md
