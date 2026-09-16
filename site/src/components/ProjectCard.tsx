@@ -6,11 +6,19 @@ import type { Project } from '../types';
 
 interface Props {
   project: Project;
+  context?: string;
 }
 
-export default function ProjectCard({ project }: Props) {
+export default function ProjectCard({ project, context }: Props) {
   return (
-    <article className="border-b border-line-soft py-8 first:pt-0 last:border-b-0 last:pb-0">
+    <article
+      className={
+        project.featured
+          ? 'my-4 rounded-xl border border-line bg-surface p-6 first:mt-0'
+          : 'border-b border-line-soft py-8 first:pt-0 last:border-b-0 last:pb-0'
+      }
+    >
+      {project.featured && <p className="mono-sm mt-0 mb-3 text-faint">featured project</p>}
       <div className="flex max-w-[52ch] items-baseline justify-between gap-4">
         <h3 className="m-0 text-[1.3rem] font-semibold tracking-[-0.025em]">
           <Link to={project.path} className="text-ink no-underline hover:underline">
@@ -21,6 +29,12 @@ export default function ProjectCard({ project }: Props) {
       </div>
 
       <p className="mt-3.5 mb-0 max-w-[52ch] text-muted">{project.summary}</p>
+
+      {context && (
+        <p className="mt-4 mb-0 max-w-[52ch] border-l-2 border-line pl-4 text-sm text-muted">
+          {context}
+        </p>
+      )}
 
       <TagList tags={project.tags} className="mt-[18px]" />
 

@@ -32,14 +32,15 @@ const sitemap = await readFile(join('dist', 'sitemap.xml'), 'utf8');
 const entries = [...registry.people, ...registry.projects];
 
 for (const entry of entries) {
-  const redirect = `${entry.legacyPath} ${entry.path} 301`;
+  const redirect = `${entry.legacyPath} ${entry.path}/ 301`;
   if (!redirects.split('\n').includes(redirect)) {
     missing.push(`legacy redirect: ${redirect}`);
   }
 }
 
 for (const route of routes) {
-  if (!sitemap.includes(`<loc>https://project-graphite.com${route}</loc>`)) {
+  const location = `https://project-graphite.com${route === '/' ? route : `${route}/`}`;
+  if (!sitemap.includes(`<loc>${location}</loc>`)) {
     missing.push(`sitemap entry for ${route}`);
   }
 }

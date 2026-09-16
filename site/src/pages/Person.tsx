@@ -3,7 +3,12 @@ import { useParams } from 'react-router-dom';
 import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
 import TagList from '../components/TagList';
-import { githubProfiles, personByHandle, projectsForPerson } from '../registry';
+import {
+  contributionForPerson,
+  githubProfiles,
+  personByHandle,
+  projectsForPerson,
+} from '../registry';
 import NotFound from './NotFound';
 
 export default function Person() {
@@ -89,7 +94,11 @@ export default function Person() {
         ) : (
           <div>
             {memberProjects.map((project) => (
-              <ProjectCard key={project.path} project={project} />
+              <ProjectCard
+                key={project.path}
+                project={project}
+                context={contributionForPerson(project, person)?.summary}
+              />
             ))}
           </div>
         )}

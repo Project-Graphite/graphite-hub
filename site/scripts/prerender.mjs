@@ -19,6 +19,8 @@ const head = ({ title, description, canonical }) =>
     `<meta property="og:description" content="${escape(description)}" />`,
     `<meta property="og:url" content="${escape(canonical)}" />`,
     '<meta property="og:type" content="website" />',
+    '<meta property="og:site_name" content="Project Graphite" />',
+    '<meta name="twitter:card" content="summary" />',
   ].join('\n    ');
 
 const template = await readFile(join(DIST, 'index.html'), 'utf8');
@@ -49,7 +51,9 @@ for (const route of routePaths) {
 const sitemap = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...routePaths.map((route) => `  <url><loc>${ORIGIN}${route}</loc></url>`),
+  ...routePaths.map(
+    (route) => `  <url><loc>${ORIGIN}${route === '/' ? route : `${route}/`}</loc></url>`,
+  ),
   '</urlset>',
   '',
 ].join('\n');
@@ -57,7 +61,7 @@ const sitemap = [
 await writeFile(join(DIST, 'sitemap.xml'), sitemap, 'utf8');
 await writeFile(
   join(DIST, '_redirects'),
-  legacyRedirects.map(({ from, to }) => `${from} ${to} 301`).join('\n') + '\n',
+  legacyRedirects.map(({ from, to }) => `${from} ${to}/ 301`).join('\n') + '\n',
   'utf8',
 );
 console.log(`generated sitemap.xml and ${legacyRedirects.length} legacy redirects`);

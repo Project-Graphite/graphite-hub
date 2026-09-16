@@ -7,16 +7,25 @@ export default function Index() {
   return (
     <>
       <section className="pt-[88px] pb-5">
+        <p className="mono-sm m-0 mb-4 text-faint">people / projects / working software</p>
         <h1 className="page-title max-w-[20ch]">Things that get built here, and stay built.</h1>
         <p className="mt-[22px] mb-0 max-w-[52ch] text-muted">
           A shared portfolio for the people behind Project Graphite. Every project has its own
           repository; deployable web projects get a live subdomain, while source-only work is
           labelled honestly.
         </p>
+        <div className="mono-sm mt-7 flex flex-wrap gap-5">
+          <a href="#projects" className="rule-link">
+            explore projects ↓
+          </a>
+          <a href="#people" className="rule-link">
+            meet the members ↓
+          </a>
+        </div>
       </section>
 
       {people.length > 0 && (
-        <Section label="people">
+        <Section id="people" label="people">
           <div className="grid gap-4 sm:grid-cols-2">
             {people.map((person) => {
               const profile = githubProfiles[person.github];
@@ -47,7 +56,7 @@ export default function Index() {
         </Section>
       )}
 
-      <Section label="projects">
+      <Section id="projects" label="projects">
         {projects.length === 0 ? (
           <p className="mono-sm m-0 text-faint">Nothing registered yet.</p>
         ) : (

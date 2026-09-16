@@ -3,6 +3,10 @@ import { personByHandle, projectBySlug } from './registry';
 const SITE = 'Project Graphite';
 const ORIGIN = 'https://project-graphite.com';
 
+function canonicalFor(path: string) {
+  return path === '/' ? `${ORIGIN}/` : `${ORIGIN}${path}/`;
+}
+
 export interface PageMeta {
   title: string;
   description: string;
@@ -29,7 +33,7 @@ export function metaFor(path: string): PageMeta {
       return {
         title: `${project.name} — ${SITE}`,
         description: project.summary,
-        canonical: `${ORIGIN}${project.path}`,
+        canonical: canonicalFor(project.path),
       };
     }
   }
@@ -40,20 +44,20 @@ export function metaFor(path: string): PageMeta {
       return {
         title: `Not found — ${SITE}`,
         description: 'That page does not exist.',
-        canonical: `${ORIGIN}${path}`,
+        canonical: canonicalFor(path),
       };
     }
     return {
       title: `${person.name} — ${SITE}`,
       description:
         person.headline ?? person.bio ?? `Projects credited to ${person.name} on ${SITE}.`,
-      canonical: `${ORIGIN}${person.path}`,
+      canonical: canonicalFor(person.path),
     };
   }
 
   return {
     title: `Not found — ${SITE}`,
     description: 'That page does not exist.',
-    canonical: `${ORIGIN}${path}`,
+    canonical: canonicalFor(path),
   };
 }

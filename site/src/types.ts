@@ -9,9 +9,22 @@ export interface Project {
   authors: string[];
   status: string;
   featured: boolean;
+  showcase: ProjectShowcase | null;
   url: string | null;
   path: string;
   legacyPath: string;
+}
+
+export interface ProjectContribution {
+  github: string;
+  summary: string;
+}
+
+export interface ProjectShowcase {
+  problem: string;
+  approach: string;
+  outcome: string;
+  contributions: ProjectContribution[];
 }
 
 export interface PersonLink {

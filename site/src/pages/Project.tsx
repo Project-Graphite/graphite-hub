@@ -31,6 +31,25 @@ export default function Project() {
         <TagList tags={project.tags} className="mt-[18px]" />
       </section>
 
+      {project.showcase && (
+        <Section label="case study">
+          <div className="grid gap-7 md:grid-cols-3">
+            <div>
+              <h3 className="mono-sm m-0 mb-2 font-normal text-faint">problem</h3>
+              <p className="m-0 text-muted">{project.showcase.problem}</p>
+            </div>
+            <div>
+              <h3 className="mono-sm m-0 mb-2 font-normal text-faint">approach</h3>
+              <p className="m-0 text-muted">{project.showcase.approach}</p>
+            </div>
+            <div>
+              <h3 className="mono-sm m-0 mb-2 font-normal text-faint">outcome</h3>
+              <p className="m-0 text-muted">{project.showcase.outcome}</p>
+            </div>
+          </div>
+        </Section>
+      )}
+
       <Section label="details">
         <dl className="mono-sm grid grid-cols-[auto_minmax(0,1fr)] gap-x-8 gap-y-3">
           <dt className="text-faint">built by</dt>
@@ -80,6 +99,35 @@ export default function Project() {
           </dd>
         </dl>
       </Section>
+
+      {project.showcase && (
+        <Section label="contributions">
+          <div className="grid gap-5">
+            {project.showcase.contributions.map((contribution) => {
+              const person = personByGithub(contribution.github);
+              return (
+                <article key={contribution.github} className="max-w-[56ch]">
+                  <h3 className="m-0 text-base font-semibold">
+                    {person ? (
+                      <Link to={person.path} className="text-ink hover:underline">
+                        {person.name}
+                      </Link>
+                    ) : (
+                      <a
+                        href={`https://github.com/${contribution.github}`}
+                        className="text-ink hover:underline"
+                      >
+                        {contribution.github}
+                      </a>
+                    )}
+                  </h3>
+                  <p className="mt-2 mb-0 text-muted">{contribution.summary}</p>
+                </article>
+              );
+            })}
+          </div>
+        </Section>
+      )}
     </article>
   );
 }

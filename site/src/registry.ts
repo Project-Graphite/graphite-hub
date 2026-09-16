@@ -35,6 +35,12 @@ export function projectsForPerson(person: Person): Project[] {
   );
 }
 
+export function contributionForPerson(project: Project, person: Person) {
+  return project.showcase?.contributions.find(
+    (contribution) => contribution.github.toLowerCase() === person.github.toLowerCase(),
+  );
+}
+
 export function projectBySlug(slug: string): Project | undefined {
   return projects.find((project) => project.slug === slug);
 }
