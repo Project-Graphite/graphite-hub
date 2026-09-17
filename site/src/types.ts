@@ -1,6 +1,7 @@
 export interface Project {
   slug: string;
   parent: string | null;
+  kind: 'project' | 'epic';
   name: string;
   summary: string;
   tags: string[];
@@ -9,7 +10,6 @@ export interface Project {
   owner: string;
   authors: string[];
   status: string;
-  featured: boolean;
   showcase: ProjectShowcase | null;
   url: string | null;
   path: string;

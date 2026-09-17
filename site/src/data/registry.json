@@ -122,42 +122,9 @@
   ],
   "projects": [
     {
-      "slug": "windhawk-mods",
-      "parent": null,
-      "name": "Windhawk Mods",
-      "summary": "A growing collection of native Windows customizations built for Windhawk, the open-source marketplace and framework for modifying programs without replacing system files.",
-      "tags": [
-        "cpp",
-        "windows",
-        "windhawk",
-        "win32"
-      ],
-      "repo": "project-graphite/windhawk-mods",
-      "repoUrl": "https://github.com/project-graphite/windhawk-mods",
-      "owner": "amr",
-      "authors": [
-        "AmrMsCLL"
-      ],
-      "status": "source-only",
-      "featured": true,
-      "showcase": {
-        "problem": "Useful Windows customizations are often distributed as opaque executables or broad system replacements, making them difficult to inspect, maintain and trust across Windows updates.",
-        "approach": "Each customization is developed as a focused Windhawk mod with its own folder, documentation and reviewable C++ source. The collection favors native Windows behavior, explicit settings and resilient integration points over standalone background applications.",
-        "outcome": "Project Graphite has a maintainable home for Windows experiments where every mod can be understood, installed and evolved independently while sharing consistent quality checks.",
-        "contributions": [
-          {
-            "github": "AmrMsCLL",
-            "summary": "Designs and maintains the collection, its native Windows integrations, settings models, project documentation and validation workflow."
-          }
-        ]
-      },
-      "url": null,
-      "path": "/projects/windhawk-mods",
-      "legacyPath": "/amr/windhawk-mods"
-    },
-    {
       "slug": "graphite-message-lab",
       "parent": null,
+      "kind": "project",
       "name": "Graphite Message Lab",
       "summary": "A public message form with private-by-default moderation, backed by Django, PostgreSQL, Redis and Celery and deployed automatically through the Project Graphite hosting path.",
       "tags": [
@@ -174,7 +141,6 @@
         "AmrMsCLL"
       ],
       "status": "live",
-      "featured": false,
       "showcase": {
         "problem": "Project Graphite needed an approachable application that visitors could use while proving the complete path from a browser through an API, persistent database and background worker.",
         "approach": "Visitors submit public or private messages through Django. PostgreSQL stores them, Redis and Celery process them asynchronously, and moderation keeps messages private until an admin chooses to publish them. Coolify redeploys the Compose application when the main branch changes.",
@@ -193,6 +159,7 @@
     {
       "slug": "stack-switch",
       "parent": "windhawk-mods",
+      "kind": "project",
       "name": "StackSwitch",
       "summary": "A Windhawk taskbar launcher that starts and stops configurable working sets of applications, folders, editor workspaces, URLs and terminal commands with one action.",
       "tags": [
@@ -208,7 +175,6 @@
         "AmrMsCLL"
       ],
       "status": "source-only",
-      "featured": false,
       "showcase": {
         "problem": "A development session can mean opening the same mix of applications, workspaces, folders, URLs and terminal commands, then finding and closing them all again in the right order.",
         "approach": "StackSwitch adds a native taskbar panel with persistent selections, named profiles, grouped items, launch delays and wait-for-exit behavior. It closes the same selection in reverse order and avoids fragile Windows symbol resolution by using a layered child window.",
@@ -223,6 +189,40 @@
       "url": null,
       "path": "/projects/windhawk-mods/stack-switch",
       "legacyPath": "/amr/stack-switch"
+    },
+    {
+      "slug": "windhawk-mods",
+      "parent": null,
+      "kind": "epic",
+      "name": "Windhawk Mods",
+      "summary": "A growing collection of native Windows customizations built for Windhawk, the open-source marketplace and framework for modifying programs without replacing system files.",
+      "tags": [
+        "cpp",
+        "windows",
+        "windhawk",
+        "win32"
+      ],
+      "repo": "project-graphite/windhawk-mods",
+      "repoUrl": "https://github.com/project-graphite/windhawk-mods",
+      "owner": "amr",
+      "authors": [
+        "AmrMsCLL"
+      ],
+      "status": "source-only",
+      "showcase": {
+        "problem": "Useful Windows customizations are often distributed as opaque executables or broad system replacements, making them difficult to inspect, maintain and trust across Windows updates.",
+        "approach": "Each customization is developed as a focused Windhawk mod with its own folder, documentation and reviewable C++ source. The collection favors native Windows behavior, explicit settings and resilient integration points over standalone background applications.",
+        "outcome": "Project Graphite has a maintainable home for Windows experiments where every mod can be understood, installed and evolved independently while sharing consistent quality checks.",
+        "contributions": [
+          {
+            "github": "AmrMsCLL",
+            "summary": "Designs and maintains the collection, its native Windows integrations, settings models, project documentation and validation workflow."
+          }
+        ]
+      },
+      "url": null,
+      "path": "/projects/windhawk-mods",
+      "legacyPath": "/amr/windhawk-mods"
     }
   ]
 }

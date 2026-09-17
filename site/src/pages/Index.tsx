@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
-import { githubProfiles, people, rootProjects } from '../registry';
+import { epics, githubProfiles, people, rootProjects } from '../registry';
 
 export default function Index() {
   return (
@@ -67,6 +67,16 @@ export default function Index() {
           </div>
         )}
       </Section>
+
+      {epics.length > 0 && (
+        <Section id="epics" label="epics">
+          <div>
+            {epics.map((epic) => (
+              <ProjectCard key={epic.path} project={epic} />
+            ))}
+          </div>
+        </Section>
+      )}
     </>
   );
 }

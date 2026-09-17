@@ -6,7 +6,10 @@ const registry = data as Registry;
 
 export const people: Person[] = registry.people;
 export const projects: Project[] = registry.projects;
-export const rootProjects: Project[] = projects.filter((project) => !project.parent);
+export const rootProjects: Project[] = projects.filter(
+  (project) => project.kind === 'project' && !project.parent,
+);
+export const epics: Project[] = projects.filter((project) => project.kind === 'epic');
 export const githubProfiles = githubData as Record<string, GithubProfile>;
 
 export const routePaths: string[] = [
@@ -31,8 +34,17 @@ export function personByGithub(github: string): Person | undefined {
 export function projectsForPerson(person: Person): Project[] {
   return projects.filter(
     (project) =>
-      project.owner === person.handle ||
-      project.authors.some((author) => author.toLowerCase() === person.github.toLowerCase()),
+      project.kind === 'project' &&
+      (project.owner === person.handle ||
+        project.authors.some((author) => author.toLowerCase() === person.github.toLowerCase())),
+  );
+}
+
+export function epicsForPerson(person: Person): Project[] {
+  return epics.filter(
+    (epic) =>
+      epic.owner === person.handle ||
+      epic.authors.some((author) => author.toLowerCase() === person.github.toLowerCase()),
   );
 }
 

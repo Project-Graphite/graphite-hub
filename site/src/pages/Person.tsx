@@ -5,6 +5,7 @@ import Section from '../components/Section';
 import TagList from '../components/TagList';
 import {
   contributionForPerson,
+  epicsForPerson,
   githubProfiles,
   personByHandle,
   projectsForPerson,
@@ -21,6 +22,7 @@ export default function Person() {
 
   const profile = githubProfiles[person.github];
   const memberProjects = projectsForPerson(person);
+  const memberEpics = epicsForPerson(person);
   const avatarUrl = profile?.avatarUrl ?? `https://github.com/${person.github}.png?size=128`;
 
   return (
@@ -103,6 +105,20 @@ export default function Person() {
           </div>
         )}
       </Section>
+
+      {memberEpics.length > 0 && (
+        <Section label="epics">
+          <div>
+            {memberEpics.map((epic) => (
+              <ProjectCard
+                key={epic.path}
+                project={epic}
+                context={contributionForPerson(epic, person)?.summary}
+              />
+            ))}
+          </div>
+        </Section>
+      )}
     </>
   );
 }
