@@ -214,6 +214,30 @@
       "legacyPath": "/amr/stack-switch"
     },
     {
+      "slug": "traceboard",
+      "parent": null,
+      "kind": "project",
+      "name": "Traceboard",
+      "summary": "A private, client-side workspace for exploring structured logs through fast filters, correlation groups, timelines and focused event inspection.",
+      "tags": [
+        "react",
+        "vite",
+        "typescript",
+        "observability"
+      ],
+      "repo": "project-graphite/traceboard",
+      "repoUrl": "https://github.com/project-graphite/traceboard",
+      "owner": "amr",
+      "authors": [
+        "AmrMsCLL"
+      ],
+      "status": "wip",
+      "showcase": null,
+      "url": null,
+      "path": "/projects/traceboard",
+      "legacyPath": "/amr/traceboard"
+    },
+    {
       "slug": "windhawk-mods",
       "parent": null,
       "kind": "epic",
