@@ -13,7 +13,7 @@ export default function ProjectCard({ project, context }: Props) {
   return (
     <article className="border-b border-line-soft py-8 first:pt-0 last:border-b-0 last:pb-0">
       <div className="flex max-w-[52ch] items-baseline justify-between gap-4">
-        <h3 className="m-0 text-[1.3rem] font-semibold tracking-[-0.025em]">
+        <h3 className="m-0 text-[1.3rem] font-semibold tracking-tight">
           <Link to={project.path} className="text-ink no-underline hover:underline">
             {project.name}
           </Link>
@@ -29,7 +29,7 @@ export default function ProjectCard({ project, context }: Props) {
         </p>
       )}
 
-      <TagList tags={project.tags} className="mt-[18px]" />
+      <TagList tags={project.tags} className="mt-4.5" />
 
       <div className="mono-sm mt-6 flex max-w-[52ch] flex-wrap items-center justify-between gap-3 text-faint">
         <span className="flex flex-wrap gap-x-1.5">
@@ -51,7 +51,7 @@ export default function ProjectCard({ project, context }: Props) {
             );
           })}
         </span>
-        <span className="flex gap-[18px]">
+        <span className="flex gap-4.5">
           {project.url && (
             <a href={project.url} className="rule-link">
               visit ↗

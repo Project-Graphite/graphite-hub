@@ -6,10 +6,10 @@ import { epics, githubProfiles, people, rootProjects } from '../registry';
 export default function Index() {
   return (
     <>
-      <section className="pt-[88px] pb-5">
+      <section className="pt-22 pb-5">
         <p className="mono-sm m-0 mb-4 text-faint">people / projects / working software</p>
         <h1 className="page-title max-w-[20ch]">Things that get built here, and stay built.</h1>
-        <p className="mt-[22px] mb-0 max-w-[52ch] text-muted">
+        <p className="mt-5.5 mb-0 max-w-[52ch] text-muted">
           A shared portfolio for the people behind Project Graphite. Every project has its own
           repository; deployable web projects get a live subdomain, while source-only work is
           labelled honestly.

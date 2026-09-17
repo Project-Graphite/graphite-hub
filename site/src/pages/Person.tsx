@@ -28,7 +28,7 @@ export default function Person() {
 
   return (
     <>
-      <section className="pt-[88px] pb-5">
+      <section className="pt-22 pb-5">
         <p className="mono-sm m-0 text-faint">/members/{person.handle}</p>
 
         <div className="mt-3 flex items-center gap-5">
@@ -47,7 +47,7 @@ export default function Person() {
 
         {person.bio && <p className="mt-6 mb-0 max-w-[56ch] text-muted">{person.bio}</p>}
 
-        <div className="mono-sm mt-6 flex flex-wrap gap-x-[18px] gap-y-2">
+        <div className="mono-sm mt-6 flex flex-wrap gap-x-4.5 gap-y-2">
           {person.links.map((link) => (
             <a key={link.url} href={link.url} className="rule-link">
               {link.label} ↗
