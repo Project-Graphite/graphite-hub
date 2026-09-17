@@ -51,7 +51,5 @@ const entries = await Promise.all(
   }),
 );
 
-const profiles = Object.fromEntries(entries);
-
-await writeFile(OUTPUT, JSON.stringify(profiles, null, 2) + '\n', 'utf8');
-console.log(`Prepared ${Object.keys(profiles).length} GitHub profiles in ${OUTPUT}.`);
+await writeFile(OUTPUT, JSON.stringify(Object.fromEntries(entries), null, 2) + '\n', 'utf8');
+console.log(`Prepared ${entries.length} GitHub profiles in ${OUTPUT}.`);

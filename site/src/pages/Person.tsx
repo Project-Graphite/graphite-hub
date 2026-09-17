@@ -23,7 +23,8 @@ export default function Person() {
   const profile = githubProfiles[person.github];
   const memberProjects = projectsForPerson(person);
   const memberEpics = epicsForPerson(person);
-  const avatarUrl = profile?.avatarUrl ?? `https://github.com/${person.github}.png?size=128`;
+  const avatarUrl =
+    profile?.avatarUrl ?? `https://github.com/${encodeURIComponent(person.github)}.png?size=128`;
 
   return (
     <>
@@ -68,7 +69,7 @@ export default function Person() {
 
           <dt className="text-faint">profile</dt>
           <dd className="m-0">
-            <a href={person.githubUrl} className="text-ink hover:underline">
+            <a href={`https://github.com/${person.github}`} className="text-ink hover:underline">
               github.com/{person.github} ↗
             </a>
           </dd>

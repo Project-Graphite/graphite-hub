@@ -49,8 +49,7 @@ export function metaFor(path: string): PageMeta {
     }
     return {
       title: `${person.name} — ${SITE}`,
-      description:
-        person.headline ?? person.bio ?? `Projects credited to ${person.name} on ${SITE}.`,
+      description: person.headline ?? person.bio ?? person.name,
       canonical: canonicalFor(person.path),
     };
   }

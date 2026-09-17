@@ -41,7 +41,6 @@ export interface StackGroup {
 export interface Person {
   handle: string;
   github: string;
-  githubUrl: string;
   name: string;
   headline: string | null;
   bio: string | null;

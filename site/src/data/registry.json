@@ -3,7 +3,6 @@
     {
       "handle": "amr",
       "github": "AmrMsCLL",
-      "githubUrl": "https://github.com/AmrMsCLL",
       "name": "Amr El-Sheraey",
       "headline": "Full-stack engineer in Cairo",
       "bio": "Computer Science and AI graduate of FCAI, Cairo University, building document-intelligence software at Syntheia. A normal week touches a TypeScript API, a React front end, a Python ML service and a Helm chart. Most useful where those meet, and most interested in whichever part I have not done before.",
@@ -105,7 +104,6 @@
     {
       "handle": "bluocaroot",
       "github": "BluoCaroot",
-      "githubUrl": "https://github.com/BluoCaroot",
       "name": "Assem Amr Abdelfattah",
       "headline": "Software engineering intern at Syntheia",
       "bio": "Software engineer working at Syntheia. This profile is intentionally minimal and can be expanded by its owner with projects, preferred links, a fuller biography and a technology stack.",
@@ -121,6 +119,31 @@
     }
   ],
   "projects": [
+    {
+      "slug": "digital-to-physical",
+      "parent": null,
+      "kind": "project",
+      "name": "Digital to Physical",
+      "summary": "A private, client-side tool that turns digital comic archives into print-ready PDFs with spread alignment, booklet padding, flexible back covers and a live pre-print audit.",
+      "tags": [
+        "react",
+        "vite",
+        "typescript",
+        "webassembly",
+        "pdf"
+      ],
+      "repo": "project-graphite/digital-to-physical",
+      "repoUrl": "https://github.com/project-graphite/digital-to-physical",
+      "owner": "bluocaroot",
+      "authors": [
+        "BluoCaroot"
+      ],
+      "status": "live",
+      "showcase": null,
+      "url": "https://digital-to-physical.project-graphite.com",
+      "path": "/projects/digital-to-physical",
+      "legacyPath": "/bluocaroot/digital-to-physical"
+    },
     {
       "slug": "graphite-message-lab",
       "parent": null,

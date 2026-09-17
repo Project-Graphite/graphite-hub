@@ -36,7 +36,10 @@ export default function Index() {
                   className="flex items-center gap-4 rounded-lg border border-line-soft bg-surface p-4 text-ink no-underline hover:border-line"
                 >
                   <img
-                    src={profile?.avatarUrl ?? `https://github.com/${person.github}.png?size=96`}
+                    src={
+                      profile?.avatarUrl ??
+                      `https://github.com/${encodeURIComponent(person.github)}.png?size=96`
+                    }
                     alt=""
                     width={48}
                     height={48}
