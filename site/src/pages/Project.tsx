@@ -1,14 +1,23 @@
 import { Link, useParams } from 'react-router-dom';
+import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
-import { personByGithub, personByHandle, projectBySlug } from '../registry';
+import {
+  childProjects,
+  personByGithub,
+  personByHandle,
+  projectByRoute,
+  projectBySlug,
+} from '../registry';
 import NotFound from './NotFound';
 
 export default function Project() {
-  const { slug } = useParams();
-  const project = slug ? projectBySlug(slug) : undefined;
+  const { parentSlug, slug } = useParams();
+  const project = slug ? projectByRoute(parentSlug, slug) : undefined;
   const owner = project ? personByHandle(project.owner) : undefined;
+  const parent = project?.parent ? projectBySlug(project.parent) : undefined;
+  const children = project ? childProjects(project.slug) : [];
 
   if (!project || !owner) {
     return <NotFound />;
@@ -18,7 +27,18 @@ export default function Project() {
     <article>
       <section className="pt-[88px] pb-5">
         <p className="mono-sm m-0 text-faint">
-          <span>/projects/{project.slug}</span>
+          <span>
+            /projects/
+            {parent && (
+              <>
+                <Link to={parent.path} className="text-faint hover:text-ink hover:underline">
+                  {parent.slug}
+                </Link>
+                /
+              </>
+            )}
+            {project.slug}
+          </span>
         </p>
 
         <div className="mt-3 flex max-w-[52ch] items-baseline justify-between gap-4">
@@ -46,6 +66,16 @@ export default function Project() {
               <h3 className="mono-sm m-0 mb-2 font-normal text-faint">outcome</h3>
               <p className="m-0 text-muted">{project.showcase.outcome}</p>
             </div>
+          </div>
+        </Section>
+      )}
+
+      {children.length > 0 && (
+        <Section label="projects">
+          <div>
+            {children.map((child) => (
+              <ProjectCard key={child.path} project={child} />
+            ))}
           </div>
         </Section>
       )}

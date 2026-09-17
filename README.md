@@ -17,6 +17,7 @@ collaborative work.
 | `/` | Everything registered |
 | `/members/<handle>` | A person: who they are, and the projects they maintain or built |
 | `/projects/<slug>` | A project: what it is, who built it, and where it runs |
+| `/projects/<collection>/<slug>` | A project contained within a larger collection |
 
 The old short routes redirect permanently, so existing links continue to work. A deployed project
 runs at its own subdomain and its project page links to it — serving an app under a path would mean

@@ -6,6 +6,7 @@ const registry = data as Registry;
 
 export const people: Person[] = registry.people;
 export const projects: Project[] = registry.projects;
+export const rootProjects: Project[] = projects.filter((project) => !project.parent);
 export const githubProfiles = githubData as Record<string, GithubProfile>;
 
 export const routePaths: string[] = [
@@ -43,6 +44,14 @@ export function contributionForPerson(project: Project, person: Person) {
 
 export function projectBySlug(slug: string): Project | undefined {
   return projects.find((project) => project.slug === slug);
+}
+
+export function projectByRoute(parent: string | undefined, slug: string): Project | undefined {
+  return projects.find((project) => project.parent === (parent ?? null) && project.slug === slug);
+}
+
+export function childProjects(parent: string): Project[] {
+  return projects.filter((project) => project.parent === parent);
 }
 
 export function legacyProject(handle: string, slug: string): Project | undefined {

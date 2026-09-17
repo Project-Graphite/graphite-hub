@@ -1,4 +1,4 @@
-import { personByHandle, projectBySlug } from './registry';
+import { personByHandle, projectByRoute } from './registry';
 
 const SITE = 'Project Graphite';
 const ORIGIN = 'https://project-graphite.com';
@@ -25,10 +25,10 @@ export function metaFor(path: string): PageMeta {
     return INDEX;
   }
 
-  const [section, slug] = path.replace(/^\//, '').split('/');
+  const [section, slug, childSlug] = path.replace(/^\//, '').split('/');
 
   if (section === 'projects' && slug) {
-    const project = projectBySlug(slug);
+    const project = projectByRoute(childSlug ? slug : undefined, childSlug ?? slug);
     if (project) {
       return {
         title: `${project.name} — ${SITE}`,

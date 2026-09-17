@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
-import { githubProfiles, people, projects } from '../registry';
+import { githubProfiles, people, rootProjects } from '../registry';
 
 export default function Index() {
   return (
@@ -57,11 +57,11 @@ export default function Index() {
       )}
 
       <Section id="projects" label="projects">
-        {projects.length === 0 ? (
+        {rootProjects.length === 0 ? (
           <p className="mono-sm m-0 text-faint">Nothing registered yet.</p>
         ) : (
           <div>
-            {projects.map((project) => (
+            {rootProjects.map((project) => (
               <ProjectCard key={project.path} project={project} />
             ))}
           </div>

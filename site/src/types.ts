@@ -1,5 +1,6 @@
 export interface Project {
   slug: string;
+  parent: string | null;
   name: string;
   summary: string;
   tags: string[];

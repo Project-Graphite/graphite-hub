@@ -24,6 +24,7 @@ export default function App() {
       <Route element={<Shell />}>
         <Route index element={<Index />} />
         <Route path="members/:handle" element={<Person />} />
+        <Route path="projects/:parentSlug/:slug" element={<Project />} />
         <Route path="projects/:slug" element={<Project />} />
         <Route path=":handle" element={<LegacyPersonRedirect />} />
         <Route path=":handle/:slug" element={<LegacyProjectRedirect />} />
