@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
+import EpicCard from '../components/EpicCard';
 import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
-import { epics, githubProfiles, people, rootProjects } from '../registry';
+import { childProjects, epics, githubProfiles, people, rootProjects } from '../registry';
 
 export default function Index() {
   return (
@@ -59,27 +60,27 @@ export default function Index() {
         </Section>
       )}
 
-      <Section id="projects" label="projects">
-        {rootProjects.length === 0 ? (
-          <p className="mono-sm m-0 text-faint">Nothing registered yet.</p>
-        ) : (
-          <div>
-            {rootProjects.map((project) => (
-              <ProjectCard key={project.path} project={project} />
-            ))}
-          </div>
-        )}
-      </Section>
-
       {epics.length > 0 && (
         <Section id="epics" label="epics">
-          <div>
+          <div className="grid gap-5">
             {epics.map((epic) => (
-              <ProjectCard key={epic.path} project={epic} />
+              <EpicCard key={epic.path} epic={epic} projects={childProjects(epic.slug)} />
             ))}
           </div>
         </Section>
       )}
+
+      <Section id="projects" label="standalone projects">
+        {rootProjects.length === 0 ? (
+          <p className="mono-sm m-0 text-faint">Nothing registered yet.</p>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {rootProjects.map((project) => (
+              <ProjectCard key={project.path} project={project} variant="card" />
+            ))}
+          </div>
+        )}
+      </Section>
     </>
   );
 }
