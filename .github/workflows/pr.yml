@@ -33,7 +33,7 @@ jobs:
 
   secrets:
     name: Secrets
-    uses: project-graphite/actions/.github/workflows/reusable-gitleaks.yml@v1
+    uses: project-graphite/actions/.github/workflows/reusable-gitleaks.yml@main
 
   conventions:
     name: Conventions
@@ -41,4 +41,4 @@ jobs:
       contents: read
       issues: write
       pull-requests: write
-    uses: project-graphite/actions/.github/workflows/reusable-pr-checks.yml@v1
+    uses: project-graphite/actions/.github/workflows/reusable-pr-checks.yml@main
