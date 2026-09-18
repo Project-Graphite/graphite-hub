@@ -25,7 +25,7 @@ export default function Project() {
 
   return (
     <article>
-      <section className="pt-[88px] pb-5">
+      <section className="pt-22 pb-5">
         <p className="mono-sm m-0 text-faint">
           <span>
             /projects/
@@ -48,7 +48,7 @@ export default function Project() {
 
         <p className="mt-6 mb-0 max-w-[56ch] text-muted">{project.summary}</p>
 
-        <TagList tags={project.tags} className="mt-[18px]" />
+        <TagList tags={project.tags} className="mt-4.5" />
       </section>
 
       {project.showcase && (

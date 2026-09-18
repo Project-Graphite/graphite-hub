@@ -18,8 +18,8 @@ export default function Shell() {
       <a href="#content" className="skip-link">
         skip to content
       </a>
-      <header className="sticky top-0 z-10 border-b border-line-soft bg-paper/88 backdrop-blur-[8px]">
-        <div className="shell flex flex-wrap items-baseline justify-between gap-4 py-[18px]">
+      <header className="sticky top-0 z-10 border-b border-line-soft bg-paper/88 backdrop-blur-sm">
+        <div className="shell flex flex-wrap items-baseline justify-between gap-4 py-4.5">
           <Link
             to="/"
             className="text-[1.02rem] font-[620] tracking-[-0.022em] text-ink no-underline"
