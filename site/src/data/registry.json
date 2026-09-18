@@ -214,6 +214,41 @@
       "legacyPath": "/amr/stack-switch"
     },
     {
+      "slug": "tasktune",
+      "parent": "windhawk-mods",
+      "kind": "project",
+      "name": "TaskTune",
+      "summary": "A configurable Windhawk media player embedded in the Windows 11 taskbar, with media-session controls, per-app volume, audio-only application support and an optional spectrum visualizer.",
+      "tags": [
+        "cpp",
+        "windows",
+        "windhawk",
+        "winrt",
+        "audio"
+      ],
+      "repo": "project-graphite/windhawk-mods",
+      "repoUrl": "https://github.com/project-graphite/windhawk-mods",
+      "owner": "amr",
+      "authors": [
+        "AmrMsCLL"
+      ],
+      "status": "source-only",
+      "showcase": {
+        "problem": "Checking playback details or controlling several media and audio applications usually means opening a player window or a separate volume interface and leaving the current workflow.",
+        "approach": "The mod injects a configurable Fluent UI player into the Windows 11 taskbar, reads Windows media sessions, falls back to active audio sessions, and exposes playback, session and per-application volume controls beside an optional WASAPI visualizer.",
+        "outcome": "Media status and the most common playback and volume actions remain available at a glance without adding a separate background application or replacing Windows system files.",
+        "contributions": [
+          {
+            "github": "AmrMsCLL",
+            "summary": "Designed and maintains the media-session integration, taskbar player, per-application audio controls, visualizer, customization model and Project Graphite packaging."
+          }
+        ]
+      },
+      "url": null,
+      "path": "/projects/windhawk-mods/tasktune",
+      "legacyPath": "/amr/tasktune"
+    },
+    {
       "slug": "traceboard",
       "parent": null,
       "kind": "project",
@@ -256,17 +291,7 @@
         "AmrMsCLL"
       ],
       "status": "source-only",
-      "showcase": {
-        "problem": "Useful Windows customizations are often distributed as opaque executables or broad system replacements, making them difficult to inspect, maintain and trust across Windows updates.",
-        "approach": "Each customization is developed as a focused Windhawk mod with its own folder, documentation and reviewable C++ source. The collection favors native Windows behavior, explicit settings and resilient integration points over standalone background applications.",
-        "outcome": "Project Graphite has a maintainable home for Windows experiments where every mod can be understood, installed and evolved independently while sharing consistent quality checks.",
-        "contributions": [
-          {
-            "github": "AmrMsCLL",
-            "summary": "Designs and maintains the collection, its native Windows integrations, settings models, project documentation and validation workflow."
-          }
-        ]
-      },
+      "showcase": null,
       "url": null,
       "path": "/projects/windhawk-mods",
       "legacyPath": "/amr/windhawk-mods"
