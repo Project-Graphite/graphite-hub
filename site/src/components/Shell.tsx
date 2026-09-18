@@ -1,7 +1,18 @@
-import { Link, Outlet } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 
 export default function Shell() {
+  const { pathname } = useLocation();
+  const previousPathname = useRef(pathname);
+
+  useEffect(() => {
+    if (pathname !== previousPathname.current) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      previousPathname.current = pathname;
+    }
+  }, [pathname]);
+
   return (
     <>
       <a href="#content" className="skip-link">
