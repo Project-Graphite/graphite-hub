@@ -16,6 +16,7 @@
 }
 
 @utility shell {
+  width: 100%;
   margin-inline: auto;
   max-width: 64rem;
   padding-inline: 1.5rem;
@@ -48,6 +49,7 @@
 
 :root {
   color-scheme: dark;
+  scrollbar-gutter: stable;
 }
 
 body {
