@@ -60,7 +60,7 @@ export default function Shell() {
         </div>
       </main>
 
-      <footer className="shell mono-sm mt-24 border-t border-line-soft pt-7 pb-14 text-faint">
+      <footer className="shell mono-sm mt-24 border-t border-line-soft pt-7 pb-14 text-faint text-center">
         <p className="m-0">
           Project Graphite · Made for Learning · Made for Fun · Made for Everyone
         </p>
