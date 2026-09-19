@@ -1,4 +1,4 @@
-import { personByHandle, projectByRoute } from './registry';
+import { memberByHandle, projectByRoute } from './registry';
 
 const SITE = 'Project Graphite';
 const ORIGIN = 'https://project-graphite.com';
@@ -20,14 +20,44 @@ const INDEX: PageMeta = {
   canonical: `${ORIGIN}/`,
 };
 
+const MEMBERS: PageMeta = {
+  title: `Members — ${SITE}`,
+  description: 'The people building and maintaining every project in the registry.',
+  canonical: `${ORIGIN}/members/`,
+};
+
+const EPICS: PageMeta = {
+  title: `Epics — ${SITE}`,
+  description: 'Multi-project efforts, grouped under one ongoing initiative.',
+  canonical: `${ORIGIN}/epics/`,
+};
+
+const PROJECTS: PageMeta = {
+  title: `Projects — ${SITE}`,
+  description: 'Standalone projects — each with its own repository, independent of any epic.',
+  canonical: `${ORIGIN}/projects/`,
+};
+
 export function metaFor(path: string): PageMeta {
   if (path === '/') {
     return INDEX;
   }
 
+  if (path === '/members') {
+    return MEMBERS;
+  }
+
+  if (path === '/epics') {
+    return EPICS;
+  }
+
+  if (path === '/projects') {
+    return PROJECTS;
+  }
+
   const [section, slug, childSlug] = path.replace(/^\//, '').split('/');
 
-  if (section === 'projects' && slug) {
+  if ((section === 'projects' || section === 'epics') && slug) {
     const project = projectByRoute(childSlug ? slug : undefined, childSlug ?? slug);
     if (project) {
       return {
@@ -39,8 +69,8 @@ export function metaFor(path: string): PageMeta {
   }
 
   if (section === 'members' && slug) {
-    const person = personByHandle(slug);
-    if (!person) {
+    const member = memberByHandle(slug);
+    if (!member) {
       return {
         title: `Not found — ${SITE}`,
         description: 'That page does not exist.',
@@ -48,9 +78,9 @@ export function metaFor(path: string): PageMeta {
       };
     }
     return {
-      title: `${person.name} — ${SITE}`,
-      description: person.headline ?? person.bio ?? person.name,
-      canonical: canonicalFor(person.path),
+      title: `${member.name} — ${SITE}`,
+      description: member.headline ?? member.bio ?? member.name,
+      canonical: canonicalFor(member.path),
     };
   }
 

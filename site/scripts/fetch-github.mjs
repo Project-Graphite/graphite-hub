@@ -15,9 +15,9 @@ if (process.env.GITHUB_TOKEN) {
 }
 
 const entries = await Promise.all(
-  registry.people.map(async (person) => {
+  registry.members.map(async (member) => {
     try {
-      const response = await fetch(`https://api.github.com/users/${person.github}`, {
+      const response = await fetch(`https://api.github.com/users/${member.github}`, {
         headers,
         signal: AbortSignal.timeout(10_000),
       });
@@ -28,7 +28,7 @@ const entries = await Promise.all(
 
       const user = await response.json();
       return [
-        person.github,
+        member.github,
         {
           avatarUrl: user.avatar_url,
           publicRepos: user.public_repos,
@@ -37,11 +37,11 @@ const entries = await Promise.all(
         },
       ];
     } catch (error) {
-      console.warn(`Could not refresh ${person.github}: ${error.message}. Using cached data.`);
+      console.warn(`Could not refresh ${member.github}: ${error.message}. Using cached data.`);
       return [
-        person.github,
-        cached[person.github] ?? {
-          avatarUrl: `https://github.com/${encodeURIComponent(person.github)}.png?size=128`,
+        member.github,
+        cached[member.github] ?? {
+          avatarUrl: `https://github.com/${encodeURIComponent(member.github)}.png?size=128`,
           publicRepos: null,
           followers: null,
           joined: null,

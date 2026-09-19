@@ -5,7 +5,7 @@ export default function NotFound() {
     <section className="pt-22 pb-5">
       <h1 className="page-title">Nothing here.</h1>
       <p className="mt-5.5 mb-6 max-w-[52ch] text-muted">
-        That page does not exist. Deployed projects live on their own subdomains.
+        That page does not exist. It may have been removed, or you may have mistyped the address.
       </p>
       <Link to="/" className="rule-link mono-sm">
         back to the index

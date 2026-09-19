@@ -28,7 +28,7 @@ export interface ProjectShowcase {
   contributions: ProjectContribution[];
 }
 
-export interface PersonLink {
+export interface MemberLink {
   label: string;
   url: string;
 }
@@ -38,14 +38,14 @@ export interface StackGroup {
   items: string[];
 }
 
-export interface Person {
+export interface Member {
   handle: string;
   github: string;
   name: string;
   headline: string | null;
   bio: string | null;
   stack: StackGroup[];
-  links: PersonLink[];
+  links: MemberLink[];
   path: string;
   legacyPath: string;
 }
@@ -58,6 +58,6 @@ export interface GithubProfile {
 }
 
 export interface Registry {
-  people: Person[];
+  members: Member[];
   projects: Project[];
 }

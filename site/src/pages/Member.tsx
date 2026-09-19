@@ -6,51 +6,51 @@ import Section from '../components/Section';
 import TagList from '../components/TagList';
 import {
   childProjects,
-  contributionForPerson,
-  epicsForPerson,
+  contributionForMember,
+  epicsForMember,
   githubProfiles,
-  personByHandle,
-  projectsForPerson,
+  memberByHandle,
+  projectsForMember,
 } from '../registry';
 import NotFound from './NotFound';
 
-export default function Person() {
+export default function Member() {
   const { handle } = useParams();
-  const person = handle ? personByHandle(handle) : undefined;
+  const member = handle ? memberByHandle(handle) : undefined;
 
-  if (!person) {
+  if (!member) {
     return <NotFound />;
   }
 
-  const profile = githubProfiles[person.github];
-  const memberProjects = projectsForPerson(person);
-  const memberEpics = epicsForPerson(person);
+  const profile = githubProfiles[member.github];
+  const memberProjects = projectsForMember(member);
+  const memberEpics = epicsForMember(member);
   const avatarUrl =
-    profile?.avatarUrl ?? `https://github.com/${encodeURIComponent(person.github)}.png?size=128`;
+    profile?.avatarUrl ?? `https://github.com/${encodeURIComponent(member.github)}.png?size=128`;
 
   return (
     <>
       <section className="pt-22 pb-5">
-        <p className="mono-sm m-0 text-faint">/members/{person.handle}</p>
+        <p className="mono-sm m-0 text-faint">/members/{member.handle}</p>
 
         <div className="mt-3 flex items-center gap-5">
           <img
             src={avatarUrl}
-            alt={`${person.name}'s GitHub avatar`}
+            alt={`${member.name}'s GitHub avatar`}
             width={64}
             height={64}
             className="size-16 shrink-0 rounded-full border border-line-soft"
           />
           <div>
-            <h1 className="page-title max-w-[18ch]">{person.name}</h1>
-            {person.headline && <p className="mt-2 mb-0 text-muted">{person.headline}</p>}
+            <h1 className="page-title max-w-[18ch]">{member.name}</h1>
+            {member.headline && <p className="mt-2 mb-0 text-muted">{member.headline}</p>}
           </div>
         </div>
 
-        {person.bio && <p className="mt-6 mb-0 max-w-[56ch] text-muted">{person.bio}</p>}
+        {member.bio && <p className="mt-6 mb-0 max-w-[56ch] text-muted">{member.bio}</p>}
 
         <div className="mono-sm mt-6 flex flex-wrap gap-x-4.5 gap-y-2">
-          {person.links.map((link) => (
+          {member.links.map((link) => (
             <a key={link.url} href={link.url} className="rule-link">
               {link.label} ↗
             </a>
@@ -71,17 +71,17 @@ export default function Person() {
 
           <dt className="text-faint">profile</dt>
           <dd className="m-0">
-            <a href={`https://github.com/${person.github}`} className="text-ink hover:underline">
-              github.com/{person.github} ↗
+            <a href={`https://github.com/${member.github}`} className="text-ink hover:underline">
+              github.com/{member.github} ↗
             </a>
           </dd>
         </dl>
       </Section>
 
-      {person.stack.length > 0 && (
+      {member.stack.length > 0 && (
         <Section label="stack">
           <dl className="mono-sm grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-8 gap-y-3">
-            {person.stack.map((group) => (
+            {member.stack.map((group) => (
               <Fragment key={group.group}>
                 <dt className="text-faint">{group.group}</dt>
                 <dd className="m-0">
@@ -102,8 +102,7 @@ export default function Person() {
               <ProjectCard
                 key={project.path}
                 project={project}
-                variant="card"
-                context={contributionForPerson(project, person)?.summary}
+                context={contributionForMember(project, member)?.summary}
               />
             ))}
           </div>
@@ -118,7 +117,7 @@ export default function Person() {
                 key={epic.path}
                 epic={epic}
                 projects={childProjects(epic.slug)}
-                context={contributionForPerson(epic, person)?.summary}
+                context={contributionForMember(epic, member)?.summary}
               />
             ))}
           </div>

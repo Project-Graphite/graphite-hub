@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Project } from '../types';
+import ProjectTile from './ProjectTile';
 import Status from './Status';
 import TagList from './TagList';
 
@@ -39,17 +40,7 @@ export default function EpicCard({ epic, projects, context }: Props) {
       {projects.length > 0 && (
         <div className="mt-7 grid gap-3 border-t border-line-soft pt-5 sm:grid-cols-2">
           {projects.map((project) => (
-            <Link
-              key={project.path}
-              to={project.path}
-              className="group rounded-lg border border-line-soft bg-paper p-4 text-ink no-underline hover:border-line"
-            >
-              <span className="flex items-baseline justify-between gap-3">
-                <strong className="font-semibold group-hover:underline">{project.name}</strong>
-                <Status status={project.status} />
-              </span>
-              <span className="mt-2 block text-sm text-muted">{project.summary}</span>
-            </Link>
+            <ProjectTile key={project.path} project={project} />
           ))}
         </div>
       )}

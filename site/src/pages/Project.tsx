@@ -1,12 +1,12 @@
 import { Link, useParams } from 'react-router-dom';
-import ProjectCard from '../components/ProjectCard';
+import ProjectTile from '../components/ProjectTile';
 import Section from '../components/Section';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
 import {
   childProjects,
-  personByGithub,
-  personByHandle,
+  memberByGithub,
+  memberByHandle,
   projectByRoute,
   projectBySlug,
 } from '../registry';
@@ -15,7 +15,7 @@ import NotFound from './NotFound';
 export default function Project() {
   const { parentSlug, slug } = useParams();
   const project = slug ? projectByRoute(parentSlug, slug) : undefined;
-  const owner = project ? personByHandle(project.owner) : undefined;
+  const owner = project ? memberByHandle(project.owner) : undefined;
   const parent = project?.parent ? projectBySlug(project.parent) : undefined;
   const children = project ? childProjects(project.slug) : [];
 
@@ -23,15 +23,20 @@ export default function Project() {
     return <NotFound />;
   }
 
+  const section = project.path.split('/')[1];
+
   return (
     <article>
       <section className="pt-22 pb-5">
         <p className="mono-sm m-0 text-faint">
           <span>
-            /projects/
+            /{section}/
             {parent && (
               <>
-                <Link to={parent.path} className="text-faint hover:text-ink hover:underline">
+                <Link
+                  to={parent.path}
+                  className="text-faint transition-colors duration-200 hover:text-ink hover:underline"
+                >
                   {parent.slug}
                 </Link>
                 /
@@ -72,9 +77,9 @@ export default function Project() {
 
       {children.length > 0 && (
         <Section label="projects">
-          <div>
+          <div className="grid gap-3 sm:grid-cols-2">
             {children.map((child) => (
-              <ProjectCard key={child.path} project={child} />
+              <ProjectTile key={child.path} project={child} />
             ))}
           </div>
         </Section>
@@ -85,13 +90,13 @@ export default function Project() {
           <dt className="text-faint">built by</dt>
           <dd className="m-0">
             {project.authors.map((author, index) => {
-              const person = personByGithub(author);
+              const member = memberByGithub(author);
               return (
                 <span key={author}>
                   {index > 0 && <span className="mx-1.5 text-faint">·</span>}
-                  {person ? (
-                    <Link to={person.path} className="text-ink hover:underline">
-                      {person.name}
+                  {member ? (
+                    <Link to={member.path} className="text-ink hover:underline">
+                      {member.name}
                     </Link>
                   ) : (
                     <a href={`https://github.com/${author}`} className="text-ink hover:underline">
@@ -134,13 +139,13 @@ export default function Project() {
         <Section label="contributions">
           <div className="grid gap-5">
             {project.showcase.contributions.map((contribution) => {
-              const person = personByGithub(contribution.github);
+              const member = memberByGithub(contribution.github);
               return (
                 <article key={contribution.github} className="max-w-[56ch]">
                   <h3 className="m-0 text-base font-semibold">
-                    {person ? (
-                      <Link to={person.path} className="text-ink hover:underline">
-                        {person.name}
+                    {member ? (
+                      <Link to={member.path} className="text-ink hover:underline">
+                        {member.name}
                       </Link>
                     ) : (
                       <a

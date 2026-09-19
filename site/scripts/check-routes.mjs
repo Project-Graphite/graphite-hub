@@ -4,7 +4,10 @@ import { join } from 'node:path';
 const registry = JSON.parse(await readFile('src/data/registry.json', 'utf8'));
 const routes = [
   '/',
-  ...registry.people.map((person) => person.path),
+  '/members',
+  '/epics',
+  '/projects',
+  ...registry.members.map((member) => member.path),
   ...registry.projects.map((project) => project.path),
 ];
 
@@ -29,7 +32,7 @@ for (const asset of ['404.html', 'robots.txt', 'sitemap.xml', '_headers', '_redi
 
 const redirects = await readFile(join('dist', '_redirects'), 'utf8');
 const sitemap = await readFile(join('dist', 'sitemap.xml'), 'utf8');
-const entries = [...registry.people, ...registry.projects];
+const entries = [...registry.members, ...registry.projects];
 
 for (const entry of entries) {
   const redirect = `${entry.legacyPath} ${entry.path}/ 301`;

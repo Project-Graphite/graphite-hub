@@ -1,10 +1,10 @@
 import githubData from './data/github.json';
 import data from './data/registry.json';
-import type { GithubProfile, Person, Project, Registry } from './types';
+import type { GithubProfile, Member, Project, Registry } from './types';
 
 const registry = data as Registry;
 
-export const people: Person[] = registry.people;
+export const members: Member[] = registry.members;
 export const projects: Project[] = registry.projects;
 export const rootProjects: Project[] = projects.filter(
   (project) => project.kind === 'project' && !project.parent,
@@ -14,43 +14,47 @@ export const githubProfiles = githubData as Record<string, GithubProfile>;
 
 export const routePaths: string[] = [
   '/',
-  ...people.map((person) => person.path),
+  '/members',
+  '/epics',
+  '/projects',
+  ...members.map((member) => member.path),
   ...projects.map((project) => project.path),
 ];
 
 export const legacyRedirects: Array<{ from: string; to: string }> = [
-  ...people.map((person) => ({ from: person.legacyPath, to: person.path })),
+  ...members.map((member) => ({ from: member.legacyPath, to: member.path })),
   ...projects.map((project) => ({ from: project.legacyPath, to: project.path })),
 ];
 
-export function personByHandle(handle: string): Person | undefined {
-  return people.find((person) => person.handle === handle);
+export function memberByHandle(handle: string): Member | undefined {
+  return members.find((member) => member.handle.toLowerCase() === handle.toLowerCase());
 }
 
-export function personByGithub(github: string): Person | undefined {
-  return people.find((person) => person.github.toLowerCase() === github.toLowerCase());
+export function memberByGithub(github: string): Member | undefined {
+  return members.find((member) => member.github.toLowerCase() === github.toLowerCase());
 }
 
-export function projectsForPerson(person: Person): Project[] {
+export function projectsForMember(member: Member): Project[] {
   return projects.filter(
     (project) =>
       project.kind === 'project' &&
-      (project.owner === person.handle ||
-        project.authors.some((author) => author.toLowerCase() === person.github.toLowerCase())),
+      !project.parent &&
+      (project.owner === member.handle ||
+        project.authors.some((author) => author.toLowerCase() === member.github.toLowerCase())),
   );
 }
 
-export function epicsForPerson(person: Person): Project[] {
+export function epicsForMember(member: Member): Project[] {
   return epics.filter(
     (epic) =>
-      epic.owner === person.handle ||
-      epic.authors.some((author) => author.toLowerCase() === person.github.toLowerCase()),
+      epic.owner === member.handle ||
+      epic.authors.some((author) => author.toLowerCase() === member.github.toLowerCase()),
   );
 }
 
-export function contributionForPerson(project: Project, person: Person) {
+export function contributionForMember(project: Project, member: Member) {
   return project.showcase?.contributions.find(
-    (contribution) => contribution.github.toLowerCase() === person.github.toLowerCase(),
+    (contribution) => contribution.github.toLowerCase() === member.github.toLowerCase(),
   );
 }
 
@@ -66,6 +70,10 @@ export function childProjects(parent: string): Project[] {
   return projects.filter((project) => project.parent === parent);
 }
 
+export function memberByLegacyPath(path: string): Member | undefined {
+  return members.find((member) => member.legacyPath === path);
+}
+
 export function legacyProject(handle: string, slug: string): Project | undefined {
-  return projects.find((project) => project.owner === handle && project.slug === slug);
+  return projects.find((project) => project.legacyPath === `/${handle}/${slug}`);
 }

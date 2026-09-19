@@ -1,7 +1,7 @@
 {
-  "people": [
+  "members": [
     {
-      "handle": "amr",
+      "handle": "amrmscll",
       "github": "AmrMsCLL",
       "name": "Amr El-Sheraey",
       "headline": "Full-stack engineer in Cairo",
@@ -98,8 +98,8 @@
           "url": "https://discord.com/users/412317378337046529"
         }
       ],
-      "path": "/members/amr",
-      "legacyPath": "/amr"
+      "path": "/members/amrmscll",
+      "legacyPath": "/amrmscll"
     },
     {
       "handle": "bluocaroot",
@@ -159,7 +159,7 @@
       ],
       "repo": "project-graphite/graphite-message-lab",
       "repoUrl": "https://github.com/project-graphite/graphite-message-lab",
-      "owner": "amr",
+      "owner": "amrmscll",
       "authors": [
         "AmrMsCLL"
       ],
@@ -177,7 +177,7 @@
       },
       "url": "https://message-lab.project-graphite.com",
       "path": "/projects/graphite-message-lab",
-      "legacyPath": "/amr/graphite-message-lab"
+      "legacyPath": "/amrmscll/graphite-message-lab"
     },
     {
       "slug": "stack-switch",
@@ -193,7 +193,7 @@
       ],
       "repo": "project-graphite/windhawk-mods",
       "repoUrl": "https://github.com/project-graphite/windhawk-mods",
-      "owner": "amr",
+      "owner": "amrmscll",
       "authors": [
         "AmrMsCLL"
       ],
@@ -210,8 +210,8 @@
         ]
       },
       "url": null,
-      "path": "/projects/windhawk-mods/stack-switch",
-      "legacyPath": "/amr/stack-switch"
+      "path": "/epics/windhawk-mods/stack-switch",
+      "legacyPath": "/amrmscll/stack-switch"
     },
     {
       "slug": "tasktune",
@@ -228,7 +228,7 @@
       ],
       "repo": "project-graphite/windhawk-mods",
       "repoUrl": "https://github.com/project-graphite/windhawk-mods",
-      "owner": "amr",
+      "owner": "amrmscll",
       "authors": [
         "AmrMsCLL"
       ],
@@ -245,15 +245,15 @@
         ]
       },
       "url": null,
-      "path": "/projects/windhawk-mods/tasktune",
-      "legacyPath": "/amr/tasktune"
+      "path": "/epics/windhawk-mods/tasktune",
+      "legacyPath": "/amrmscll/tasktune"
     },
     {
       "slug": "traceboard",
       "parent": null,
       "kind": "project",
       "name": "Traceboard",
-      "summary": "A client-side workspace for exploring structured logs through fast filters, correlation groups, timelines and focused event inspection.",
+      "summary": "A private, client-side workspace for exploring structured logs through fast filters, correlation groups, timelines and focused event inspection.",
       "tags": [
         "react",
         "vite",
@@ -262,7 +262,7 @@
       ],
       "repo": "project-graphite/traceboard",
       "repoUrl": "https://github.com/project-graphite/traceboard",
-      "owner": "amr",
+      "owner": "amrmscll",
       "authors": [
         "AmrMsCLL"
       ],
@@ -270,7 +270,7 @@
       "showcase": null,
       "url": "https://traceboard.project-graphite.com",
       "path": "/projects/traceboard",
-      "legacyPath": "/amr/traceboard"
+      "legacyPath": "/amrmscll/traceboard"
     },
     {
       "slug": "windhawk-mods",
@@ -286,15 +286,15 @@
       ],
       "repo": "project-graphite/windhawk-mods",
       "repoUrl": "https://github.com/project-graphite/windhawk-mods",
-      "owner": "amr",
+      "owner": "amrmscll",
       "authors": [
         "AmrMsCLL"
       ],
       "status": "source-only",
       "showcase": null,
       "url": null,
-      "path": "/projects/windhawk-mods",
-      "legacyPath": "/amr/windhawk-mods"
+      "path": "/epics/windhawk-mods",
+      "legacyPath": "/amrmscll/windhawk-mods"
     }
   ]
 }
