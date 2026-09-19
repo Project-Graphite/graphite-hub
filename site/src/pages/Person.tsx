@@ -1,9 +1,11 @@
 import { Fragment } from 'react';
 import { useParams } from 'react-router-dom';
+import EpicCard from '../components/EpicCard';
 import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
 import TagList from '../components/TagList';
 import {
+  childProjects,
   contributionForPerson,
   epicsForPerson,
   githubProfiles,
@@ -95,11 +97,12 @@ export default function Person() {
         {memberProjects.length === 0 ? (
           <p className="mono-sm m-0 text-faint">No projects credited to this member yet.</p>
         ) : (
-          <div>
+          <div className="grid gap-4 md:grid-cols-2">
             {memberProjects.map((project) => (
               <ProjectCard
                 key={project.path}
                 project={project}
+                variant="card"
                 context={contributionForPerson(project, person)?.summary}
               />
             ))}
@@ -109,11 +112,12 @@ export default function Person() {
 
       {memberEpics.length > 0 && (
         <Section label="epics">
-          <div>
+          <div className="grid gap-5">
             {memberEpics.map((epic) => (
-              <ProjectCard
+              <EpicCard
                 key={epic.path}
-                project={epic}
+                epic={epic}
+                projects={childProjects(epic.slug)}
                 context={contributionForPerson(epic, person)?.summary}
               />
             ))}

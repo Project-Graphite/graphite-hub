@@ -6,9 +6,10 @@ import TagList from './TagList';
 interface Props {
   epic: Project;
   projects: Project[];
+  context?: string;
 }
 
-export default function EpicCard({ epic, projects }: Props) {
+export default function EpicCard({ epic, projects, context }: Props) {
   return (
     <article className="rounded-xl border border-line bg-surface p-6 sm:p-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -26,6 +27,13 @@ export default function EpicCard({ epic, projects }: Props) {
       </div>
 
       <p className="mt-4 mb-0 max-w-[64ch] text-muted">{epic.summary}</p>
+
+      {context && (
+        <p className="mt-4 mb-0 max-w-[64ch] border-l-2 border-line pl-4 text-sm text-muted">
+          {context}
+        </p>
+      )}
+
       <TagList tags={epic.tags} className="mt-5" />
 
       {projects.length > 0 && (
