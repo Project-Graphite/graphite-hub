@@ -61,10 +61,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 :focus-visible {
   outline: 2px solid var(--color-ink);
   outline-offset: 3px;
@@ -88,6 +84,10 @@ html {
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
   .skip-link {
     transition: transform 0.2s ease;
   }
@@ -125,11 +125,5 @@ html {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
   }
 }
