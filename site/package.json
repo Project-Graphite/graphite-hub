@@ -4,7 +4,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "start": "vite",
     "build": "node scripts/fetch-github.mjs && tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
     "lint": "eslint .",

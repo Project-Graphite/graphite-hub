@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' https://avatars.githubusercontent.com https://github.com data:; object-src 'none'; script-src 'self'; style-src 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' https://avatars.githubusercontent.com https://github.com; object-src 'none'; script-src 'self'; style-src 'self'; upgrade-insecure-requests
   Permissions-Policy: camera=(), geolocation=(), microphone=(), payment=(), usb=()
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=31536000
