@@ -19,9 +19,9 @@ export default function Index() {
         </h1>
         <div className="hero-rule mt-5.5 max-w-[52ch]" />
         <p className="mt-5.5 mb-0 max-w-[52ch] text-muted">
-          A shared portfolio for the members behind Project Graphite. Every project has its own
-          repository; deployable web projects get a live subdomain, while source-only work is
-          labelled honestly.
+          A shared portfolio for the members behind Project Graphite. Every standalone project has
+          its own repository; deployable web projects get a live subdomain, while source-only work
+          is labelled as such.
         </p>
       </section>
 
