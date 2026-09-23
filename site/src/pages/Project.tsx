@@ -1,15 +1,10 @@
 import { Link, useParams } from 'react-router-dom';
+import AuthorLink from '../components/AuthorLink';
 import ProjectTile from '../components/ProjectTile';
 import Section from '../components/Section';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
-import {
-  childProjects,
-  memberByGithub,
-  memberByHandle,
-  projectByRoute,
-  projectBySlug,
-} from '../registry';
+import { childProjects, memberByHandle, projectByRoute, projectBySlug } from '../registry';
 import NotFound from './NotFound';
 
 export default function Project() {
@@ -23,27 +18,23 @@ export default function Project() {
     return <NotFound />;
   }
 
-  const section = project.path.split('/')[1];
-
   return (
     <article>
       <section className="pt-22 pb-5">
         <p className="mono-sm m-0 text-faint">
-          <span>
-            /{section}/
-            {parent && (
-              <>
-                <Link
-                  to={parent.path}
-                  className="text-faint transition-colors duration-200 hover:text-ink hover:underline"
-                >
-                  {parent.slug}
-                </Link>
-                /
-              </>
-            )}
-            {project.slug}
-          </span>
+          /{project.path.split('/')[1]}/
+          {parent && (
+            <>
+              <Link
+                to={parent.path}
+                className="text-faint transition-colors duration-200 hover:text-ink hover:underline"
+              >
+                {parent.slug}
+              </Link>
+              /
+            </>
+          )}
+          {project.slug}
         </p>
 
         <div className="mt-3 flex max-w-[52ch] items-baseline justify-between gap-4">
@@ -89,23 +80,12 @@ export default function Project() {
         <dl className="mono-sm grid grid-cols-[auto_minmax(0,1fr)] gap-x-8 gap-y-3">
           <dt className="text-faint">built by</dt>
           <dd className="m-0">
-            {project.authors.map((author, index) => {
-              const member = memberByGithub(author);
-              return (
-                <span key={author}>
-                  {index > 0 && <span className="mx-1.5 text-faint">·</span>}
-                  {member ? (
-                    <Link to={member.path} className="text-ink hover:underline">
-                      {member.name}
-                    </Link>
-                  ) : (
-                    <a href={`https://github.com/${author}`} className="text-ink hover:underline">
-                      {author} ↗
-                    </a>
-                  )}
-                </span>
-              );
-            })}
+            {project.authors.map((author, index) => (
+              <span key={author}>
+                {index > 0 && <span className="mx-1.5 text-faint">·</span>}
+                <AuthorLink github={author} className="text-ink hover:underline" />
+              </span>
+            ))}
           </dd>
 
           <dt className="text-faint">maintained by</dt>
@@ -138,28 +118,14 @@ export default function Project() {
       {project.showcase && (
         <Section label="contributions">
           <div className="grid gap-5">
-            {project.showcase.contributions.map((contribution) => {
-              const member = memberByGithub(contribution.github);
-              return (
-                <article key={contribution.github} className="max-w-[56ch]">
-                  <h3 className="m-0 text-base font-semibold">
-                    {member ? (
-                      <Link to={member.path} className="text-ink hover:underline">
-                        {member.name}
-                      </Link>
-                    ) : (
-                      <a
-                        href={`https://github.com/${contribution.github}`}
-                        className="text-ink hover:underline"
-                      >
-                        {contribution.github} ↗
-                      </a>
-                    )}
-                  </h3>
-                  <p className="mt-2 mb-0 text-muted">{contribution.summary}</p>
-                </article>
-              );
-            })}
+            {project.showcase.contributions.map((contribution) => (
+              <article key={contribution.github} className="max-w-[56ch]">
+                <h3 className="m-0 text-base font-semibold">
+                  <AuthorLink github={contribution.github} className="text-ink hover:underline" />
+                </h3>
+                <p className="mt-2 mb-0 text-muted">{contribution.summary}</p>
+              </article>
+            ))}
           </div>
         </Section>
       )}

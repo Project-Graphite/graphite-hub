@@ -3,7 +3,6 @@ import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const DIST = 'dist';
-const ORIGIN = 'https://project-graphite.com';
 const OPEN = '<!--head-->';
 const CLOSE = '<!--/head-->';
 
@@ -35,8 +34,11 @@ const { render, routePaths } = await import(
   pathToFileURL(join(process.cwd(), 'dist-ssr', 'entry-server.js')).href
 );
 
+const locations = [];
+
 for (const route of routePaths) {
   const { html, meta } = render(route);
+  locations.push(meta.canonical);
   const page = template
     .slice(0, open)
     .concat(head(meta), template.slice(close + CLOSE.length))
@@ -51,9 +53,7 @@ for (const route of routePaths) {
 const sitemap = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...routePaths.map(
-    (route) => `  <url><loc>${ORIGIN}${route === '/' ? route : `${route}/`}</loc></url>`,
-  ),
+  ...locations.map((location) => `  <url><loc>${location}</loc></url>`),
   '</urlset>',
   '',
 ].join('\n');

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { githubProfiles } from '../registry';
+import { avatarFor } from '../registry';
 import type { Member } from '../types';
 
 interface Props {
@@ -7,18 +7,13 @@ interface Props {
 }
 
 export default function MemberCard({ member }: Props) {
-  const profile = githubProfiles[member.github];
-
   return (
     <Link
       to={member.path}
       className="flex items-center gap-4 rounded-lg border border-line-soft bg-surface p-4 text-ink no-underline transition-colors duration-200 hover:border-line"
     >
       <img
-        src={
-          profile?.avatarUrl ??
-          `https://github.com/${encodeURIComponent(member.github)}.png?size=96`
-        }
+        src={avatarFor(member)}
         alt=""
         width={48}
         height={48}

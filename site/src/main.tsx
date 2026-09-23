@@ -4,14 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './styles/global.css';
 
-const container = document.getElementById('root');
-
-if (!container) {
-  throw new Error('No #root element in index.html');
-}
-
 hydrateRoot(
-  container,
+  document.getElementById('root')!,
   <StrictMode>
     <BrowserRouter>
       <App />

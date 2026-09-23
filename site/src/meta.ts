@@ -20,19 +20,19 @@ const INDEX: PageMeta = {
   canonical: `${ORIGIN}/`,
 };
 
-const MEMBERS: PageMeta = {
+export const MEMBERS: PageMeta = {
   title: `Members — ${SITE}`,
   description: 'The people building and maintaining every project in the registry.',
   canonical: `${ORIGIN}/members/`,
 };
 
-const EPICS: PageMeta = {
+export const EPICS: PageMeta = {
   title: `Epics — ${SITE}`,
   description: 'Multi-project efforts, grouped under one ongoing initiative.',
   canonical: `${ORIGIN}/epics/`,
 };
 
-const PROJECTS: PageMeta = {
+export const PROJECTS: PageMeta = {
   title: `Projects — ${SITE}`,
   description: 'Standalone projects — each with its own repository, independent of any epic.',
   canonical: `${ORIGIN}/projects/`,
@@ -70,18 +70,13 @@ export function metaFor(path: string): PageMeta {
 
   if (section === 'members' && slug) {
     const member = memberByHandle(slug);
-    if (!member) {
+    if (member) {
       return {
-        title: `Not found — ${SITE}`,
-        description: 'That page does not exist.',
-        canonical: canonicalFor(path),
+        title: `${member.name} — ${SITE}`,
+        description: member.headline ?? member.bio ?? member.name,
+        canonical: canonicalFor(member.path),
       };
     }
-    return {
-      title: `${member.name} — ${SITE}`,
-      description: member.headline ?? member.bio ?? member.name,
-      canonical: canonicalFor(member.path),
-    };
   }
 
   return {

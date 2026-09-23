@@ -5,6 +5,7 @@ import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
 import TagList from '../components/TagList';
 import {
+  avatarFor,
   childProjects,
   contributionForMember,
   epicsForMember,
@@ -25,8 +26,6 @@ export default function Member() {
   const profile = githubProfiles[member.github];
   const memberProjects = projectsForMember(member);
   const memberEpics = epicsForMember(member);
-  const avatarUrl =
-    profile?.avatarUrl ?? `https://github.com/${encodeURIComponent(member.github)}.png?size=128`;
 
   return (
     <>
@@ -35,7 +34,7 @@ export default function Member() {
 
         <div className="mt-3 flex items-center gap-5">
           <img
-            src={avatarUrl}
+            src={avatarFor(member)}
             alt={`${member.name}'s GitHub avatar`}
             width={64}
             height={64}

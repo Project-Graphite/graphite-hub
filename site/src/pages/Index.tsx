@@ -5,10 +5,6 @@ import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
 import { childProjects, epics, members, rootProjects } from '../registry';
 
-const MEMBER_PREVIEW = 4;
-const EPIC_PREVIEW = 2;
-const PROJECT_PREVIEW = 4;
-
 export default function Index() {
   return (
     <>
@@ -25,22 +21,20 @@ export default function Index() {
         </p>
       </section>
 
-      {members.length > 0 && (
-        <Section
-          label="members"
-          action={
-            <Link to="/members" className="rule-link mono-sm">
-              view all
-            </Link>
-          }
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            {members.slice(0, MEMBER_PREVIEW).map((member) => (
-              <MemberCard key={member.handle} member={member} />
-            ))}
-          </div>
-        </Section>
-      )}
+      <Section
+        label="members"
+        action={
+          <Link to="/members" className="rule-link mono-sm">
+            view all
+          </Link>
+        }
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          {members.slice(0, 4).map((member) => (
+            <MemberCard key={member.handle} member={member} />
+          ))}
+        </div>
+      </Section>
 
       {epics.length > 0 && (
         <Section
@@ -52,7 +46,7 @@ export default function Index() {
           }
         >
           <div className="grid gap-5">
-            {epics.slice(0, EPIC_PREVIEW).map((epic) => (
+            {epics.slice(0, 2).map((epic) => (
               <EpicCard key={epic.path} epic={epic} projects={childProjects(epic.slug)} />
             ))}
           </div>
@@ -69,7 +63,7 @@ export default function Index() {
           }
         >
           <div className="grid gap-4 md:grid-cols-2">
-            {rootProjects.slice(0, PROJECT_PREVIEW).map((project) => (
+            {rootProjects.slice(0, 4).map((project) => (
               <ProjectCard key={project.path} project={project} />
             ))}
           </div>

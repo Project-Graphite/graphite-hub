@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
+import AuthorLink from './AuthorLink';
 import Status from './Status';
 import TagList from './TagList';
-import { memberByGithub } from '../registry';
 import type { Project } from '../types';
 
 interface Props {
@@ -33,29 +33,15 @@ export default function ProjectCard({ project, context }: Props) {
 
       <div className="mono-sm mt-6 flex flex-wrap items-center justify-between gap-3 text-faint">
         <span className="flex flex-wrap gap-x-1.5">
-          {project.authors.map((author, index) => {
-            const member = memberByGithub(author);
-            return (
-              <span key={author}>
-                {index > 0 && <span className="mr-1.5">·</span>}
-                {member ? (
-                  <Link
-                    to={member.path}
-                    className="text-faint transition-colors duration-200 hover:text-ink"
-                  >
-                    {member.name}
-                  </Link>
-                ) : (
-                  <a
-                    href={`https://github.com/${author}`}
-                    className="text-faint transition-colors duration-200 hover:text-ink"
-                  >
-                    {author} ↗
-                  </a>
-                )}
-              </span>
-            );
-          })}
+          {project.authors.map((author, index) => (
+            <span key={author}>
+              {index > 0 && <span className="mr-1.5">·</span>}
+              <AuthorLink
+                github={author}
+                className="text-faint transition-colors duration-200 hover:text-ink"
+              />
+            </span>
+          ))}
         </span>
         <span className="flex gap-4.5">
           {project.url && (

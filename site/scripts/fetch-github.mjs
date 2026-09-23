@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 const OUTPUT = 'src/data/github.json';
 
 const registry = JSON.parse(await readFile('src/data/registry.json', 'utf8'));
-const cached = JSON.parse(await readFile(OUTPUT, 'utf8').catch(() => '{}'));
+const cached = JSON.parse(await readFile(OUTPUT, 'utf8'));
 
 const headers = {
   Accept: 'application/vnd.github+json',
@@ -41,7 +41,7 @@ const entries = await Promise.all(
       return [
         member.github,
         cached[member.github] ?? {
-          avatarUrl: `https://github.com/${encodeURIComponent(member.github)}.png?size=128`,
+          avatarUrl: `https://github.com/${member.github}.png?size=128`,
           publicRepos: null,
           followers: null,
           joined: null,

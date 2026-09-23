@@ -9,7 +9,7 @@ export interface Project {
   repoUrl: string;
   owner: string;
   authors: string[];
-  status: string;
+  status: 'live' | 'wip' | 'archived' | 'source-only';
   showcase: ProjectShowcase | null;
   url: string | null;
   path: string;
