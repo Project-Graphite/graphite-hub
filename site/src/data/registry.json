@@ -5,7 +5,7 @@
       "github": "AmrMsCLL",
       "name": "Amr El-Sheraey",
       "headline": "Full-stack Software Engineer",
-      "bio": "Computer Science and AI graduate of FCAI, Cairo University, building document-intelligence software at Syntheia. A normal week touches a TypeScript API, a React front end, a Python ML service and a Helm chart. Most useful where those meet, and most interested in whichever part I have not done before. Currently building document intelligence software at Syntheia.",
+      "bio": "Computer Science and AI graduate of FCAI, Cairo University, building document-intelligence software at Syntheia. A normal week touches a TypeScript API, a React front end, a Python ML service and a Helm chart. Most useful where those meet, and most interested in whichever part I have not done before.",
       "stack": [
         {
           "group": "languages",
@@ -98,15 +98,14 @@
           "url": "https://discord.com/users/412317378337046529"
         }
       ],
-      "path": "/members/amrmscll",
-      "legacyPath": "/amrmscll"
+      "path": "/members/amrmscll"
     },
     {
       "handle": "bluocaroot",
       "github": "BluoCaroot",
       "name": "Assem Amr Abdelfattah",
       "headline": "Software engineering intern at Syntheia",
-      "bio": "Software engineer working at Syntheia. This profile is intentionally minimal and can be expanded by its owner with projects, preferred links, a fuller biography and a technology stack.",
+      "bio": null,
       "stack": [],
       "links": [
         {
@@ -114,8 +113,7 @@
           "url": "https://github.com/BluoCaroot"
         }
       ],
-      "path": "/members/bluocaroot",
-      "legacyPath": "/bluocaroot"
+      "path": "/members/bluocaroot"
     }
   ],
   "projects": [
@@ -141,8 +139,7 @@
       "status": "live",
       "showcase": null,
       "url": "https://digital-to-physical.project-graphite.com",
-      "path": "/projects/digital-to-physical",
-      "legacyPath": "/bluocaroot/digital-to-physical"
+      "path": "/projects/digital-to-physical"
     },
     {
       "slug": "graphite-message-lab",
@@ -176,8 +173,7 @@
         ]
       },
       "url": "https://message-lab.project-graphite.com",
-      "path": "/projects/graphite-message-lab",
-      "legacyPath": "/amrmscll/graphite-message-lab"
+      "path": "/projects/graphite-message-lab"
     },
     {
       "slug": "stack-switch",
@@ -210,8 +206,7 @@
         ]
       },
       "url": null,
-      "path": "/epics/windhawk-mods/stack-switch",
-      "legacyPath": "/amrmscll/stack-switch"
+      "path": "/epics/windhawk-mods/stack-switch"
     },
     {
       "slug": "tasktune",
@@ -245,8 +240,7 @@
         ]
       },
       "url": null,
-      "path": "/epics/windhawk-mods/tasktune",
-      "legacyPath": "/amrmscll/tasktune"
+      "path": "/epics/windhawk-mods/tasktune"
     },
     {
       "slug": "traceboard",
@@ -269,8 +263,7 @@
       "status": "live",
       "showcase": null,
       "url": "https://traceboard.project-graphite.com",
-      "path": "/projects/traceboard",
-      "legacyPath": "/amrmscll/traceboard"
+      "path": "/projects/traceboard"
     },
     {
       "slug": "windhawk-mods",
@@ -293,8 +286,7 @@
       "status": "source-only",
       "showcase": null,
       "url": null,
-      "path": "/epics/windhawk-mods",
-      "legacyPath": "/amrmscll/windhawk-mods"
+      "path": "/epics/windhawk-mods"
     }
   ]
 }
