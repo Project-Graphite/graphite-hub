@@ -100,7 +100,7 @@ Cloudflare Pages, matching the registry entry in `platform`:
 | Root directory | `site` |
 | Build command | `npm run build` |
 | Output directory | `dist` |
-| `NODE_VERSION` | `22` |
+| `NODE_VERSION` | `24` |
 
 Every push to `main` deploys. Every pull request gets its own preview URL.
 
