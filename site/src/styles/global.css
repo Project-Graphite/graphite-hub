@@ -32,7 +32,7 @@
 
 @utility mono-sm {
   font-family: var(--font-mono);
-  font-size: 0.82em;
+  font-size: 0.82rem;
 }
 
 @utility rule-link {

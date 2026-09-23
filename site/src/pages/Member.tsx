@@ -49,13 +49,15 @@ export default function Member() {
 
         {member.bio && <p className="mt-6 mb-0 max-w-[56ch] text-muted">{member.bio}</p>}
 
-        <div className="mono-sm mt-6 flex flex-wrap gap-x-4.5 gap-y-2">
-          {member.links.map((link) => (
-            <a key={link.url} href={link.url} className="rule-link">
-              {link.label} ↗
-            </a>
-          ))}
-        </div>
+        {member.links.length > 0 && (
+          <div className="mono-sm mt-6 flex flex-wrap gap-x-4.5 gap-y-2">
+            {member.links.map((link) => (
+              <a key={link.url} href={link.url} className="rule-link">
+                {link.label} ↗
+              </a>
+            ))}
+          </div>
+        )}
       </section>
 
       <Section label="on github">

@@ -11,7 +11,7 @@ interface Props {
 
 export default function ProjectCard({ project, context }: Props) {
   return (
-    <article className="flex h-full flex-col rounded-lg border border-line-soft bg-surface p-5 transition-colors duration-200 hover:border-line sm:p-6">
+    <article className="flex h-full flex-col rounded-lg border border-line-soft bg-surface p-5 sm:p-6">
       <div className="flex items-baseline justify-between gap-4">
         <h3 className="m-0 text-[1.3rem] font-semibold tracking-tight">
           <Link to={project.path} className="text-ink no-underline hover:underline">
@@ -50,7 +50,7 @@ export default function ProjectCard({ project, context }: Props) {
                     href={`https://github.com/${author}`}
                     className="text-faint transition-colors duration-200 hover:text-ink"
                   >
-                    {author}
+                    {author} ↗
                   </a>
                 )}
               </span>

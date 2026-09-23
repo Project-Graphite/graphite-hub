@@ -16,7 +16,7 @@ export default function EpicCard({ epic, projects, context }: Props) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="mono-sm m-0 mb-2 text-faint">
-            ongoing epic · {projects.length} {projects.length === 1 ? 'project' : 'projects'}
+            epic · {projects.length} {projects.length === 1 ? 'project' : 'projects'}
           </p>
           <h3 className="m-0 text-[1.65rem] font-semibold tracking-tight">
             <Link to={epic.path} className="text-ink no-underline hover:underline">

@@ -100,7 +100,7 @@ export default function Project() {
                     </Link>
                   ) : (
                     <a href={`https://github.com/${author}`} className="text-ink hover:underline">
-                      {author}
+                      {author} ↗
                     </a>
                   )}
                 </span>
@@ -152,7 +152,7 @@ export default function Project() {
                         href={`https://github.com/${contribution.github}`}
                         className="text-ink hover:underline"
                       >
-                        {contribution.github}
+                        {contribution.github} ↗
                       </a>
                     )}
                   </h3>
