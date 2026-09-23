@@ -40,7 +40,7 @@ for (const route of routePaths) {
   const page = template
     .slice(0, open)
     .concat(head(meta), template.slice(close + CLOSE.length))
-    .replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+    .replace('<div id="root"></div>', () => `<div id="root">${html}</div>`);
 
   const file = route === '/' ? join(DIST, 'index.html') : join(DIST, route, 'index.html');
   await mkdir(dirname(file), { recursive: true });
