@@ -1,17 +1,9 @@
 :root {
-  color-scheme: light dark;
-  --paper: #f7f6f3;
-  --ink: #16161a;
-  --muted: #6b6b74;
-  --line: #ddd9d2;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #0c0c0e;
-    --ink: #e8e8ea;
-    --muted: #8b8b95;
-    --line: #26262c;
-  }
+  color-scheme: dark;
+  --paper: #0c0c0e;
+  --ink: #e8e8ea;
+  --muted: #8b8b95;
+  --line: #26262c;
 }
 body {
   margin: 0;
@@ -30,6 +22,7 @@ body {
     Roboto,
     sans-serif;
   line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 main {
   max-width: 34rem;
@@ -49,9 +42,13 @@ a {
   text-decoration: none;
   border-bottom: 1px solid var(--line);
   padding-bottom: 1px;
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
   font-size: 0.85em;
 }
 a:hover {
   border-bottom-color: var(--ink);
+}
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
 }
