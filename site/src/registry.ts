@@ -21,11 +21,6 @@ export const routePaths: string[] = [
   ...projects.map((project) => project.path),
 ];
 
-export const legacyRedirects: Array<{ from: string; to: string }> = [
-  ...members.map((member) => ({ from: member.legacyPath, to: member.path })),
-  ...projects.map((project) => ({ from: project.legacyPath, to: project.path })),
-];
-
 export function memberByHandle(handle: string): Member | undefined {
   return members.find((member) => member.handle.toLowerCase() === handle.toLowerCase());
 }
@@ -68,12 +63,4 @@ export function projectByRoute(parent: string | undefined, slug: string): Projec
 
 export function childProjects(parent: string): Project[] {
   return projects.filter((project) => project.parent === parent);
-}
-
-export function memberByLegacyPath(path: string): Member | undefined {
-  return members.find((member) => member.legacyPath === path);
-}
-
-export function legacyProject(handle: string, slug: string): Project | undefined {
-  return projects.find((project) => project.legacyPath === `/${handle}/${slug}`);
 }

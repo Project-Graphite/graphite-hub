@@ -31,7 +31,7 @@ if (open === -1 || close === -1) {
   throw new Error(`index.html is missing the ${OPEN} … ${CLOSE} markers`);
 }
 
-const { legacyRedirects, render, routePaths } = await import(
+const { render, routePaths } = await import(
   pathToFileURL(join(process.cwd(), 'dist-ssr', 'entry-server.js')).href
 );
 
@@ -59,9 +59,4 @@ const sitemap = [
 ].join('\n');
 
 await writeFile(join(DIST, 'sitemap.xml'), sitemap, 'utf8');
-await writeFile(
-  join(DIST, '_redirects'),
-  legacyRedirects.map(({ from, to }) => `${from} ${to}/ 301`).join('\n') + '\n',
-  'utf8',
-);
-console.log(`generated sitemap.xml and ${legacyRedirects.length} legacy redirects`);
+console.log('generated sitemap.xml');

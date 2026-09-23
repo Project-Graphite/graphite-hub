@@ -13,7 +13,6 @@ export interface Project {
   showcase: ProjectShowcase | null;
   url: string | null;
   path: string;
-  legacyPath: string;
 }
 
 export interface ProjectContribution {
@@ -47,7 +46,6 @@ export interface Member {
   stack: StackGroup[];
   links: MemberLink[];
   path: string;
-  legacyPath: string;
 }
 
 export interface GithubProfile {

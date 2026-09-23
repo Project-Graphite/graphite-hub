@@ -22,7 +22,7 @@ for (const route of routes) {
   }
 }
 
-for (const asset of ['404.html', 'robots.txt', 'sitemap.xml', '_headers', '_redirects']) {
+for (const asset of ['404.html', 'robots.txt', '_headers', '_redirects']) {
   try {
     await access(join('dist', asset));
   } catch {
@@ -30,16 +30,7 @@ for (const asset of ['404.html', 'robots.txt', 'sitemap.xml', '_headers', '_redi
   }
 }
 
-const redirects = await readFile(join('dist', '_redirects'), 'utf8');
 const sitemap = await readFile(join('dist', 'sitemap.xml'), 'utf8');
-const entries = [...registry.members, ...registry.projects];
-
-for (const entry of entries) {
-  const redirect = `${entry.legacyPath} ${entry.path}/ 301`;
-  if (!redirects.split('\n').includes(redirect)) {
-    missing.push(`legacy redirect: ${redirect}`);
-  }
-}
 
 for (const route of routes) {
   const location = `https://project-graphite.com${route === '/' ? route : `${route}/`}`;
