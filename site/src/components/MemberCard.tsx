@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { avatarFor } from '../registry';
 import type { Member } from '../types';
 

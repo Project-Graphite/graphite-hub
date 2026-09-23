@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import type { Project } from '../types';
 import ProjectTile from './ProjectTile';
 import Status from './Status';

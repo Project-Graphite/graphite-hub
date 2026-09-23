@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import EpicCard from '../components/EpicCard';
 import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';

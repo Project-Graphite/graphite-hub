@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import Shell from './components/Shell';
 import Epics from './pages/Epics';
 import Index from './pages/Index';

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import EpicCard from '../components/EpicCard';
 import MemberCard from '../components/MemberCard';
 import ProjectCard from '../components/ProjectCard';

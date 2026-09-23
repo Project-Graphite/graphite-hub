@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router';
 import AuthorLink from '../components/AuthorLink';
 import ProjectTile from '../components/ProjectTile';
 import Section from '../components/Section';
