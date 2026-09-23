@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { metaFor } from '../meta';
 
 export default function Shell() {
   const { pathname } = useLocation();
@@ -8,6 +9,7 @@ export default function Shell() {
   useEffect(() => {
     if (pathname !== previousPathname.current) {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.title = metaFor(pathname.replace(/(.)\/$/, '$1')).title;
       previousPathname.current = pathname;
     }
   }, [pathname]);
