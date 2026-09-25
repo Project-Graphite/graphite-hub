@@ -47,7 +47,11 @@ export function projectsForMember(member: Member): Project[] {
 }
 
 export function epicsForMember(member: Member): Project[] {
-  return epics.filter((epic) => isCredited(epic, member));
+  return epics.filter(
+    (epic) =>
+      isCredited(epic, member) ||
+      childProjects(epic.slug).some((project) => isCredited(project, member)),
+  );
 }
 
 export function contributionForMember(project: Project, member: Member) {
