@@ -11,7 +11,7 @@ Member pages include every project they maintain or are credited on, including c
 
 | Path | What it is |
 | :--- | :--- |
-| `/` | Latest members, epics and projects |
+| `/` | A preview of the members, epics and projects |
 | `/members` | Every member |
 | `/members/<handle>` | A member: who they are, and the projects they maintain or built |
 | `/epics` | Every epic |
