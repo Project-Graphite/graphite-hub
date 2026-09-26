@@ -340,29 +340,6 @@
       "path": "/epics/windhawk-mods/tasktune"
     },
     {
-      "slug": "traceboard",
-      "parent": null,
-      "kind": "project",
-      "name": "Traceboard",
-      "summary": "A client-side log explorer with level, service and correlation filters, a timeline and an event inspector.",
-      "tags": [
-        "react",
-        "vite",
-        "typescript",
-        "observability"
-      ],
-      "repo": "project-graphite/traceboard",
-      "repoUrl": "https://github.com/project-graphite/traceboard",
-      "owner": "amrmscll",
-      "authors": [
-        "AmrMsCLL"
-      ],
-      "status": "live",
-      "showcase": null,
-      "url": "https://traceboard.project-graphite.com",
-      "path": "/projects/traceboard"
-    },
-    {
       "slug": "windhawk-mods",
       "parent": null,
       "kind": "epic",
