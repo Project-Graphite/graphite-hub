@@ -238,6 +238,31 @@
       "path": "/projects/graphite-message-lab"
     },
     {
+      "slug": "graphite-tracker",
+      "parent": null,
+      "kind": "project",
+      "name": "Graphite Tracker",
+      "summary": "A universal entertainment tracker for movies, television, anime, manga, manhwa and games.",
+      "tags": [
+        "react",
+        "nestjs",
+        "prisma",
+        "postgresql",
+        "tmdb",
+        "rawg"
+      ],
+      "repo": "project-graphite/graphite-tracker",
+      "repoUrl": "https://github.com/project-graphite/graphite-tracker",
+      "owner": "amrmscll",
+      "authors": [
+        "AmrMsCLL"
+      ],
+      "status": "wip",
+      "showcase": null,
+      "url": null,
+      "path": "/projects/graphite-tracker"
+    },
+    {
       "slug": "stack-switch",
       "parent": "windhawk-mods",
       "kind": "project",
