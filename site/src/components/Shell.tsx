@@ -20,11 +20,24 @@ export default function Shell() {
         skip to content
       </a>
       <header className="sticky top-0 z-10 border-b border-line-soft bg-paper/88 backdrop-blur-sm">
-        <div className="shell flex flex-wrap items-baseline justify-between gap-4 py-4.5">
+        <div className="shell flex flex-wrap items-center justify-between gap-4 py-4.5">
           <Link
             to="/"
-            className="text-[1.02rem] font-[620] tracking-[-0.022em] text-ink no-underline"
+            className="flex items-center gap-2.5 text-[1.02rem] font-[620] tracking-[-0.022em] text-ink no-underline"
           >
+            <svg
+              aria-hidden="true"
+              className="h-[1.15em] w-[0.9em] shrink-0"
+              viewBox="-3 -3 36 46"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={6}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5.62 25 L0 40 M24.38 25 L30 40" />
+              <path d="M15 0 L8.25 18 H21.75 Z" fill="currentColor" />
+            </svg>
             Project Graphite
           </Link>
           <nav aria-label="Primary" className="mono-sm flex flex-wrap gap-x-5 gap-y-2">
