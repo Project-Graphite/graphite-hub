@@ -59,3 +59,28 @@ export interface Registry {
   members: Member[];
   projects: Project[];
 }
+
+export type ChangeType = 'breaking' | 'security' | 'added' | 'changed' | 'fixed' | 'removed';
+
+export interface ReleaseChange {
+  text: string;
+  commit: string;
+  pr: number | null;
+  author: string | null;
+}
+
+export interface Release {
+  id: string;
+  project: string;
+  version: string;
+  tag: string;
+  previous: string | null;
+  date: string;
+  title: string | null;
+  summary: string | null;
+  groups: { type: ChangeType; changes: ReleaseChange[] }[];
+}
+
+export interface Changelog {
+  releases: Release[];
+}

@@ -1,8 +1,12 @@
+import changelogData from './data/changelog.json';
 import githubData from './data/github.json';
 import data from './data/registry.json';
-import type { GithubProfile, Member, Project, Registry } from './types';
+import type { Changelog, GithubProfile, Member, Project, Registry, Release } from './types';
 
 const registry = data as Registry;
+
+export const CHANGELOG = 'https://changelog.project-graphite.com';
+export const releases: Release[] = (changelogData as Changelog).releases;
 
 export const members: Member[] = registry.members;
 export const projects: Project[] = registry.projects;
@@ -70,4 +74,9 @@ export function projectByRoute(parent: string | undefined, slug: string): Projec
 
 export function childProjects(parent: string): Project[] {
   return projects.filter((project) => project.parent === parent);
+}
+
+export function releasesForProject(project: Project): Release[] {
+  const slugs = new Set([project.slug, ...childProjects(project.slug).map((child) => child.slug)]);
+  return releases.filter((release) => slugs.has(release.project));
 }

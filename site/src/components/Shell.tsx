@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { metaFor } from '../meta';
+import { CHANGELOG } from '../registry';
 
 export default function Shell() {
   const { pathname } = useLocation();
@@ -59,6 +60,12 @@ export default function Shell() {
             >
               projects
             </Link>
+            <a
+              href={CHANGELOG}
+              className="text-muted no-underline transition-colors duration-200 hover:text-ink"
+            >
+              changelog ↗
+            </a>
             <a
               href="https://github.com/project-graphite"
               className="text-muted no-underline transition-colors duration-200 hover:text-ink"

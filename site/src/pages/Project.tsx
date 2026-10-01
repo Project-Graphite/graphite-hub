@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router';
 import AuthorLink from '../components/AuthorLink';
+import ChangelogPreview from '../components/ChangelogPreview';
 import ProjectTile from '../components/ProjectTile';
 import Section from '../components/Section';
 import Status from '../components/Status';
@@ -20,32 +21,35 @@ export default function Project() {
 
   return (
     <article>
-      <section className="pt-22 pb-5">
-        <p className="mono-sm m-0 text-faint">
-          /{project.path.split('/')[1]}/
-          {parent && (
-            <>
-              <Link
-                to={parent.path}
-                className="text-faint transition-colors duration-200 hover:text-ink hover:underline"
-              >
-                {parent.slug}
-              </Link>
-              /
-            </>
-          )}
-          {project.slug}
-        </p>
+      <div className="grid gap-10 pt-22 pb-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <section>
+          <p className="mono-sm m-0 text-faint">
+            /{project.path.split('/')[1]}/
+            {parent && (
+              <>
+                <Link
+                  to={parent.path}
+                  className="text-faint transition-colors duration-200 hover:text-ink hover:underline"
+                >
+                  {parent.slug}
+                </Link>
+                /
+              </>
+            )}
+            {project.slug}
+          </p>
 
-        <div className="mt-3 flex max-w-[52ch] items-baseline justify-between gap-4">
-          <h1 className="page-title">{project.name}</h1>
-          <Status status={project.status} />
-        </div>
+          <div className="mt-3 flex max-w-[52ch] items-baseline justify-between gap-4">
+            <h1 className="page-title">{project.name}</h1>
+            <Status status={project.status} />
+          </div>
 
-        <p className="mt-6 mb-0 max-w-[56ch] text-muted">{project.summary}</p>
+          <p className="mt-6 mb-0 max-w-[56ch] text-muted">{project.summary}</p>
 
-        <TagList tags={project.tags} className="mt-4.5" />
-      </section>
+          <TagList tags={project.tags} className="mt-4.5" />
+        </section>
+        <ChangelogPreview project={project} />
+      </div>
 
       {project.showcase && (
         <Section label="case study">
