@@ -3,3 +3,4 @@ dist-ssr
 package-lock.json
 src/data/registry.json
 src/data/github.json
+src/data/changelog.json
