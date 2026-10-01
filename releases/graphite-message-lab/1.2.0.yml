@@ -1,0 +1,27 @@
+project: graphite-message-lab
+version: 1.2.0
+tag: v1.2.0
+previous: v1.1.0
+date: 2026-09-27
+title: Form privacy, contrast and worker health
+summary: >
+  Follow-up fixes keep unsent message text out of URLs, raise faint text to WCAG AA contrast and add a
+  health check for the production Celery worker. The favicon and header now carry the Project
+  Graphite mark.
+changes:
+  - type: security
+    text: The message form posts its data, so unsent message text never reaches the URL or access logs when the page script fails to load
+    commit: d24b42d
+    author: AmrMsCLL
+  - type: fixed
+    text: Faint text meets WCAG AA contrast
+    commit: f21247e
+    author: AmrMsCLL
+  - type: added
+    text: The production Celery worker has a health check that pings it every 60 seconds
+    commit: 4395fe1
+    author: AmrMsCLL
+  - type: changed
+    text: The favicon and header tile use the Project Graphite pencil-A mark
+    commit: b3a63a5
+    author: AmrMsCLL

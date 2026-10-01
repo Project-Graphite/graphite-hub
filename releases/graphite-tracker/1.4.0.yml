@@ -1,0 +1,42 @@
+project: graphite-tracker
+version: 1.4.0
+tag: v1.4.0
+previous: v1.3.0
+date: 2026-09-27
+title: Content filters and default sources
+summary: >
+  Content filtering gets stricter and more precise across manga, manhwa, games and TV, and the
+  system manager can choose which source each category uses by default for the whole site.
+changes:
+  - type: added
+    text: The system manager chooses the default source for each category across the site
+    commit: 487f854
+    author: AmrMsCLL
+  - type: changed
+    text: Adult filters for manga, manhwa and games cover more tags, while widely read titles stay visible
+    commit: e610fd7
+    author: AmrMsCLL
+  - type: changed
+    text: Ecchi and harem manga are hidden unless widely read on MangaUpdates
+    commit: f3071e1
+    author: AmrMsCLL
+  - type: changed
+    text: LGBTQ-tagged titles are hidden from search, browse and title pages for every reader
+    commit: c614948
+    author: AmrMsCLL
+  - type: changed
+    text: Genre lists follow the reader's adult content setting
+    commit: e610fd7
+    author: AmrMsCLL
+  - type: changed
+    text: Anime no longer appears in TV browse and search
+    commit: e610fd7
+    author: AmrMsCLL
+  - type: changed
+    text: A new favicon and header mark
+    commit: e531411
+    author: AmrMsCLL
+  - type: fixed
+    text: MangaUpdates searches no longer fail on series without a year or genres
+    commit: e610fd7
+    author: AmrMsCLL

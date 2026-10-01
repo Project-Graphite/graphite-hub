@@ -1,0 +1,39 @@
+project: graphite-tracker
+version: 0.1.0
+tag: v0.1.0
+previous: null
+date: 2026-09-20
+title: Catalogue and library
+summary: >
+  The first working tracker. Readers can create an account, discover movies, TV, anime, manga,
+  manhwa and games from TMDB, MangaDex and IGDB, and keep them in a personal library with their
+  progress.
+changes:
+  - type: added
+    text: Readers can register, verify their account and sign in
+    commit: 1eb038b
+    author: AmrMsCLL
+  - type: added
+    text: Discover shows recent and popular movies from TMDB, with search
+    commit: 1eb038b
+    author: AmrMsCLL
+  - type: added
+    text: A personal library keeps each title in a list such as planned, in progress or completed
+    commit: 1eb038b
+    author: AmrMsCLL
+  - type: added
+    text: TV and anime from TMDB, manga and manhwa from MangaDex and games from IGDB join the catalogue
+    commit: 1f6244f
+    author: AmrMsCLL
+  - type: added
+    text: Title pages show the details of any catalogue entry
+    commit: 1f6244f
+    author: AmrMsCLL
+  - type: added
+    text: The library tracks progress such as episodes and chapters for each title
+    commit: 1f6244f
+    author: AmrMsCLL
+  - type: added
+    text: Readers choose which source each category uses from a sources settings page
+    commit: 1f6244f
+    author: AmrMsCLL

@@ -1,0 +1,31 @@
+project: tasktune
+version: 2.4.0
+tag: tasktune/v2.4.0
+previous: tasktune/v2.3.1
+date: 2026-09-25
+title: Immediate clicks and safer threading
+summary: >
+  Clicks act immediately now that the double-click launch is gone, the context menu's Open media app
+  entry starts a configured app when nothing is playing, and media-session calls can no longer
+  deadlock the taskbar.
+changes:
+  - type: removed
+    text: Double-click click types, the App opened by double-click setting and the single-click delay, so every click acts immediately; saved double-click entries are no longer read
+    commit: 3ca9684
+    author: AmrMsCLL
+  - type: removed
+    text: Open media app as a configurable click action; the context menu entry remains
+    commit: 87b9f9f
+    author: AmrMsCLL
+  - type: added
+    text: When no media session or matching window exists, the context menu's Open media app runs the App opened from the context menu command, Spotify by default, keeping previously saved commands
+    commit: 6dc3fbf
+    author: AmrMsCLL
+  - type: fixed
+    text: The taskbar can no longer deadlock while TaskTune attaches, detaches or releases media sessions
+    commit: 4dd2daa
+    author: AmrMsCLL
+  - type: fixed
+    text: Settings reload on the taskbar thread, so a settings change no longer races click and pointer handlers
+    commit: daf9373
+    author: AmrMsCLL

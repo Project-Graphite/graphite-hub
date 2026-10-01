@@ -1,0 +1,42 @@
+project: tasktune
+version: 2.2.0
+tag: tasktune/v2.2.0
+previous: null
+date: 2026-09-18
+title: Media player in the taskbar
+summary: >
+  The first version of TaskTune in this repository embeds media details and playback controls in the
+  Windows 11 taskbar, with per-app volume, audio-only app support and an optional spectrum visualizer.
+changes:
+  - type: added
+    text: Taskbar player with album art, title and artist, scrolling text, and play, pause, stop, previous, next, shuffle, repeat and 1-60 second rewind and forward controls
+    commit: 0d71bfe
+    author: AmrMsCLL
+  - type: added
+    text: More than 20 taskbar and system-tray placements, with independent players on multiple monitors
+    commit: 0d71bfe
+    author: AmrMsCLL
+  - type: added
+    text: Per-application volume and mute controls, falling back to active audio sessions for apps that publish no media details
+    commit: 0d71bfe
+    author: AmrMsCLL
+  - type: added
+    text: Session switching, configurable mouse actions and a compact mini player
+    commit: 0d71bfe
+    author: AmrMsCLL
+  - type: added
+    text: Double-click anywhere on the player to open Spotify or another configured app
+    commit: 0d71bfe
+    author: AmrMsCLL
+  - type: added
+    text: Solid, gradient, Acrylic, Mica and blurred album-art backgrounds
+    commit: 0d71bfe
+    author: AmrMsCLL
+  - type: added
+    text: Optional WASAPI spectrum visualizer with several shapes, colour modes and EQ presets
+    commit: 0d71bfe
+    author: AmrMsCLL
+  - type: added
+    text: Automatic hiding when no media is playing, the taskbar is idle or an app is full-screen
+    commit: 0d71bfe
+    author: AmrMsCLL

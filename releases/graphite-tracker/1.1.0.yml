@@ -1,0 +1,43 @@
+project: graphite-tracker
+version: 1.1.0
+tag: v1.1.0
+previous: v1.0.0
+date: 2026-09-26
+title: Adult content controls and loading states
+summary: >
+  Readers decide whether adult titles appear and whether their artwork is blurred, search spans
+  every category at once, and the app shows skeletons, outage and not-found pages instead of
+  bare loading text.
+changes:
+  - type: added
+    text: Readers can opt into adult content behind a confirmation, with adult artwork blurred by default
+    commit: 81a0691
+    author: AmrMsCLL
+  - type: added
+    text: Home search shows results for every category on one page
+    commit: 81a0691
+    author: AmrMsCLL
+  - type: added
+    text: Loading skeletons, a not-found page and an outage page that reloads once the server is back
+    commit: d34af2f
+    author: AmrMsCLL
+  - type: added
+    text: The administrator can see private profiles and reviews, marked as private
+    commit: 6a6e549
+    author: AmrMsCLL
+  - type: changed
+    text: Adult filtering is enforced by each source on the server, and result counts appear only when exact
+    commit: 0c84771
+    author: AmrMsCLL
+  - type: changed
+    text: Game search ranks results by title match and popularity
+    commit: 0c84771
+    author: AmrMsCLL
+  - type: fixed
+    text: MangaDex covers load in production instead of a placeholder
+    commit: f5dba31
+    author: AmrMsCLL
+  - type: fixed
+    text: The Discover genre filter stays in place while it loads, and empty filtered pages explain why
+    commit: e50e6c7
+    author: AmrMsCLL

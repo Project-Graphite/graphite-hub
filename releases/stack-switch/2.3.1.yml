@@ -1,0 +1,34 @@
+project: stack-switch
+version: 2.3.1
+tag: stack-switch/v2.3.1
+previous: stack-switch/v2.3.0
+date: 2026-09-27
+title: Options line and panel items
+summary: >
+  Each item's settings card shrinks to nine fields with a single Options line, items can be added
+  and edited from the panel itself, and rarely used global settings are gone.
+changes:
+  - type: breaking
+    text: The per-item launch, timing and appearance fields are replaced by one comma-separated Options line, and values saved in the old fields are not migrated
+    commit: 5f9abca
+    author: AmrMsCLL
+  - type: added
+    text: The panel's + button adds items from running apps, a file, a folder or a blank item, and right-clicking a panel item offers Edit and Remove
+    commit: 5f9abca
+    author: AmrMsCLL
+  - type: removed
+    text: Rarely used global settings such as theme, accent colour, animation, font, panel size, launch stagger and terminal host; their defaults now apply
+    commit: 5f9abca
+    author: AmrMsCLL
+  - type: changed
+    text: Terminal items keep their window open unless Wait for it to exit is on, and new items start from neutral defaults with the root folder set to %USERPROFILE%
+    commit: 5f9abca
+    author: AmrMsCLL
+  - type: fixed
+    text: Quoted targets and shell targets such as Store apps show their real icon
+    commit: 5f9abca
+    author: AmrMsCLL
+  - type: changed
+    text: The mod's author name is AmrMsCLL, matching its GitHub handle
+    commit: 2003d1d
+    author: AmrMsCLL

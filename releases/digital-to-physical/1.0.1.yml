@@ -1,0 +1,13 @@
+project: digital-to-physical
+version: 1.0.1
+tag: v1.0.1
+previous: v1.0.0
+date: 2026-09-27
+title: Project Graphite branding
+summary: >
+  The app now carries the shared Project Graphite pencil-A mark in its browser tab and header.
+changes:
+  - type: changed
+    text: Replaced the favicon and the header brand glyph with the Project Graphite pencil-A mark
+    commit: 66b9d7f
+    author: AmrMsCLL

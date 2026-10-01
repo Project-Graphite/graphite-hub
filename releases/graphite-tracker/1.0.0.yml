@@ -1,0 +1,51 @@
+project: graphite-tracker
+version: 1.0.0
+tag: v1.0.0
+previous: v0.3.0
+date: 2026-09-26
+title: Live with email and release digests
+summary: >
+  Graphite Tracker goes live in production, deployed automatically to Coolify from main. Account
+  email arrives for real, and readers get daily or weekly digests of new episodes, chapters and
+  releases for the titles they follow.
+changes:
+  - type: added
+    text: Every push to main publishes the image and deploys the tracker to production on Coolify
+    commit: f7344ea
+    author: AmrMsCLL
+  - type: added
+    text: Verification, password reset and email change links are delivered by email
+    commit: e3f0206
+    author: AmrMsCLL
+  - type: added
+    text: Account settings cover email, password, time zone, a data export and account deletion
+    commit: e3f0206
+    author: AmrMsCLL
+  - type: added
+    text: New episodes, chapters and releases of followed titles are detected and sent as daily or weekly email digests
+    commit: 42dd341
+    author: AmrMsCLL
+  - type: added
+    text: Notification settings, a one-click unsubscribe page and an admin list of rejected digests
+    commit: 14b98d7
+    author: AmrMsCLL
+  - type: added
+    text: Operators can switch any source off with DISABLED_SOURCES
+    commit: aab3abe
+    author: AmrMsCLL
+  - type: changed
+    text: Title pages link every attached source, and library entries follow title, category and global source preferences
+    commit: aab3abe
+    author: AmrMsCLL
+  - type: changed
+    text: Import previews list titles already in the library as conflicts
+    commit: aab3abe
+    author: AmrMsCLL
+  - type: fixed
+    text: Adult titles stay out of IGDB and RAWG lists and every source's title details
+    commit: aab3abe
+    author: AmrMsCLL
+  - type: fixed
+    text: One refused address no longer stops digests for other readers
+    commit: b4f1f39
+    author: AmrMsCLL

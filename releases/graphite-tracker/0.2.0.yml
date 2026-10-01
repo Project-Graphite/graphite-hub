@@ -1,0 +1,71 @@
+project: graphite-tracker
+version: 0.2.0
+tag: v0.2.0
+previous: v0.1.0
+date: 2026-09-23
+title: Games, home rows and catalogue polish
+summary: >
+  Games get their own tracking page with RAWG as an alternative source, the home page fills with
+  recent titles, and a large round of fixes makes catalogue data, sessions and the library
+  behave reliably.
+changes:
+  - type: added
+    text: RAWG can be used as the game catalogue instead of IGDB
+    commit: 22ccf1e
+    author: AmrMsCLL
+  - type: added
+    text: A games page lets signed-in readers search games and manage the games they track
+    commit: db8c902
+    author: AmrMsCLL
+  - type: added
+    text: The home page shows rows of recent titles for each category
+    commit: 05829ba
+    author: AmrMsCLL
+  - type: added
+    text: Adding a title asks which list it goes into
+    commit: 90c32f9
+    author: AmrMsCLL
+  - type: added
+    text: Title pages list alternate titles, and pasting a TMDB or MangaDex link opens the recognised title
+    commit: 623fc8f
+    author: AmrMsCLL
+  - type: changed
+    text: Discover filters offer status and sort options that match the category
+    commit: 03ca963
+    author: AmrMsCLL
+  - type: changed
+    text: Library progress fields follow what each title can track, and game notifications need a platform
+    commit: cbb575a
+    author: AmrMsCLL
+  - type: changed
+    text: Source credits link to the source, and sources the server has not configured cannot be enabled
+    commit: d115836
+    author: AmrMsCLL
+  - type: changed
+    text: The app matches the graphite-hub theme and tab icon
+    commit: 01c8d37
+    author: AmrMsCLL
+  - type: changed
+    text: Concurrent requests for the same source data share one load and requests to each source are queued
+    commit: 0a027b0
+    author: AmrMsCLL
+  - type: fixed
+    text: Sessions renew before the access token expires, sign-out works after expiry and pages stay loaded during renewal
+    commit: 2c0c167
+    author: AmrMsCLL
+  - type: fixed
+    text: IGDB year filters, paging, status and release dates are correct
+    commit: fef3d57
+    author: AmrMsCLL
+  - type: fixed
+    text: TMDB TV genres and anime paging are correct, and Korean titles no longer appear in MangaDex manga lists
+    commit: 67c1fdc
+    author: AmrMsCLL
+  - type: fixed
+    text: The server fails fast when Redis is unreachable and closes its connections on shutdown
+    commit: 7db2b49
+    author: AmrMsCLL
+  - type: fixed
+    text: Production Compose refuses to start without its required secrets and passes the game source settings
+    commit: 34c1b58
+    author: AmrMsCLL

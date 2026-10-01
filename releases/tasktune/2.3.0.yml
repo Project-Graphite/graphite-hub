@@ -1,0 +1,46 @@
+project: tasktune
+version: 2.3.0
+tag: tasktune/v2.3.0
+previous: tasktune/v2.2.3
+date: 2026-09-23
+title: Correctness pass
+summary: >
+  A full audit fixes fullscreen hiding, the mini player, session handling, click timing, the
+  visualizer and seeking, and drops the Mica backgrounds that looked the same as a solid colour.
+changes:
+  - type: fixed
+    text: Fullscreen hiding works, the no-media grace period expires and an empty media button list is honoured
+    commit: 278e13e
+    author: AmrMsCLL
+  - type: fixed
+    text: Mini player rows rebuild when sessions change, so each row controls the session it shows, and the flyout centres for the centre screen placement
+    commit: 8c92c6d
+    author: AmrMsCLL
+  - type: fixed
+    text: The mini player's previous, play, next, mute and volume controls have accessible names and tooltips
+    commit: ee96785
+    author: AmrMsCLL
+  - type: fixed
+    text: Session attaching no longer races, stale media fetches no longer overwrite newer details, and cover art appears at once for a browser session that is already playing
+    commit: a942f77
+    author: AmrMsCLL
+  - type: fixed
+    text: A single click acts at once when no double-click action can follow, the ignore list and web app names match correctly, and idle hiding counts real time
+    commit: 3cd31f8
+    author: AmrMsCLL
+  - type: fixed
+    text: Visualizer bars fall on silence, the EQ preset applies once, and a visualizer shown again keeps capturing
+    commit: "1e42627"
+    author: AmrMsCLL
+  - type: fixed
+    text: Rewind and forward start from the live position, two sessions of one app can be cycled, and each volume wheel notch changes the system volume once
+    commit: 24f99f1
+    author: AmrMsCLL
+  - type: removed
+    text: The Mica and Mica Alt backgrounds, which drew the same as Solid color; stored values load as solid
+    commit: afe22fd
+    author: AmrMsCLL
+  - type: changed
+    text: Menu labels use sentence case, and setting labels, group names and colour hints are corrected
+    commit: 37f3d75
+    author: AmrMsCLL

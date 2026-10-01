@@ -1,0 +1,67 @@
+project: graphite-tracker
+version: 0.3.0
+tag: v0.3.0
+previous: v0.2.0
+date: 2026-09-25
+title: Imports, reviews and profiles
+summary: >
+  Readers can bring their Mihon and AniYomi libraries across, rate and review what they finish,
+  and share a public profile, while connectors and the redesigned poster-card interface are
+  hardened for real traffic.
+changes:
+  - type: added
+    text: Readers can import Mihon and AniYomi backups and review every match before it is applied
+    commit: 3d4c465
+    author: AmrMsCLL
+  - type: added
+    text: Readers can rate and review completed or dropped titles, with spoiler warnings and private reviews
+    commit: a5dbd3f
+    author: AmrMsCLL
+  - type: added
+    text: Public profiles show statistics, activity, library, ratings and reviews, each with its own privacy setting
+    commit: 13ee7ad
+    author: AmrMsCLL
+  - type: added
+    text: The administrator can resolve reports, hide or restore reviews and deactivate readers
+    commit: a5dbd3f
+    author: AmrMsCLL
+  - type: added
+    text: Privacy, terms and credits pages
+    commit: 13ee7ad
+    author: AmrMsCLL
+  - type: security
+    text: Sign-in, registration and catalogue reads are rate limited, and a replayed refresh token signs its user out everywhere
+    commit: ca787ca
+    author: AmrMsCLL
+  - type: changed
+    text: Discover, home rows, games and the library share one poster card, with filters on every Discover section and a paginated library
+    commit: 80ea487
+    author: AmrMsCLL
+  - type: changed
+    text: One library editor handles lists, progress, platforms, preferred source and notifications everywhere
+    commit: 80ea487
+    author: AmrMsCLL
+  - type: changed
+    text: Source connectors share timeouts, retries, a circuit breaker, a response size cap and a host allowlist
+    commit: ca787ca
+    author: AmrMsCLL
+  - type: changed
+    text: The server image applies database migrations on start
+    commit: 3655fe6
+    author: AmrMsCLL
+  - type: fixed
+    text: An import can no longer be applied twice, and oversized backup text is dropped instead of stalling the server
+    commit: fc6928e
+    author: AmrMsCLL
+  - type: fixed
+    text: Rejected upstream requests no longer make a source unavailable for everyone
+    commit: e9a7be5
+    author: AmrMsCLL
+  - type: fixed
+    text: A failed scheduled session renewal no longer signs the reader out
+    commit: c784c54
+    author: AmrMsCLL
+  - type: fixed
+    text: Faint text meets WCAG AA contrast and phone layouts are tighter
+    commit: a5967cb
+    author: AmrMsCLL
