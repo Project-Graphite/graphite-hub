@@ -204,6 +204,29 @@
       "path": "/projects/digital-to-physical"
     },
     {
+      "slug": "graphite-changelog",
+      "parent": null,
+      "kind": "project",
+      "name": "Graphite Changelog",
+      "summary": "Every Project Graphite release in one place: what changed in each version, the epic it belongs to and the member who owns it, drafted automatically from version tags.",
+      "tags": [
+        "react",
+        "vite",
+        "typescript",
+        "github-actions"
+      ],
+      "repo": "project-graphite/graphite-changelog",
+      "repoUrl": "https://github.com/project-graphite/graphite-changelog",
+      "owner": "amrmscll",
+      "authors": [
+        "AmrMsCLL"
+      ],
+      "status": "wip",
+      "showcase": null,
+      "url": null,
+      "path": "/projects/graphite-changelog"
+    },
+    {
       "slug": "graphite-message-lab",
       "parent": null,
       "kind": "project",
