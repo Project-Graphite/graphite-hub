@@ -328,6 +328,31 @@
       "path": "/epics/windhawk-mods/stack-switch"
     },
     {
+      "slug": "strata",
+      "parent": null,
+      "kind": "project",
+      "name": "Strata",
+      "summary": "A personal workspace for your dashboard, agenda, notes, whiteboards, subscriptions and files.",
+      "tags": [
+        "react",
+        "nestjs",
+        "prisma",
+        "postgresql",
+        "redis",
+        "typescript"
+      ],
+      "repo": "project-graphite/strata",
+      "repoUrl": "https://github.com/project-graphite/strata",
+      "owner": "amrmscll",
+      "authors": [
+        "AmrMsCLL"
+      ],
+      "status": "wip",
+      "showcase": null,
+      "url": null,
+      "path": "/projects/strata"
+    },
+    {
       "slug": "tasktune",
       "parent": "windhawk-mods",
       "kind": "project",
