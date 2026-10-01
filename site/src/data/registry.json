@@ -296,6 +296,28 @@
       "path": "/projects/graphite-tracker"
     },
     {
+      "slug": "graphite-ui",
+      "parent": null,
+      "kind": "project",
+      "name": "Graphite UI",
+      "summary": "The shared Project Graphite design tokens, dark theme and React components used by every Graphite web app.",
+      "tags": [
+        "react",
+        "typescript",
+        "tailwind"
+      ],
+      "repo": "project-graphite/graphite-ui",
+      "repoUrl": "https://github.com/project-graphite/graphite-ui",
+      "owner": "amrmscll",
+      "authors": [
+        "AmrMsCLL"
+      ],
+      "status": "wip",
+      "showcase": null,
+      "url": null,
+      "path": "/projects/graphite-ui"
+    },
+    {
       "slug": "stack-switch",
       "parent": "windhawk-mods",
       "kind": "project",
