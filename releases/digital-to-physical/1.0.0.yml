@@ -1,0 +1,55 @@
+project: digital-to-physical
+version: 1.0.0
+tag: v1.0.0
+previous: null
+date: 2026-09-18
+title: First public release
+summary: >
+  Digital to Physical launches as a private, browser-only tool that turns comic archives into
+  print-ready PDFs that bind cleanly into booklets. Spreads stay aligned across the fold, page
+  counts are padded for folding, and a live audit checks the layout before you build.
+changes:
+  - type: added
+    text: Convert .cbz, .cbr, .zip and .rar comic archives into PDFs entirely in your browser, with RAR archives unpacked through WebAssembly and no files ever uploaded
+    commit: 7db67fd
+    author: BluoCaroot
+  - type: added
+    text: Live booklet preview and page grid showing trim boxes, spreads, padding pages and cover placement
+    commit: 7db67fd
+    author: BluoCaroot
+  - type: added
+    text: Automatic splitting of landscape double-page spreads, with left-to-right and right-to-left manga reading orders
+    commit: 7db67fd
+    author: BluoCaroot
+  - type: added
+    text: Spread alignment that keeps both halves of a split spread facing each other across the fold, for binding or two-up screen reading
+    commit: 7db67fd
+    author: BluoCaroot
+  - type: added
+    text: Booklet padding to a multiple of four or a custom multiple so the printed volume folds cleanly
+    commit: 7db67fd
+    author: BluoCaroot
+  - type: added
+    text: Advert and filler pool that fills padding pages with your own images, spread evenly across the volume with deterministic per-book ordering
+    commit: 7db67fd
+    author: BluoCaroot
+  - type: added
+    text: Back cover choices including auto-composed art, a solid colour, variant covers, a page from the archive, the front cover, an advert or your own uploaded image
+    commit: 7db67fd
+    author: BluoCaroot
+  - type: added
+    text: Live pre-print audit that checks the multiple-of-four page count, facing spread pairs and advert balance before you build
+    commit: 7db67fd
+    author: BluoCaroot
+  - type: added
+    text: Print and bind, Faithful copy and Two-up on screen presets
+    commit: 7db67fd
+    author: BluoCaroot
+  - type: added
+    text: Paper sizes from US comic to JIS B5 manga and custom sizes, with margins, DPI and optional carrier sheets with crop marks
+    commit: 7db67fd
+    author: BluoCaroot
+  - type: added
+    text: Whole JPEG pages are embedded byte for byte with no re-compression
+    commit: 7db67fd
+    author: BluoCaroot

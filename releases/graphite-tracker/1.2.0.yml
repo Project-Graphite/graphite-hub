@@ -1,0 +1,63 @@
+project: graphite-tracker
+version: 1.2.0
+tag: v1.2.0
+previous: v1.1.0
+date: 2026-09-26
+title: Roles, inbox and phone layout
+summary: >
+  A system manager now runs the site and appoints administrators, readers get an in-app
+  notification inbox, title pages gain cast, crew and trailers, and the whole app is designed
+  for phones.
+changes:
+  - type: breaking
+    text: The admin:grant command is replaced by system-manager:grant, and the system manager appoints administrators from the admin page
+    commit: e2cd9a2
+    author: AmrMsCLL
+  - type: added
+    text: The system manager can turn adult content off for everyone
+    commit: c019b99
+    author: AmrMsCLL
+  - type: added
+    text: An in-app notification center with a bell and pop-ups for new releases
+    commit: f461865
+    author: AmrMsCLL
+  - type: added
+    text: Readers can hide single library entries from their profile
+    commit: 1e6f50d
+    author: AmrMsCLL
+  - type: added
+    text: Title pages show cast and crew for every category and link trailers
+    commit: 94d3279
+    author: AmrMsCLL
+  - type: added
+    text: Pasting a source link into any search opens that title
+    commit: 173c8c5
+    author: AmrMsCLL
+  - type: changed
+    text: The app is designed for phones, with a bottom tab bar, account menu, bottom-sheet dialogs and collapsible filters
+    commit: 23e1fce
+    author: AmrMsCLL
+  - type: changed
+    text: Settings live under the reader's own profile, and old settings links redirect there
+    commit: 68f8512
+    author: AmrMsCLL
+  - type: changed
+    text: Release notifications are offered only for titles still coming out
+    commit: 6a5b842
+    author: AmrMsCLL
+  - type: changed
+    text: Discover search sits beside the heading and the year is picked from a list
+    commit: 16ec734
+    author: AmrMsCLL
+  - type: changed
+    text: Forms and confirmations use in-app messages and dialogs instead of browser prompts
+    commit: '1e56937'
+    author: AmrMsCLL
+  - type: changed
+    text: Source credits and source links move into the page footer
+    commit: b19b977
+    author: AmrMsCLL
+  - type: changed
+    text: Skeletons appear wherever content is still loading, with custom scrollbars and smoother motion
+    commit: 09a14ff
+    author: AmrMsCLL

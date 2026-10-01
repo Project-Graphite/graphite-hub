@@ -1,0 +1,13 @@
+project: tasktune
+version: 2.3.1
+tag: tasktune/v2.3.1
+previous: tasktune/v2.3.0
+date: 2026-09-25
+title: Scrolling text width
+summary: >
+  Scrolling text uses the player's full width again when the visualizer sits on the left.
+changes:
+  - type: fixed
+    text: Scrolling text is no longer clamped to about the album-art width when a left visualizer and a maximum player width are set
+    commit: 43cc5a8
+    author: AmrMsCLL

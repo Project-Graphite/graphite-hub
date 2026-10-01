@@ -1,0 +1,64 @@
+project: graphite-tracker
+version: 1.3.0
+tag: v1.3.0
+previous: v1.2.0
+date: 2026-09-26
+title: Better sources and audit fixes
+summary: >
+  AniList and MangaUpdates become the default anime, manga and manhwa sources and TV browse shows
+  real scripted series, while an audit of the first four phases closes account, digest, privacy
+  and import defects and raises capacity on the single server container.
+changes:
+  - type: added
+    text: AniList is the default anime source, with season browsing and the latest aired episode
+    commit: fa47616
+    pr: 9
+    author: AmrMsCLL
+  - type: added
+    text: MangaUpdates is the default manga and manhwa source, separating manga from manhwa and manhua
+    commit: 86d6239
+    pr: 8
+    author: AmrMsCLL
+  - type: changed
+    text: TV browse shows scripted series and miniseries with real audiences instead of talk shows and zero-vote uploads
+    commit: fbcb891
+    pr: 7
+    author: AmrMsCLL
+  - type: changed
+    text: Searches are cached longer and a busy source answers at once with a try-again message
+    commit: 3b97f55
+    author: AmrMsCLL
+  - type: security
+    text: Password reset and change cancel pending email changes, and the old address is warned about a requested change
+    commit: a6fd79a
+    pr: 10
+    author: AmrMsCLL
+  - type: security
+    text: Security headers including HSTS are sent and X-Powered-By is off
+    commit: a6fd79a
+    pr: 10
+    author: AmrMsCLL
+  - type: fixed
+    text: Backup uploads no longer run the server out of memory
+    commit: 3b97f55
+    author: AmrMsCLL
+  - type: fixed
+    text: Private ratings stay off public profiles
+    commit: a6fd79a
+    pr: 10
+    author: AmrMsCLL
+  - type: fixed
+    text: Digests survive sender outages and crashes without losing or repeating releases
+    commit: a6fd79a
+    pr: 10
+    author: AmrMsCLL
+  - type: fixed
+    text: Imports no longer overwrite shared catalogue titles, and saved titles are refreshed from their source weekly
+    commit: a6fd79a
+    pr: 10
+    author: AmrMsCLL
+  - type: fixed
+    text: Progress can go past a title's stored totals
+    commit: a6fd79a
+    pr: 10
+    author: AmrMsCLL

@@ -1,0 +1,39 @@
+project: stack-switch
+version: 2.0.1
+tag: stack-switch/v2.0.1
+previous: null
+date: 2026-09-15
+title: Tech Stack Launcher
+summary: >
+  The first version, released as Tech Stack Launcher, adds a taskbar button whose panel starts a
+  configurable working set of apps, folders, editors, URLs and terminal commands in order and closes
+  the same selection again in reverse order.
+changes:
+  - type: added
+    text: Taskbar launcher panel that starts apps, folders, VS Code workspaces, URLs, terminal commands and windowless commands in order, and closes the selected items again in reverse order
+    commit: bf76283
+    author: AmrMsCLL
+  - type: added
+    text: Per-item toggles that persist across restarts, collapsible groups and profile chips that switch the whole selection in one click
+    commit: bf76283
+    author: AmrMsCLL
+  - type: added
+    text: Eight taskbar anchors read from the taskbar's live layout, using a layered child window instead of XAML injection so no symbol resolution is needed
+    commit: bf76283
+    author: AmrMsCLL
+  - type: added
+    text: Search box, per-item right-click menu with Launch now, Close now, Show in File Explorer and Copy target, and a dot on every running item
+    commit: bf76283
+    author: AmrMsCLL
+  - type: added
+    text: Ctrl+Alt+S hotkey, an optional tray icon and an optional profile launch after signing in
+    commit: bf76283
+    author: AmrMsCLL
+  - type: added
+    text: The {root} token and environment variables expand in every path
+    commit: bf76283
+    author: AmrMsCLL
+  - type: added
+    text: Dark and light panel themes styled after VS Code's Dark Modern and Light Modern palettes
+    commit: bf76283
+    author: AmrMsCLL

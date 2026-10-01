@@ -1,0 +1,47 @@
+project: stack-switch
+version: 2.3.0
+tag: stack-switch/v2.3.0
+previous: stack-switch/v2.2.0
+date: 2026-09-23
+title: StackSwitch
+summary: >
+  The launcher is renamed StackSwitch and gets a full correctness pass: sequences follow the panel
+  order, the panel and button behave on every taskbar, terminal items target their own window, and
+  the dark panel moves to the Project Graphite colours.
+changes:
+  - type: changed
+    text: Tech Stack Launcher is renamed StackSwitch, with the mod id stack-switch
+    commit: bed7234
+    author: AmrMsCLL
+  - type: fixed
+    text: Launch, Close, tray profiles and the sign-in auto-run follow the panel's grouped and dragged order, and Cancel during the close grace wait no longer force-kills the item
+    commit: c4f1b5a
+    author: AmrMsCLL
+  - type: fixed
+    text: Panel hover, focus, filtering and group dragging behave correctly, Alt+F4 no longer destroys the panel and the panel slides from its anchor
+    commit: 47f6f3d
+    author: AmrMsCLL
+  - type: fixed
+    text: Mixed-DPI taskbars no longer overwrite each other, the panel opens over the clicked button, and the tray icon and hotkey follow settings and theme changes
+    commit: 0897c1e
+    author: AmrMsCLL
+  - type: fixed
+    text: A font name of 32 characters or more no longer crashes Explorer, and a root folder containing {root} no longer expands forever
+    commit: "9568046"
+    author: AmrMsCLL
+  - type: fixed
+    text: Minimized and maximized terminal items act only on the Windows Terminal window they opened, and quoted paths ending in a backslash keep their closing quote
+    commit: b9fda5a
+    author: AmrMsCLL
+  - type: fixed
+    text: Profile chips that do not fit on one row wrap onto further rows instead of disappearing
+    commit: 3f79b15
+    author: AmrMsCLL
+  - type: removed
+    text: The Always Windows Terminal host option, which behaved like Auto; a stored value now loads as Auto
+    commit: 571ec74
+    author: AmrMsCLL
+  - type: changed
+    text: The dark panel uses the Project Graphite colours, and the light panel's dim text meets 4.5:1 contrast
+    commit: 7f51db0
+    author: AmrMsCLL

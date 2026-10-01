@@ -1,0 +1,34 @@
+project: graphite-ui
+version: 0.1.0
+tag: v0.1.0
+previous: null
+date: 2026-10-01
+title: Shared theme and components
+summary: >
+  The first release of @project-graphite/ui moves Graphite Tracker's generic design tokens, base
+  styles and components into one package, so every Graphite web app can share the same dark look.
+changes:
+  - type: added
+    text: Shared dark theme with the Graphite colour, radius, shadow, easing and layout tokens plus the live, in-progress and dormant status colours
+    commit: ff1a146
+    author: AmrMsCLL
+  - type: added
+    text: Sixteen React components including AppShell, Dialog, ConfirmDialog, Menu, Popover, GridListbox, Field, Toggle, Pagination, Skeleton, Snackbar and OutageGate
+    commit: ff1a146
+    author: AmrMsCLL
+  - type: added
+    text: UiProvider keeps routing with the host app, so the package does not depend on react-router
+    commit: ff1a146
+    author: AmrMsCLL
+  - type: added
+    text: Dialogs, menus and popovers restore focus and support keyboard navigation
+    commit: ff1a146
+    author: AmrMsCLL
+  - type: added
+    text: Local preview page showing every component in every state
+    commit: ff1a146
+    author: AmrMsCLL
+  - type: added
+    text: Version tags publish the package as a GitHub release
+    commit: ff1a146
+    author: AmrMsCLL

@@ -1,0 +1,26 @@
+project: tasktune
+version: 2.2.3
+tag: tasktune/v2.2.3
+previous: tasktune/v2.2.0
+date: 2026-09-18
+title: Click handling
+summary: >
+  Single and double clicks on the player and album art are told apart reliably, and double-clicking
+  the player opens the configured app by default.
+changes:
+  - type: fixed
+    text: Double clicks are recognised, because a single-click action waits for the Windows double-click time and the second click must land near the first
+    commit: eb07ecb
+    author: AmrMsCLL
+  - type: changed
+    text: Double-clicking the player opens the configured app by default, including installations that had no double-click setting saved
+    commit: eb07ecb
+    author: AmrMsCLL
+  - type: fixed
+    text: A pending click action is cancelled when its control unloads
+    commit: eb07ecb
+    author: AmrMsCLL
+  - type: fixed
+    text: Setting descriptions containing a colon are quoted, so the settings page parses
+    commit: eb07ecb
+    author: AmrMsCLL

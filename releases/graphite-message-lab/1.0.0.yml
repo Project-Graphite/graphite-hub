@@ -1,0 +1,43 @@
+project: graphite-message-lab
+version: 1.0.0
+tag: v1.0.0
+previous: v0.1.0
+date: 2026-09-17
+title: Live on Coolify with private review
+summary: >
+  Message Lab went live at message-lab.project-graphite.com, deployed by Coolify from a production
+  Compose stack that redeploys automatically after each successful push to main. Messages are now
+  private by default and reach the public wall only after an administrator publishes them.
+changes:
+  - type: changed
+    text: Production now runs as a Coolify-managed Docker Compose application instead of on Kubernetes
+    commit: "95754e0"
+    author: AmrMsCLL
+  - type: added
+    text: Production Compose stack that pulls the prebuilt GHCR images, limits CPU and memory, persists PostgreSQL and Redis in named volumes and runs migrations before Gunicorn starts
+    commit: "95754e0"
+    author: AmrMsCLL
+  - type: added
+    text: Trusted CSRF origins, HTTPS detection behind the proxy and secure cookies outside debug mode
+    commit: "95754e0"
+    author: AmrMsCLL
+  - type: added
+    text: Every successful push to main redeploys production through the Coolify deployment webhook
+    commit: d99ffc5
+    author: AmrMsCLL
+  - type: added
+    text: Visitors choose between Private and Public after review, every message lands in a private inbox, and only messages an administrator publishes appear on the public wall
+    commit: 5b53693
+    author: AmrMsCLL
+  - type: added
+    text: The admin inbox shows each message's requested visibility and moderation flag, with bulk actions to publish messages or make them private
+    commit: 5b53693
+    author: AmrMsCLL
+  - type: added
+    text: Messages containing flagged language are marked for moderation and always stay private
+    commit: 5b53693
+    author: AmrMsCLL
+  - type: added
+    text: The project is registered in Project Graphite as a live, listed application
+    commit: 4f4b04e
+    author: AmrMsCLL

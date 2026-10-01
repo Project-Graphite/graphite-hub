@@ -1,0 +1,30 @@
+project: graphite-message-lab
+version: 1.1.0
+tag: v1.1.0
+previous: v1.0.0
+date: 2026-09-23
+title: Wall privacy fixes and Graphite theme
+summary: >
+  An audit pass closed gaps that could put private or flagged messages on the public wall, made the
+  wall resilient to failed requests, and moved the site and admin onto the shared Graphite theme.
+changes:
+  - type: security
+    text: Messages that never requested publication can no longer be published to the wall, and a flagged display name now keeps a message private
+    commit: 402cad8
+    author: AmrMsCLL
+  - type: fixed
+    text: A failed refresh keeps the messages already on the wall and shows a styled notice, form errors fall back to a readable message, screen readers no longer re-announce the wall on every refresh, and the header wraps at phone width
+    commit: 35c51dc
+    author: AmrMsCLL
+  - type: fixed
+    text: Docker Compose honours the documented APP_UID, APP_GID and CELERY_LOG_LEVEL settings
+    commit: bd75c15
+    author: AmrMsCLL
+  - type: changed
+    text: The site and the admin use the Graphite dark theme with a single SVG favicon in place of the upstream favicon kit
+    commit: cfaa1a1
+    author: AmrMsCLL
+  - type: removed
+    text: DATABASE_URL is no longer read; PostgreSQL is configured only through the POSTGRES_* variables
+    commit: 4017ed6
+    author: AmrMsCLL

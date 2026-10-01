@@ -1,0 +1,21 @@
+project: stack-switch
+version: 2.1.0
+tag: stack-switch/v2.1.0
+previous: stack-switch/v2.0.1
+date: 2026-09-15
+title: Reliable terminal items
+summary: >
+  Terminal items now keep their full command, honour their window state and can be waited on.
+changes:
+  - type: fixed
+    text: Terminal commands containing semicolons or double quotes reach Windows Terminal intact, with PowerShell commands passed as an encoded command
+    commit: 2479ea9
+    author: AmrMsCLL
+  - type: fixed
+    text: Minimized and Maximized now apply to terminal items, which open in their own Windows Terminal window
+    commit: 2479ea9
+    author: AmrMsCLL
+  - type: fixed
+    text: Wait for it to exit waits for the terminal command instead of returning as soon as Windows Terminal starts
+    commit: 2479ea9
+    author: AmrMsCLL

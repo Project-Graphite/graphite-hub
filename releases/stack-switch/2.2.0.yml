@@ -1,0 +1,22 @@
+project: stack-switch
+version: 2.2.0
+tag: stack-switch/v2.2.0
+previous: stack-switch/v2.1.0
+date: 2026-09-15
+title: Grouping and reordering
+summary: >
+  Items sharing a group name now gather under one heading, and the panel order, which decides
+  what starts first, can be rearranged directly.
+changes:
+  - type: changed
+    text: Items with the same group name appear under one heading wherever they sit in the settings
+    commit: 95d8ca3
+    author: AmrMsCLL
+  - type: added
+    text: Drag an item or a whole group heading, or use Alt+Up and Alt+Down, to reorder the panel and the launch order
+    commit: 95d8ca3
+    author: AmrMsCLL
+  - type: added
+    text: Reset order to settings discards the saved panel order
+    commit: 95d8ca3
+    author: AmrMsCLL

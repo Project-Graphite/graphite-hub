@@ -1,0 +1,31 @@
+project: windhawk-mods
+version: 1.0.0
+tag: v1.0.0
+previous: null
+date: 2026-09-23
+title: Collection layout and checks
+summary: >
+  The repository becomes a collection with one folder per mod in the official windhawk-mods layout,
+  an MIT license, metadata checks on every change and automatic Project Graphite registration.
+changes:
+  - type: added
+    text: Official windhawk-mods layout with every mod at mods/<mod-id>/<mod-id>.wh.cpp beside its readme, and the upstream .clang-format
+    commit: bed7234
+    author: AmrMsCLL
+  - type: added
+    text: MIT license for the collection
+    commit: 7fd69c8
+    author: AmrMsCLL
+  - type: added
+    text: Quality workflow that checks each mod's folder, filename, readme, @id and required metadata on every push and pull request without reformatting sources
+    commit: 4fe4801
+    author: AmrMsCLL
+  - type: added
+    text: Project Graphite manifest listing Windhawk Mods, StackSwitch and TaskTune
+    commit: 27e120b
+    author: AmrMsCLL
+  - type: added
+    text: The Project Graphite registry syncs whenever the manifest changes on main
+    commit: c00f90f
+    pr: 2
+    author: AmrMsCLL
