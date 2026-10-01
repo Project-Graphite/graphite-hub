@@ -11,6 +11,7 @@
   --color-live: #46b97a;
   --color-wip: #d7a54a;
   --color-dormant: #6e6e78;
+  --color-danger: #f2a09a;
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
 }
@@ -45,6 +46,10 @@
   &:hover {
     border-bottom-color: var(--color-ink);
   }
+}
+
+html {
+  scroll-padding-top: 5rem;
 }
 
 :root {

@@ -9,6 +9,9 @@ const routes = [
   '/projects',
   ...registry.members.map((member) => member.path),
   ...registry.projects.map((project) => project.path),
+  '/changelog',
+  ...registry.members.map((member) => `/changelog${member.path}`),
+  ...registry.projects.map((project) => `/changelog${project.path}`),
 ];
 
 const missing = [];

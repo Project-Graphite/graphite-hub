@@ -1,19 +1,23 @@
 import { useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { metaFor } from '../meta';
-import { CHANGELOG } from '../registry';
 
 export default function Shell() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const previousPathname = useRef(pathname);
 
   useEffect(() => {
     if (pathname !== previousPathname.current) {
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      const target = hash ? document.getElementById(hash.slice(1)) : null;
+      if (target) {
+        target.scrollIntoView({ behavior: 'instant' });
+      } else {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      }
       document.title = metaFor(pathname.replace(/(.)\/$/, '$1')).title;
       previousPathname.current = pathname;
     }
-  }, [pathname]);
+  }, [pathname, hash]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -60,12 +64,12 @@ export default function Shell() {
             >
               projects
             </Link>
-            <a
-              href={CHANGELOG}
+            <Link
+              to="/changelog"
               className="text-muted no-underline transition-colors duration-200 hover:text-ink"
             >
-              changelog ↗
-            </a>
+              changelog
+            </Link>
             <a
               href="https://github.com/project-graphite"
               className="text-muted no-underline transition-colors duration-200 hover:text-ink"

@@ -1,4 +1,5 @@
-import { CHANGELOG, projectBySlug, releases, releasesForProject } from '../registry';
+import { Link } from 'react-router';
+import { changelogPath, projectBySlug, releases, releasesForProject } from '../registry';
 import type { Project } from '../types';
 
 interface Props {
@@ -18,9 +19,9 @@ export default function ChangelogPreview({ project }: Props) {
         <h2 id="changelog-preview" className="mono-sm m-0 font-normal text-faint">
           changelog
         </h2>
-        <a href={`${CHANGELOG}${project ? `${project.path}/` : '/'}`} className="rule-link mono-sm">
-          full log ↗
-        </a>
+        <Link to={project ? changelogPath(project) : '/changelog'} className="rule-link mono-sm">
+          full log
+        </Link>
       </div>
 
       {shown.length === 0 ? (
@@ -32,8 +33,8 @@ export default function ChangelogPreview({ project }: Props) {
 
             return (
               <li key={release.id}>
-                <a
-                  href={`${CHANGELOG}${released.path}/#${release.id}`}
+                <Link
+                  to={`${changelogPath(released)}#${release.id}`}
                   className="group block text-ink no-underline"
                 >
                   {showProject && (
@@ -55,7 +56,7 @@ export default function ChangelogPreview({ project }: Props) {
                       .map((group) => `${group.changes.length} ${group.type}`)
                       .join(' · ')}
                   </span>
-                </a>
+                </Link>
               </li>
             );
           })}

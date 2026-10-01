@@ -5,7 +5,6 @@ import type { Changelog, GithubProfile, Member, Project, Registry, Release } fro
 
 const registry = data as Registry;
 
-export const CHANGELOG = 'https://changelog.project-graphite.com';
 export const releases: Release[] = (changelogData as Changelog).releases;
 
 export const members: Member[] = registry.members;
@@ -23,7 +22,14 @@ export const routePaths: string[] = [
   '/projects',
   ...members.map((member) => member.path),
   ...projects.map((project) => project.path),
+  '/changelog',
+  ...members.map(changelogPath),
+  ...projects.map(changelogPath),
 ];
+
+export function changelogPath(entry: { path: string }) {
+  return `/changelog${entry.path}`;
+}
 
 export function memberByHandle(handle: string): Member | undefined {
   return members.find((member) => member.handle.toLowerCase() === handle.toLowerCase());
@@ -79,4 +85,19 @@ export function childProjects(parent: string): Project[] {
 export function releasesForProject(project: Project): Release[] {
   const slugs = new Set([project.slug, ...childProjects(project.slug).map((child) => child.slug)]);
   return releases.filter((release) => slugs.has(release.project));
+}
+
+export function projectsOwnedBy(member: Member): Project[] {
+  return projects.filter((project) => project.owner === member.handle);
+}
+
+export function releasesOwnedBy(member: Member): Release[] {
+  const slugs = new Set(projectsOwnedBy(member).map((project) => project.slug));
+  return releases.filter((release) => slugs.has(release.project));
+}
+
+export function compareUrl(project: Project, release: Release) {
+  return release.previous
+    ? `${project.repoUrl}/compare/${release.previous}...${release.tag}`
+    : `${project.repoUrl}/commits/${release.tag}`;
 }
