@@ -1,0 +1,70 @@
+project: strata
+version: 0.1.0
+tag: v0.1.0
+previous: null
+date: 2026-10-02
+title: Accounts, two-step sign-in and the app shell
+summary: >
+  The first release of Strata sets up its foundation: secure accounts with two-step sign-in, the
+  settings pages, and the shared Graphite look on desktop and phone, live at its own subdomain.
+changes:
+  - type: added
+    text: Sign up, email verification, sign-in, password reset and email change
+    commit: 7b0091a
+    pr: 2
+    author: AmrMsCLL
+  - type: added
+    text: The app shell with a desktop sidebar and a phone tab bar, built on the shared Graphite components
+    commit: 7b0091a
+    pr: 2
+    author: AmrMsCLL
+  - type: added
+    text: Export your account data or delete your account at any time
+    commit: 7b0091a
+    pr: 2
+    author: AmrMsCLL
+  - type: added
+    text: Privacy and terms pages written for Strata
+    commit: 7b0091a
+    pr: 2
+    author: AmrMsCLL
+  - type: security
+    text: Signing up or changing email never reveals whether an address already has an account
+    commit: 7b0091a
+    pr: 2
+    author: AmrMsCLL
+  - type: security
+    text: A strict content security policy, rate limits and request logs that hold no personal data
+    commit: 7b0091a
+    pr: 2
+    author: AmrMsCLL
+  - type: added
+    text: Two-step sign-in with an authenticator app and single-use recovery codes
+    commit: b56ebfb
+    pr: 8
+    author: AmrMsCLL
+  - type: added
+    text: Settings for your profile, security, signed-in devices and data
+    commit: b56ebfb
+    pr: 8
+    author: AmrMsCLL
+  - type: added
+    text: See every signed-in device and sign out one or all of the others
+    commit: b56ebfb
+    pr: 8
+    author: AmrMsCLL
+  - type: added
+    text: Emails when a new device signs in, the password changes or two-step sign-in is turned on or off
+    commit: b56ebfb
+    pr: 8
+    author: AmrMsCLL
+  - type: security
+    text: Passwords found in known data breaches are refused, without the password leaving Strata
+    commit: b56ebfb
+    pr: 8
+    author: AmrMsCLL
+  - type: security
+    text: Password, email and two-step changes and account deletion ask for your password and code again
+    commit: b56ebfb
+    pr: 8
+    author: AmrMsCLL
