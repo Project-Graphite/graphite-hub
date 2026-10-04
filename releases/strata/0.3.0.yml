@@ -1,0 +1,36 @@
+project: strata
+version: 0.3.0
+tag: v0.3.0
+previous: v0.2.0
+date: 2026-10-04
+title: Sharing from other apps, the wall display and quicker tasks
+summary: >
+  The installed app can receive links and files from your phone's share menu, any dashboard can
+  run as a wall display, three new widgets join Home, tasks can be typed in plain language, and Tidy
+  can send a weekly summary.
+changes:
+  - type: added
+    text: Save links, text and files to Strata from your phone's share menu
+    commit: 0b62331
+    pr: 32
+    author: AmrMsCLL
+  - type: added
+    text: Show a dashboard as a wall display that keeps the screen on
+    commit: 3d05461
+    pr: 33
+    author: AmrMsCLL
+  - type: added
+    text: Countdown, focus timer and Tidy status widgets for Home
+    commit: a7eed82
+    pr: 34
+    author: AmrMsCLL
+  - type: added
+    text: Type tasks in plain language, such as "pay rent friday 9am #home !2", and see what was understood before adding
+    commit: a135ecf
+    pr: 35
+    author: AmrMsCLL
+  - type: added
+    text: An optional weekly Tidy summary in your inbox on Monday mornings
+    commit: 432ba39
+    pr: 36
+    author: AmrMsCLL
