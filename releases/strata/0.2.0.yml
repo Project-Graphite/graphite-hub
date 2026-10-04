@@ -1,0 +1,129 @@
+project: strata
+version: 0.2.0
+tag: v0.2.0
+previous: v0.1.0
+date: 2026-10-04
+title: null
+summary: null
+changes:
+  - type: added
+    text: Add the local folder scan to Tidy
+    commit: 25d16f4
+    pr: 31
+    author: AmrMsCLL
+  - type: added
+    text: Add the Tidy suggestions, preview, undo history and tagging rule screens
+    commit: fb7667b
+    pr: 30
+    author: AmrMsCLL
+  - type: added
+    text: Add the Tidy scan, bulk actions with undo, and tagging rules
+    commit: 0f507c2
+    pr: 29
+    author: AmrMsCLL
+  - type: added
+    text: Add the inbox, space activity and security log screens
+    commit: 9d31686
+    pr: 15
+    author: AmrMsCLL
+  - type: added
+    text: Add the agenda views, event pages and guest RSVP pages
+    commit: 4f867e5
+    author: AmrMsCLL
+  - type: fixed
+    text: Keep events without an end time when looking for their occurrences
+    commit: db73ebc
+    author: AmrMsCLL
+  - type: added
+    text: Add events, guest RSVPs and the agenda feed
+    commit: 0b04584
+    author: AmrMsCLL
+  - type: fixed
+    text: Answer 404 before the last-dashboard rule when deleting someone else's dashboard
+    commit: 24d831e
+    author: AmrMsCLL
+  - type: added
+    text: Add the customisable Home dashboard with widgets
+    commit: f74ae8c
+    author: AmrMsCLL
+  - type: added
+    text: Add the Recurring overview and the subscription screens
+    commit: 57a6805
+    author: AmrMsCLL
+  - type: fixed
+    text: Refuse card numbers written with spaces or dashes
+    commit: 4d8a751
+    author: AmrMsCLL
+  - type: added
+    text: Add subscriptions with renewals, price history, reminders and totals
+    commit: 2e65f77
+    author: AmrMsCLL
+  - type: added
+    text: Add the task lists, Today view and task editor screens
+    commit: 2dd6ff2
+    author: AmrMsCLL
+  - type: added
+    text: Add task lists, repeating tasks, assignment, reminders and the Today view
+    commit: 253732f
+    author: AmrMsCLL
+  - type: added
+    text: Add repetition rules with time-zone-aware expansion
+    commit: a52d7fa
+    author: AmrMsCLL
+  - type: added
+    text: Make Strata installable with an offline page and update prompt
+    commit: b01fbb3
+    author: AmrMsCLL
+  - type: added
+    text: Add search and the command palette
+    commit: a34e210
+    author: AmrMsCLL
+  - type: added
+    text: Add the access tokens settings screen
+    commit: 8d50c77
+    author: AmrMsCLL
+  - type: added
+    text: Add scoped personal access tokens
+    commit: d3d0a52
+    author: AmrMsCLL
+  - type: added
+    text: Add file uploads, previews and downloads to spaces
+    commit: a7de3fa
+    author: AmrMsCLL
+  - type: fixed
+    text: Take file locks with executeRaw and expect the storage limit in site settings
+    commit: 32278c9
+    author: AmrMsCLL
+  - type: added
+    text: Add the file store with uploads, metadata stripping and safe downloads
+    commit: 6b33d66
+    author: AmrMsCLL
+  - type: added
+    text: Add the inbox, space activity and security log screens
+    commit: 82cd6c9
+    author: AmrMsCLL
+  - type: added
+    text: Add the activity stream, security log, inbox and background jobs
+    commit: 71854f5
+    pr: 14
+    author: AmrMsCLL
+  - type: added
+    text: Add the invitation, sign-up invite and site settings screens
+    commit: 6a7e9d2
+    pr: 13
+    author: AmrMsCLL
+  - type: added
+    text: Add invitations, the invite-only switch and share links
+    commit: de88b08
+    pr: 12
+    author: AmrMsCLL
+  - type: added
+    text: Add the spaces, tags, members and trash screens
+    commit: 9d7485d
+    pr: 11
+    author: AmrMsCLL
+  - type: added
+    text: Add spaces, members, items, tags, links and the permission check
+    commit: 435eba6
+    pr: 10
+    author: AmrMsCLL

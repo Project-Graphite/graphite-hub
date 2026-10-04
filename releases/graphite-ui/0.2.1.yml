@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 0.2.1
+tag: v0.2.1
+previous: v0.2.0
+date: 2026-10-01
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Keep the page gutter beside the sidebar
+    commit: 904f145
+    pr: 8
+    author: AmrMsCLL
