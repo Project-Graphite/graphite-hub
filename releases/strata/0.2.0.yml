@@ -3,127 +3,134 @@ version: 0.2.0
 tag: v0.2.0
 previous: v0.1.0
 date: 2026-10-04
-title: null
-summary: null
+title: Spaces, tasks, subscriptions, the dashboard, the agenda and Tidy
+summary: >
+  Strata grows from an account into a workspace: shared spaces with invitations, files, search,
+  tasks, recurring subscriptions, a customisable Home dashboard, an agenda with events and RSVPs,
+  and Tidy for clearing out clutter. It can also be installed as an app.
 changes:
   - type: added
-    text: Add the local folder scan to Tidy
-    commit: 25d16f4
-    pr: 31
+    text: Spaces you can share with others as owners, editors or viewers, with tags, links between items and a trash
+    commit: 435eba6
+    pr: 10
     author: AmrMsCLL
   - type: added
-    text: Add the Tidy suggestions, preview, undo history and tagging rule screens
-    commit: fb7667b
-    pr: 30
-    author: AmrMsCLL
-  - type: added
-    text: Add the Tidy scan, bulk actions with undo, and tagging rules
-    commit: 0f507c2
-    pr: 29
-    author: AmrMsCLL
-  - type: added
-    text: Add the inbox, space activity and security log screens
-    commit: 9d31686
-    pr: 15
-    author: AmrMsCLL
-  - type: added
-    text: Add the agenda views, event pages and guest RSVP pages
-    commit: 4f867e5
-    author: AmrMsCLL
-  - type: fixed
-    text: Keep events without an end time when looking for their occurrences
-    commit: db73ebc
-    author: AmrMsCLL
-  - type: added
-    text: Add events, guest RSVPs and the agenda feed
-    commit: 0b04584
-    author: AmrMsCLL
-  - type: fixed
-    text: Answer 404 before the last-dashboard rule when deleting someone else's dashboard
-    commit: 24d831e
-    author: AmrMsCLL
-  - type: added
-    text: Add the customisable Home dashboard with widgets
-    commit: f74ae8c
-    author: AmrMsCLL
-  - type: added
-    text: Add the Recurring overview and the subscription screens
-    commit: 57a6805
-    author: AmrMsCLL
-  - type: fixed
-    text: Refuse card numbers written with spaces or dashes
-    commit: 4d8a751
-    author: AmrMsCLL
-  - type: added
-    text: Add subscriptions with renewals, price history, reminders and totals
-    commit: 2e65f77
-    author: AmrMsCLL
-  - type: added
-    text: Add the task lists, Today view and task editor screens
-    commit: 2dd6ff2
-    author: AmrMsCLL
-  - type: added
-    text: Add task lists, repeating tasks, assignment, reminders and the Today view
-    commit: 253732f
-    author: AmrMsCLL
-  - type: added
-    text: Add repetition rules with time-zone-aware expansion
-    commit: a52d7fa
-    author: AmrMsCLL
-  - type: added
-    text: Make Strata installable with an offline page and update prompt
-    commit: b01fbb3
-    author: AmrMsCLL
-  - type: added
-    text: Add search and the command palette
-    commit: a34e210
-    author: AmrMsCLL
-  - type: added
-    text: Add the access tokens settings screen
-    commit: 8d50c77
-    author: AmrMsCLL
-  - type: added
-    text: Add scoped personal access tokens
-    commit: d3d0a52
-    author: AmrMsCLL
-  - type: added
-    text: Add file uploads, previews and downloads to spaces
-    commit: a7de3fa
-    author: AmrMsCLL
-  - type: fixed
-    text: Take file locks with executeRaw and expect the storage limit in site settings
-    commit: 32278c9
-    author: AmrMsCLL
-  - type: added
-    text: Add the file store with uploads, metadata stripping and safe downloads
-    commit: 6b33d66
-    author: AmrMsCLL
-  - type: added
-    text: Add the inbox, space activity and security log screens
-    commit: 82cd6c9
-    author: AmrMsCLL
-  - type: added
-    text: Add the activity stream, security log, inbox and background jobs
-    commit: 71854f5
-    pr: 14
-    author: AmrMsCLL
-  - type: added
-    text: Add the invitation, sign-up invite and site settings screens
-    commit: 6a7e9d2
-    pr: 13
-    author: AmrMsCLL
-  - type: added
-    text: Add invitations, the invite-only switch and share links
-    commit: de88b08
-    pr: 12
-    author: AmrMsCLL
-  - type: added
-    text: Add the spaces, tags, members and trash screens
+    text: Screens for spaces, their members, tags and the trash
     commit: 9d7485d
     pr: 11
     author: AmrMsCLL
   - type: added
-    text: Add spaces, members, items, tags, links and the permission check
-    commit: 435eba6
-    pr: 10
+    text: Invitations to a space or to Strata, an invite-only switch for the site, and share links that expire
+    commit: de88b08
+    pr: 12
+    author: AmrMsCLL
+  - type: added
+    text: Screens for sending and accepting invitations, and site settings for the system manager
+    commit: 6a7e9d2
+    pr: 13
+    author: AmrMsCLL
+  - type: added
+    text: An activity stream for each space, a security log for your account and an inbox for notifications
+    commit: 71854f5
+    pr: 14
+    author: AmrMsCLL
+  - type: added
+    text: The inbox bell, each space's activity tab and the security log in settings
+    commit: 9d31686
+    pr: 15
+    author: AmrMsCLL
+  - type: added
+    text: File uploads of up to 25 MB each, with a storage limit per person
+    commit: 6b33d66
+    pr: 16
+    author: AmrMsCLL
+  - type: security
+    text: Location and camera details are removed from uploaded photos, and downloads can never run as a page
+    commit: 6b33d66
+    pr: 16
+    author: AmrMsCLL
+  - type: added
+    text: Upload, preview and download files in a space
+    commit: a7de3fa
+    pr: 17
+    author: AmrMsCLL
+  - type: added
+    text: Personal access tokens with limited permissions, which can never change your account or security settings
+    commit: d3d0a52
+    pr: 18
+    author: AmrMsCLL
+  - type: added
+    text: Search across your spaces and a command palette on Ctrl+K
+    commit: a34e210
+    pr: 19
+    author: AmrMsCLL
+  - type: added
+    text: Install Strata as an app, with an offline page and a prompt when a new version is ready
+    commit: b01fbb3
+    pr: 20
+    author: AmrMsCLL
+  - type: added
+    text: Repeat rules that follow your time zone, shared by tasks, events and subscriptions
+    commit: a52d7fa
+    pr: 21
+    author: AmrMsCLL
+  - type: added
+    text: Task lists with sub-tasks, repeats, assignment, reminders and a Today view
+    commit: 253732f
+    pr: 22
+    author: AmrMsCLL
+  - type: added
+    text: A Tasks tab in each space with quick add and a task editor, and the Today page
+    commit: 2dd6ff2
+    pr: 23
+    author: AmrMsCLL
+  - type: added
+    text: Recurring, for subscriptions and bills, with renewals, price history, trial warnings, reminders and totals per currency
+    commit: 2e65f77
+    pr: 24
+    author: AmrMsCLL
+  - type: security
+    text: Payment labels refuse anything that looks like a card number, so card details are never stored
+    commit: 2e65f77
+    pr: 24
+    author: AmrMsCLL
+  - type: added
+    text: The Recurring overview with monthly and yearly totals, next renewals and a "still worth it?" list
+    commit: 57a6805
+    pr: 25
+    author: AmrMsCLL
+  - type: added
+    text: A Home dashboard of widgets you arrange, resize and configure, with templates and undo
+    commit: f74ae8c
+    pr: 26
+    author: AmrMsCLL
+  - type: added
+    text: Events with repeats, places and meeting links, and an agenda of events, due tasks and renewals
+    commit: 0b04584
+    pr: 27
+    author: AmrMsCLL
+  - type: added
+    text: List, week and month views of the agenda, and RSVP pages guests can use without an account
+    commit: 4f867e5
+    pr: 28
+    author: AmrMsCLL
+  - type: added
+    text: Tidy finds duplicate, large and old uploads and subscriptions that look unused or overlap
+    commit: 0f507c2
+    pr: 29
+    author: AmrMsCLL
+  - type: added
+    text: Archive, trash, tag or cancel many items at once after checking exactly what will change, then undo it from the history
+    commit: fb7667b
+    pr: 30
+    author: AmrMsCLL
+  - type: added
+    text: Tagging rules that tag new items in a space by words in their title
+    commit: 0f507c2
+    pr: 29
+    author: AmrMsCLL
+  - type: added
+    text: Scan a folder on your computer for duplicate, large and old files, without uploading anything
+    commit: 25d16f4
+    pr: 31
     author: AmrMsCLL
