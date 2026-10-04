@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   sync:
-    name: Version tags
+    name: Versions
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -44,12 +44,12 @@ jobs:
           private-key: ${{ secrets.PLATFORM_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
-      - name: Draft releases from version tags
+      - name: Tag new versions and draft their entries
         id: sync
         continue-on-error: true
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: npm run sync:releases
+        run: npm run sync:releases -- --cut
 
       - run: node scripts/compile.mjs
 
@@ -82,7 +82,7 @@ jobs:
               --base main \
               --head "$branch" \
               --title "chore: record releases" \
-              --body "Drafts changelog entries for version tags that do not have one yet. Titles and summaries can be refined in a follow-up pull request."
+              --body "Tags a new version for each project with releases: auto that has user-facing commits since its last version, and drafts changelog entries for every version tag without one. Titles and summaries can be refined in a follow-up pull request."
             pr="$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')"
           fi
 
@@ -132,5 +132,5 @@ jobs:
       - name: Report unread repositories
         if: steps.sync.outcome == 'failure'
         run: |
-          echo "::error::The sync could not read every repository; see the Draft releases from version tags step."
+          echo "::error::The sync could not read every repository; see the Tag new versions and draft their entries step."
           exit 1

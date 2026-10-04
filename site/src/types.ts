@@ -10,6 +10,8 @@ export interface Project {
   owner: string;
   authors: string[];
   status: 'live' | 'wip' | 'archived' | 'source-only';
+  paths: string[];
+  releases: 'auto' | 'manual';
   showcase: ProjectShowcase | null;
   url: string | null;
   path: string;
