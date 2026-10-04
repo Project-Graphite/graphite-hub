@@ -297,7 +297,7 @@
       ],
       "status": "wip",
       "paths": [],
-      "releases": "auto",
+      "releases": "manual",
       "showcase": null,
       "url": null,
       "path": "/projects/graphite-ui"
@@ -321,7 +321,9 @@
         "AmrMsCLL"
       ],
       "status": "source-only",
-      "paths": [],
+      "paths": [
+        "mods/stack-switch"
+      ],
       "releases": "auto",
       "showcase": {
         "problem": "A development session can mean opening the same mix of applications, workspaces, folders, URLs and terminal commands, then finding and closing them all again in the right order.",
@@ -384,7 +386,9 @@
         "AmrMsCLL"
       ],
       "status": "source-only",
-      "paths": [],
+      "paths": [
+        "mods/tasktune"
+      ],
       "releases": "auto",
       "showcase": {
         "problem": "Checking playback details or controlling several media and audio applications usually means opening a player window or a separate volume interface and leaving the current workflow.",
