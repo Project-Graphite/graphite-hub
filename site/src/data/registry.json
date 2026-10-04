@@ -199,6 +199,8 @@
         "BluoCaroot"
       ],
       "status": "live",
+      "paths": [],
+      "releases": "auto",
       "showcase": null,
       "url": "https://digital-to-physical.project-graphite.com",
       "path": "/projects/digital-to-physical"
@@ -223,6 +225,8 @@
         "AmrMsCLL"
       ],
       "status": "live",
+      "paths": [],
+      "releases": "auto",
       "showcase": {
         "problem": "Project Graphite needed an approachable application that visitors could use while proving the complete path from a browser through an API, persistent database and background worker.",
         "approach": "Visitors submit public or private messages through Django. PostgreSQL stores them, Redis and Celery process them asynchronously, and moderation keeps messages private until an admin chooses to publish them. Coolify redeploys the Compose application when the main branch changes.",
@@ -258,6 +262,8 @@
         "AmrMsCLL"
       ],
       "status": "live",
+      "paths": [],
+      "releases": "auto",
       "showcase": {
         "problem": "Films, series, anime, manga and games are usually tracked in separate apps, so a reader's progress, ratings and upcoming releases end up split across several services.",
         "approach": "One NestJS API pulls TMDB, MangaDex and IGDB or RAWG data into a shared catalogue and a library with per-category progress. Readers import Mihon and AniYomi backups, rate and review finished titles, and get in-app and email alerts for new episodes, chapters and releases. Adult content stays filtered unless a reader opts in.",
@@ -290,6 +296,8 @@
         "AmrMsCLL"
       ],
       "status": "wip",
+      "paths": [],
+      "releases": "auto",
       "showcase": null,
       "url": null,
       "path": "/projects/graphite-ui"
@@ -313,6 +321,8 @@
         "AmrMsCLL"
       ],
       "status": "source-only",
+      "paths": [],
+      "releases": "auto",
       "showcase": {
         "problem": "A development session can mean opening the same mix of applications, workspaces, folders, URLs and terminal commands, then finding and closing them all again in the right order.",
         "approach": "StackSwitch adds a native taskbar panel with persistent selections, named profiles, grouped items, launch delays and wait-for-exit behavior. It closes the same selection in reverse order and avoids fragile Windows symbol resolution by using a layered child window.",
@@ -348,6 +358,8 @@
         "AmrMsCLL"
       ],
       "status": "live",
+      "paths": [],
+      "releases": "auto",
       "showcase": null,
       "url": "https://strata.project-graphite.com",
       "path": "/projects/strata"
@@ -372,6 +384,8 @@
         "AmrMsCLL"
       ],
       "status": "source-only",
+      "paths": [],
+      "releases": "auto",
       "showcase": {
         "problem": "Checking playback details or controlling several media and audio applications usually means opening a player window or a separate volume interface and leaving the current workflow.",
         "approach": "The mod injects a configurable Fluent UI player into the Windows 11 taskbar, reads Windows media sessions, falls back to active audio sessions, and exposes playback, session and per-application volume controls beside an optional WASAPI visualizer.",
@@ -405,6 +419,8 @@
         "AmrMsCLL"
       ],
       "status": "source-only",
+      "paths": [],
+      "releases": "auto",
       "showcase": null,
       "url": null,
       "path": "/epics/windhawk-mods"
