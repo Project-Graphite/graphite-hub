@@ -5,6 +5,7 @@ import {
   compareVersions,
   concernsSibling,
   isVersion,
+  nextVersion,
   parseTag,
   tagsFor,
 } from './rules.mjs';
@@ -130,6 +131,30 @@ describe('compareVersions', () => {
       '1.10.0',
     ];
     assert.deepEqual([...ordered].reverse().sort(compareVersions), ordered);
+  });
+});
+
+describe('nextVersion', () => {
+  it('starts a project with no versions at 0.1.0', () => {
+    assert.equal(nextVersion(null, ['fixed']), '0.1.0');
+  });
+
+  it('bumps the minor version for added or removed features', () => {
+    assert.equal(nextVersion('1.4.0', ['fixed', 'added']), '1.5.0');
+    assert.equal(nextVersion('1.4.2', ['removed']), '1.5.0');
+  });
+
+  it('bumps the patch version for fixes and other changes', () => {
+    assert.equal(nextVersion('1.4.0', ['fixed', 'changed', 'security']), '1.4.1');
+  });
+
+  it('bumps the major version for breaking changes from 1.0.0 onwards', () => {
+    assert.equal(nextVersion('2.3.1', ['breaking', 'added']), '3.0.0');
+    assert.equal(nextVersion('0.3.0', ['breaking']), '0.4.0');
+  });
+
+  it('releases the pending version after a prerelease', () => {
+    assert.equal(nextVersion('1.0.0-rc.2', ['fixed']), '1.0.0');
   });
 });
 

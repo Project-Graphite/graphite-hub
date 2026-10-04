@@ -117,6 +117,26 @@ export function compareVersions(a, b) {
   return 0;
 }
 
+export function nextVersion(current, types) {
+  if (!current) {
+    return '0.1.0';
+  }
+
+  const [core, prerelease] = current.split(/-(.*)/s);
+  if (prerelease) {
+    return core;
+  }
+
+  const [major, minor, patch] = core.split('.').map(Number);
+  if (types.includes('breaking')) {
+    return major === 0 ? `0.${minor + 1}.0` : `${major + 1}.0.0`;
+  }
+  if (types.includes('added') || types.includes('removed')) {
+    return `${major}.${minor + 1}.0`;
+  }
+  return `${major}.${minor}.${patch + 1}`;
+}
+
 export function tagsFor(project, version) {
   return project.parent
     ? [`${project.slug}/v${version}`]
