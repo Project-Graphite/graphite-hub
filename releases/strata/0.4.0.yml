@@ -1,0 +1,87 @@
+project: strata
+version: 0.4.0
+tag: v0.4.0
+previous: v0.3.0
+date: 2026-10-05
+title: Notes, real-time editing and simple databases
+summary: >
+  Spaces gain notes that people write together in real time, with offline drafts, version history,
+  mentions, templates and simple databases. Home gains weather, news, quick note and habit widgets
+  and can pick a dashboard by time and device. Recurring totals everything in one currency, reads
+  bank statements and splits shared costs.
+changes:
+  - type: changed
+    text: A desktop layout with a collapsible sidebar, settings changes behind their own dialogs, and steadier loading and error states
+    commit: bfa0914
+    pr: 37
+    author: AmrMsCLL
+  - type: added
+    text: Reach every area on a phone from the More tab
+    commit: aa21d5b
+    pr: 38
+    author: AmrMsCLL
+  - type: added
+    text: Weather and news widgets for Home, with feeds fetched safely by the server
+    commit: b321aaa
+    pr: 39
+    author: AmrMsCLL
+  - type: added
+    text: See all your subscriptions in one home currency at European Central Bank rates, and pick common services from a built-in list
+    commit: 085538b
+    pr: 40
+    author: AmrMsCLL
+  - type: added
+    text: Notes in every space, with nested pages that are included in search
+    commit: b1ca9b4
+    pr: 41
+    author: AmrMsCLL
+  - type: added
+    text: Write notes together in real time and see who else is on the page
+    commit: f157524
+    pr: 42
+    author: AmrMsCLL
+  - type: added
+    text: Keep writing notes offline, and restore earlier versions from the page history
+    commit: a23cd20
+    pr: 43
+    author: AmrMsCLL
+  - type: added
+    text: Mention other pages with @, see which pages link back, and add images to notes
+    commit: 786a9af
+    pr: 44
+    author: AmrMsCLL
+  - type: added
+    text: Start pages from templates, and jot quick notes from Home or the search palette
+    commit: 6115a25
+    pr: 45
+    author: AmrMsCLL
+  - type: added
+    text: Turn a page into a database with typed properties, shown as a table, board, list or calendar
+    commit: b850e9f
+    pr: 46
+    author: AmrMsCLL
+  - type: added
+    text: Tidy rules can tag files by type, such as every PDF or image
+    commit: 974477c
+    pr: 47
+    author: AmrMsCLL
+  - type: added
+    text: Home can open the right dashboard for the time of day and your device
+    commit: fc8e964
+    pr: 48
+    author: AmrMsCLL
+  - type: added
+    text: Track habits with daily check-ins and streaks, in a space or from Home
+    commit: a57d5a2
+    pr: 49
+    author: AmrMsCLL
+  - type: added
+    text: Import a bank statement to find recurring charges and add them as subscriptions, without the file leaving your browser
+    commit: "7e59916"
+    pr: 50
+    author: AmrMsCLL
+  - type: added
+    text: Split shared subscriptions between members and settle up who owes what each month
+    commit: c0063d4
+    pr: 51
+    author: AmrMsCLL

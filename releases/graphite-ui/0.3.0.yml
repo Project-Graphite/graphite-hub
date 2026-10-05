@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 0.3.0
+tag: v0.3.0
+previous: v0.2.1
+date: 2026-10-05
+title: null
+summary: null
+changes:
+  - type: added
+    text: A sidebar that collapses from the header, a page header, an error state with retry, and loading skeletons that wait briefly before showing
+    commit: 2c8ebae
+    pr: 11
+    author: AmrMsCLL
