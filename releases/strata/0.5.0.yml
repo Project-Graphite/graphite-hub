@@ -1,0 +1,78 @@
+project: strata
+version: 0.5.0
+tag: v0.5.0
+previous: v0.4.0
+date: 2026-10-07
+title: null
+summary: null
+changes:
+  - type: added
+    text: Add webhooks and an API reference to settings
+    commit: 516ce6f
+    pr: 64
+    author: AmrMsCLL
+  - type: added
+    text: Add a dependency-free load test script
+    commit: 3a806e0
+    pr: 66
+    author: AmrMsCLL
+  - type: added
+    text: Back up the database and files every night
+    commit: 006986a
+    pr: 65
+    author: AmrMsCLL
+  - type: added
+    text: Write a weekly review page with one click
+    commit: 7879f2d
+    pr: 63
+    author: AmrMsCLL
+  - type: added
+    text: Follow outside calendars in the Agenda
+    commit: d94cdae
+    pr: 62
+    author: AmrMsCLL
+  - type: added
+    text: Share the agenda as a private calendar link
+    commit: 185c51a
+    pr: 61
+    author: AmrMsCLL
+  - type: added
+    text: Let people vote on dates for an event
+    commit: 7dfdf27
+    pr: 60
+    author: AmrMsCLL
+  - type: added
+    text: Comment on pages
+    commit: ce5f0f6
+    pr: 58
+    author: AmrMsCLL
+  - type: added
+    text: Keep a daily journal with a one-tap mood
+    commit: 2f919b8
+    pr: 57
+    author: AmrMsCLL
+  - type: added
+    text: Add a pinned and recent pages widget to Home
+    commit: 29c0d0d
+    pr: 56
+    author: AmrMsCLL
+  - type: fixed
+    text: Tighten invite emails and refuse dev secrets in production
+    commit: 7cd076c
+    pr: 55
+    author: AmrMsCLL
+  - type: fixed
+    text: Limit failed sign-ins per account and hide which emails exist
+    commit: 2b58c90
+    pr: 54
+    author: AmrMsCLL
+  - type: fixed
+    text: Only follow mentions inside Strata and load note images by file id
+    commit: f87b03d
+    pr: 53
+    author: AmrMsCLL
+  - type: fixed
+    text: End sessions and tokens properly
+    commit: 425daae
+    pr: 52
+    author: AmrMsCLL
