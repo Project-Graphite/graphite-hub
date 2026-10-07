@@ -60,3 +60,53 @@ const sitemap = [
 
 await writeFile(join(DIST, 'sitemap.xml'), sitemap, 'utf8');
 console.log('generated sitemap.xml');
+
+const ORIGIN = 'https://project-graphite.com';
+const { members, projects } = JSON.parse(
+  await readFile(join('src', 'data', 'registry.json'), 'utf8'),
+);
+const statusLabel = {
+  live: 'live',
+  wip: 'in progress',
+  archived: 'archived',
+  'source-only': 'source only',
+};
+const projectLine = (project) =>
+  [
+    `- [${project.name}](${ORIGIN}${project.path}/): ${project.summary}`,
+    project.url && project.status === 'live'
+      ? ` Open it at ${project.url}.`
+      : ` Status: ${statusLabel[project.status]}.`,
+    ` Source: ${project.repoUrl}`,
+  ].join('');
+
+const llms = [
+  '# Project Graphite',
+  '',
+  '> A shared portfolio for Project Graphite members, their work and the applications they deploy.',
+  '',
+  'Every project has its own repository. Live web apps run at their own subdomain of project-graphite.com and are open to use; source-only and in-progress work is labelled as such.',
+  '',
+  '## Live apps',
+  '',
+  ...projects.filter((project) => project.status === 'live').map(projectLine),
+  '',
+  '## Other projects',
+  '',
+  ...projects.filter((project) => project.status !== 'live').map(projectLine),
+  '',
+  '## Members',
+  '',
+  ...members.map(
+    (member) => `- [${member.name}](${ORIGIN}/members/${member.handle}/): ${member.headline}`,
+  ),
+  '',
+  '## Site',
+  '',
+  `- [Changelog](${ORIGIN}/changelog/): every release of every project`,
+  `- [Sitemap](${ORIGIN}/sitemap.xml): every page on the site`,
+  '',
+].join('\n');
+
+await writeFile(join(DIST, 'llms.txt'), llms, 'utf8');
+console.log('generated llms.txt');

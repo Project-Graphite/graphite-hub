@@ -25,7 +25,7 @@ for (const route of routes) {
   }
 }
 
-for (const asset of ['404.html', 'robots.txt', '_headers', '_redirects']) {
+for (const asset of ['404.html', 'robots.txt', '_headers', '_redirects', 'llms.txt']) {
   try {
     await access(join('dist', asset));
   } catch {

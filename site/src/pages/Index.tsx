@@ -67,9 +67,12 @@ export default function Index() {
           }
         >
           <div className="grid gap-4 md:grid-cols-2">
-            {rootProjects.slice(0, 4).map((project) => (
-              <ProjectCard key={project.path} project={project} />
-            ))}
+            {[...rootProjects]
+              .sort((a, b) => Number(b.status === 'live') - Number(a.status === 'live'))
+              .slice(0, 4)
+              .map((project) => (
+                <ProjectCard key={project.path} project={project} />
+              ))}
           </div>
         </Section>
       )}
