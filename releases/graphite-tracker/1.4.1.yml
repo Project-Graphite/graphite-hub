@@ -1,0 +1,12 @@
+project: graphite-tracker
+version: 1.4.1
+tag: v1.4.1
+previous: v1.4.0
+date: 2026-10-07
+title: null
+summary: null
+changes:
+  - type: changed
+    text: Reject backups with no library entries
+    commit: 6a1f08c
+    author: AmrMsCLL

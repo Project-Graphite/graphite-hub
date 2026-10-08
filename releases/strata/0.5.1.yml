@@ -1,0 +1,23 @@
+project: strata
+version: 0.5.1
+tag: v0.5.1
+previous: v0.5.0
+date: 2026-10-07
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Lock while creating the Weekly reviews page
+    commit: 294d37d
+    pr: 70
+    author: AmrMsCLL
+  - type: fixed
+    text: Session refresh across tabs and follow-ups from the browser checks
+    commit: da372c8
+    pr: 68
+    author: AmrMsCLL
+  - type: fixed
+    text: Duplicate review pages and the editor's offline label
+    commit: "2043858"
+    pr: 67
+    author: AmrMsCLL
