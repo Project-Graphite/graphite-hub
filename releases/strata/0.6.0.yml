@@ -1,0 +1,58 @@
+project: strata
+version: 0.6.0
+tag: v0.6.0
+previous: v0.5.1
+date: 2026-10-09
+title: null
+summary: null
+changes:
+  - type: added
+    text: Show shared pages and boards to guests
+    commit: 9181f6a
+    pr: 86
+    author: AmrMsCLL
+  - type: added
+    text: Pick page icons and widen pages per device
+    commit: "17e9637"
+    pr: 84
+    author: AmrMsCLL
+  - type: added
+    text: Show a page tree in the sidebar with drag to move and nest
+    commit: 23c69be
+    pr: 83
+    author: AmrMsCLL
+  - type: added
+    text: Start boards from templates, vote with dots and print boards
+    commit: "974e624"
+    pr: 82
+    author: AmrMsCLL
+  - type: added
+    text: Put boards on events and Home, and turn board notes into tasks
+    commit: bf5ddda
+    pr: 81
+    author: AmrMsCLL
+  - type: added
+    text: Embed boards in pages with a live preview
+    commit: bdf15a6
+    pr: 80
+    author: AmrMsCLL
+  - type: added
+    text: Give boards and pages their own places in the sidebar
+    commit: 2087ab8
+    pr: 79
+    author: AmrMsCLL
+  - type: added
+    text: Add callouts, toggles, tables and a block handle to pages
+    commit: 93fbb10
+    pr: 78
+    author: AmrMsCLL
+  - type: added
+    text: Add a / block menu to the page editor
+    commit: 00e71fd
+    pr: 77
+    author: AmrMsCLL
+  - type: added
+    text: Add boards drawn with Excalidraw
+    commit: a718cba
+    pr: 76
+    author: AmrMsCLL
