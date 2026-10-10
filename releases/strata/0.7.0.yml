@@ -1,0 +1,13 @@
+project: strata
+version: 0.7.0
+tag: v0.7.0
+previous: v0.6.0
+date: 2026-10-09
+title: null
+summary: null
+changes:
+  - type: added
+    text: Comment on a block of a page
+    commit: 98b9f79
+    pr: 85
+    author: AmrMsCLL
