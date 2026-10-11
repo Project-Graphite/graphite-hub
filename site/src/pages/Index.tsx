@@ -4,7 +4,7 @@ import EpicCard from '../components/EpicCard';
 import MemberCard from '../components/MemberCard';
 import ProjectCard from '../components/ProjectCard';
 import Section from '../components/Section';
-import { childProjects, epics, members, rootProjects } from '../registry';
+import { childProjects, epics, lastPublishedOn, members, rootProjects } from '../registry';
 
 export default function Index() {
   return (
@@ -68,8 +68,12 @@ export default function Index() {
         >
           <div className="grid gap-4 md:grid-cols-2">
             {[...rootProjects]
-              .sort((a, b) => Number(b.status === 'live') - Number(a.status === 'live'))
-              .slice(0, 4)
+              .sort(
+                (a, b) =>
+                  Number(b.pinned) - Number(a.pinned) ||
+                  lastPublishedOn(b).localeCompare(lastPublishedOn(a)),
+              )
+              .filter((project, index) => project.pinned || index < 6)
               .map((project) => (
                 <ProjectCard key={project.path} project={project} />
               ))}

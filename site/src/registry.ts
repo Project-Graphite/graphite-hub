@@ -87,6 +87,11 @@ export function releasesForProject(project: Project): Release[] {
   return releases.filter((release) => slugs.has(release.project));
 }
 
+export function lastPublishedOn(project: Project) {
+  const released = releasesForProject(project)[0]?.date ?? '';
+  return released > project.listedOn ? released : project.listedOn;
+}
+
 export function projectsOwnedBy(member: Member): Project[] {
   return projects.filter((project) => project.owner === member.handle);
 }

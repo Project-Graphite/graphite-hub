@@ -12,6 +12,8 @@ export interface Project {
   status: 'live' | 'wip' | 'archived' | 'source-only';
   paths: string[];
   releases: 'auto' | 'manual';
+  pinned: boolean;
+  listedOn: string;
   showcase: ProjectShowcase | null;
   url: string | null;
   path: string;
