@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 0.4.1
+tag: v0.4.1
+previous: v0.4.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Stop focus rings on open lists and the 1px page scroll from the header border (0.4.1)
+    commit: b9c8a7c
+    pr: 14
+    author: AmrMsCLL
