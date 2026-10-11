@@ -1,0 +1,13 @@
+project: strata
+version: 0.21.0
+tag: v0.21.0
+previous: v0.20.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Live shared boards that guests can edit, and a clearer share dialog
+    commit: f54065f
+    pr: 106
+    author: AmrMsCLL
