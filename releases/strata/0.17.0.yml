@@ -1,0 +1,13 @@
+project: strata
+version: 0.17.0
+tag: v0.17.0
+previous: v0.16.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: People, with birthdays on the agenda, gift ideas and events together
+    commit: f9b4eb9
+    pr: 102
+    author: AmrMsCLL
