@@ -1,0 +1,13 @@
+project: strata
+version: 0.20.0
+tag: v0.20.0
+previous: v0.19.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Trips, with itinerary, packing list, documents, notes and spending
+    commit: 23b91d5
+    pr: 105
+    author: AmrMsCLL
