@@ -1,0 +1,18 @@
+project: strata
+version: 0.9.0
+tag: v0.9.0
+previous: v0.8.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Comment on a shape on a board, with pins that follow it
+    commit: bc09e17
+    pr: 89
+    author: AmrMsCLL
+  - type: added
+    text: Add an are-my-apps-up Home widget
+    commit: 74024ad
+    pr: 88
+    author: AmrMsCLL
