@@ -1,0 +1,13 @@
+project: strata
+version: 0.14.0
+tag: v0.14.0
+previous: v0.13.2
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: One page frame, themed controls and create buttons in one place across Strata
+    commit: 9c974a5
+    pr: 98
+    author: AmrMsCLL
