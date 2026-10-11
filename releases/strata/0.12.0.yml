@@ -1,0 +1,13 @@
+project: strata
+version: 0.12.0
+tag: v0.12.0
+previous: v0.11.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Add a brainstorm timer and voting rounds to boards
+    commit: 2b7bd14
+    pr: 92
+    author: AmrMsCLL
