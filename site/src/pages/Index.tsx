@@ -13,7 +13,7 @@ export default function Index() {
         <section>
           <p className="mono-sm m-0 mb-4 text-faint">members / epics / projects</p>
           <h1 className="page-title">
-            Project Graphite · Made for Learning · Made for Fun · Made for Everyone
+            Project Graphite
           </h1>
           <div className="hero-rule mt-5.5 max-w-[52ch]" />
           <p className="mt-5.5 mb-0 max-w-[52ch] text-muted">
