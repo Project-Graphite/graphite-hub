@@ -1,0 +1,13 @@
+project: strata
+version: 0.16.0
+tag: v0.16.0
+previous: v0.15.1
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Turn features on in Settings, starting with Goals
+    commit: c569dae
+    pr: 101
+    author: AmrMsCLL
