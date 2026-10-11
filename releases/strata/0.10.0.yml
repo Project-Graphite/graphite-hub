@@ -1,0 +1,13 @@
+project: strata
+version: 0.10.0
+tag: v0.10.0
+previous: v0.9.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Import pages from Markdown files and Notion exports
+    commit: 88f8986
+    pr: 90
+    author: AmrMsCLL
