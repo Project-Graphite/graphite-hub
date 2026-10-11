@@ -285,6 +285,8 @@
       "status": "live",
       "paths": [],
       "releases": "auto",
+      "pinned": false,
+      "listedOn": "2026-09-17",
       "showcase": null,
       "url": "https://digital-to-physical.project-graphite.com",
       "path": "/projects/digital-to-physical"
@@ -311,6 +313,8 @@
       "status": "live",
       "paths": [],
       "releases": "auto",
+      "pinned": false,
+      "listedOn": "2026-09-16",
       "showcase": {
         "problem": "Project Graphite needed an approachable application that visitors could use while proving the complete path from a browser through an API, persistent database and background worker.",
         "approach": "Visitors submit public or private messages through Django. PostgreSQL stores them, Redis and Celery process them asynchronously, and moderation keeps messages private until an admin chooses to publish them. Coolify redeploys the Compose application when the main branch changes.",
@@ -348,6 +352,8 @@
       "status": "live",
       "paths": [],
       "releases": "auto",
+      "pinned": false,
+      "listedOn": "2026-09-23",
       "showcase": {
         "problem": "Films, series, anime, manga and games are usually tracked in separate apps, so a reader's progress, ratings and upcoming releases end up split across several services.",
         "approach": "One NestJS API pulls TMDB, MangaDex and IGDB or RAWG data into a shared catalogue and a library with per-category progress. Readers import Mihon and AniYomi backups, rate and review finished titles, and get in-app and email alerts for new episodes, chapters and releases. Adult content stays filtered unless a reader opts in.",
@@ -382,6 +388,8 @@
       "status": "wip",
       "paths": [],
       "releases": "manual",
+      "pinned": false,
+      "listedOn": "2026-10-01",
       "showcase": null,
       "url": null,
       "path": "/projects/graphite-ui"
@@ -409,6 +417,8 @@
       "status": "live",
       "paths": [],
       "releases": "auto",
+      "pinned": false,
+      "listedOn": "2026-10-10",
       "showcase": {
         "problem": "Playing Game Boy games usually means installing and configuring a desktop emulator, and save files stay stuck on the machine they were made on. There was no simple way to pick a game from a library, play it in the browser on any device and keep the same progress.",
         "approach": "A Game Boy (DMG) emulator written from scratch in C++20 (CPU, graphics, sound, timers and MBC1/MBC3/MBC5 cartridges), compiled to WebAssembly with Emscripten and run inside a React app with Web Audio sound and keyboard, gamepad and touch input. An Express API on MongoDB and MinIO handles accounts, the game library, uploads and battery saves, checking ROM headers and re-encoding cover images before storing them. Docker Compose runs the stack.",
@@ -446,6 +456,8 @@
         "mods/stack-switch"
       ],
       "releases": "auto",
+      "pinned": false,
+      "listedOn": "2026-09-17",
       "showcase": {
         "problem": "A development session can mean opening the same mix of applications, workspaces, folders, URLs and terminal commands, then finding and closing them all again in the right order.",
         "approach": "StackSwitch adds a native taskbar panel with persistent selections, named profiles, grouped items, launch delays and wait-for-exit behavior. It closes the same selection in reverse order and avoids fragile Windows symbol resolution by using a layered child window.",
@@ -483,6 +495,8 @@
       "status": "live",
       "paths": [],
       "releases": "auto",
+      "pinned": false,
+      "listedOn": "2026-10-01",
       "showcase": null,
       "url": "https://strata.project-graphite.com",
       "path": "/projects/strata"
@@ -511,6 +525,8 @@
         "mods/tasktune"
       ],
       "releases": "auto",
+      "pinned": false,
+      "listedOn": "2026-09-18",
       "showcase": {
         "problem": "Checking playback details or controlling several media and audio applications usually means opening a player window or a separate volume interface and leaving the current workflow.",
         "approach": "The mod injects a configurable Fluent UI player into the Windows 11 taskbar, reads Windows media sessions, falls back to active audio sessions, and exposes playback, session and per-application volume controls beside an optional WASAPI visualizer.",
@@ -546,6 +562,8 @@
       "status": "source-only",
       "paths": [],
       "releases": "auto",
+      "pinned": false,
+      "listedOn": "2026-09-15",
       "showcase": null,
       "url": null,
       "path": "/epics/windhawk-mods"
