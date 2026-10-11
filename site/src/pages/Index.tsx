@@ -12,9 +12,7 @@ export default function Index() {
       <div className="grid gap-10 pt-22 pb-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <section>
           <p className="mono-sm m-0 mb-4 text-faint">members / epics / projects</p>
-          <h1 className="page-title">
-            Project Graphite
-          </h1>
+          <h1 className="page-title">Project Graphite</h1>
           <div className="hero-rule mt-5.5 max-w-[52ch]" />
           <p className="mt-5.5 mb-0 max-w-[52ch] text-muted">
             A shared portfolio for the members behind Project Graphite. Every standalone project has
