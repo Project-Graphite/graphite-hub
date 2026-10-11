@@ -1,0 +1,48 @@
+project: pixelpocket
+version: 0.1.0
+tag: v0.1.0
+previous: null
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Build the emulator WebAssembly through the frontend Dockerfile; allow manual changelog runs
+    commit: d91e33e
+    author: AmrMsCLL
+  - type: changed
+    text: Redesign game shelves and admin docs
+    commit: a848b2d
+    author: Omar-Mohamed24
+  - type: added
+    text: Add admin dashboard and email/UI updates
+    commit: 2e42f6a
+    author: Omar-Mohamed24
+  - type: changed
+    text: Refactor emulator core and align project docs
+    commit: a261c14
+    author: Omar-Mohamed24
+  - type: changed
+    text: Update main.yml
+    commit: 481efb3
+    author: AmrMsCLL
+  - type: changed
+    text: Lowercase the backend and frontend folders
+    commit: acd26a0
+    author: AmrMsCLL
+  - type: changed
+    text: Normalize app folders and deployment config
+    commit: e882e2e
+    author: AmrMsCLL
+  - type: changed
+    text: Update .graphite.yml
+    commit: 02fd96c
+    author: Omar-Mohamed24
+  - type: changed
+    text: Bootstrap PixelPocket monorepo stack
+    commit: 98bf417
+    author: Omar-Mohamed24
+  - type: changed
+    text: Initial commit
+    commit: 0eba4b6
+    author: Omar-Mohamed24
