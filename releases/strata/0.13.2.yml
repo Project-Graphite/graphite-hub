@@ -1,0 +1,13 @@
+project: strata
+version: 0.13.2
+tag: v0.13.2
+previous: v0.13.1
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Treat blank optional settings as unset so production starts without VAPID keys
+    commit: 745f750
+    pr: 97
+    author: AmrMsCLL
