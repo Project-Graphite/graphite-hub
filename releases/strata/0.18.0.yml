@@ -1,0 +1,13 @@
+project: strata
+version: 0.18.0
+tag: v0.18.0
+previous: v0.17.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Recipes and a weekly meal plan with a shopping list
+    commit: dee5ec5
+    pr: 103
+    author: AmrMsCLL
