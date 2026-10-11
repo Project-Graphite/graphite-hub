@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 0.4.3
+tag: v0.4.3
+previous: v0.4.2
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Progress meter and icons for goals, gifts, meals, spending and travel (0.4.3)
+    commit: 29c3f62
+    pr: 16
+    author: AmrMsCLL
