@@ -1,0 +1,13 @@
+project: strata
+version: 0.13.0
+tag: v0.13.0
+previous: v0.12.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Send inbox notices as push notifications to chosen devices
+    commit: 88c5132
+    pr: 93
+    author: AmrMsCLL
