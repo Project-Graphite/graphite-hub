@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 0.4.2
+tag: v0.4.2
+previous: v0.4.1
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Menus open like the other popovers, themed disclosures and a quiet sidebar scrollbar (0.4.2)
+    commit: a935530
+    pr: 15
+    author: AmrMsCLL
