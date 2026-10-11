@@ -40,23 +40,6 @@ export default function Index() {
         </div>
       </Section>
 
-      {epics.length > 0 && (
-        <Section
-          label="epics"
-          action={
-            <Link to="/epics" className="rule-link mono-sm">
-              view all
-            </Link>
-          }
-        >
-          <div className="grid gap-5">
-            {epics.slice(0, 2).map((epic) => (
-              <EpicCard key={epic.path} epic={epic} projects={childProjects(epic.slug)} />
-            ))}
-          </div>
-        </Section>
-      )}
-
       {rootProjects.length > 0 && (
         <Section
           label="projects"
@@ -77,6 +60,23 @@ export default function Index() {
               .map((project) => (
                 <ProjectCard key={project.path} project={project} />
               ))}
+          </div>
+        </Section>
+      )}
+
+      {epics.length > 0 && (
+        <Section
+          label="epics"
+          action={
+            <Link to="/epics" className="rule-link mono-sm">
+              view all
+            </Link>
+          }
+        >
+          <div className="grid gap-5">
+            {epics.slice(0, 2).map((epic) => (
+              <EpicCard key={epic.path} epic={epic} projects={childProjects(epic.slug)} />
+            ))}
           </div>
         </Section>
       )}
