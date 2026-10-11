@@ -46,6 +46,10 @@ person is a new page automatically.
 from `projects/*.yml` and `people/*.yml` and commits it here whenever the registry changes, which
 triggers a rebuild.
 
+`releases/<slug>/<version>.yml` are written by each project's `Changelog` workflow
+(`reusable-changelog.yml` in `actions`) on its pushes to `main`: it tags the next version from
+conventional commits and commits the entry here, which triggers a rebuild.
+
 To add or change a project, edit the `.graphite.yml` in its repository; `platform` syncs it and
 compiles this file. Editing this file directly will be overwritten on the next sync. It is in
 `.prettierignore` for the same reason — its formatting belongs to the compiler.
