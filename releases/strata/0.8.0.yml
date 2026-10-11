@@ -1,0 +1,13 @@
+project: strata
+version: 0.8.0
+tag: v0.8.0
+previous: v0.7.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Save links as bookmarks with a read-later list and a reader view
+    commit: e245191
+    pr: 87
+    author: AmrMsCLL
