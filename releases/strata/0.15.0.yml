@@ -1,0 +1,13 @@
+project: strata
+version: 0.15.0
+tag: v0.15.0
+previous: v0.14.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Show the title first in agenda list entries
+    commit: 48bd7e2
+    pr: 99
+    author: AmrMsCLL
