@@ -1,0 +1,13 @@
+project: strata
+version: 0.15.1
+tag: v0.15.1
+previous: v0.15.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Layouts that broke on phones, even form spacing and graphite-ui 0.4.2
+    commit: 0a43ee6
+    pr: 100
+    author: AmrMsCLL
