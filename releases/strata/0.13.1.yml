@@ -1,0 +1,13 @@
+project: strata
+version: 0.13.1
+tag: v0.13.1
+previous: v0.13.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Gaps found in a full UI pass
+    commit: 9fd5393
+    pr: 96
+    author: AmrMsCLL
