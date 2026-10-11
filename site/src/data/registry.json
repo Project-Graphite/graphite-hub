@@ -1,6 +1,21 @@
 {
   "members": [
     {
+      "handle": "nier0o",
+      "github": "Nier0o",
+      "name": "Ahmed Saber",
+      "headline": null,
+      "bio": null,
+      "stack": [],
+      "links": [
+        {
+          "label": "github",
+          "url": "https://github.com/Nier0o"
+        }
+      ],
+      "path": "/members/nier0o"
+    },
+    {
       "handle": "amrmscll",
       "github": "AmrMsCLL",
       "name": "Amr El-Sheraey",
