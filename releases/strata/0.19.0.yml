@@ -1,0 +1,13 @@
+project: strata
+version: 0.19.0
+tag: v0.19.0
+previous: v0.18.0
+date: 2026-10-11
+title: null
+summary: null
+changes:
+  - type: added
+    text: Spending, with monthly budgets, statement import and shared splits
+    commit: 7d53b76
+    pr: 104
+    author: AmrMsCLL
