@@ -16,6 +16,10 @@ if (!token) {
 }
 
 const cut = process.argv.includes('--cut');
+const only = process.argv
+  .find((argument) => argument.startsWith('--repo='))
+  ?.slice('--repo='.length)
+  .toLowerCase();
 
 async function github(path, init = {}) {
   const response = await fetch(`https://api.github.com${path}`, {
@@ -173,7 +177,9 @@ async function nextRelease(project, inRepo, latest, branch) {
 }
 
 const { projects } = await loadRegistry();
-const repos = [...new Set(projects.map((project) => project.repo.toLowerCase()))].sort();
+const repos = [...new Set(projects.map((project) => project.repo.toLowerCase()))]
+  .filter((repo) => !only || repo === only)
+  .sort();
 const drafted = [];
 const tagged = [];
 const failed = [];
