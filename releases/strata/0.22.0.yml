@@ -1,0 +1,13 @@
+project: strata
+version: 0.22.0
+tag: v0.22.0
+previous: v0.21.0
+date: 2026-10-12
+title: null
+summary: null
+changes:
+  - type: added
+    text: To-do page across spaces and an addable To-do list widget
+    commit: ecada36
+    pr: 107
+    author: AmrMsCLL
