@@ -19,6 +19,9 @@ Member pages include every project they maintain or are credited on, including c
 | `/epics/<epic>/<slug>` | A project inside an epic |
 | `/projects` | Every standalone project |
 | `/projects/<slug>` | A standalone project: what it is, who built it, and where it runs |
+| `/changelog` | Every release of every project, newest first |
+| `/changelog/members/<handle>` | Releases of the projects a member owns |
+| `/changelog/epics/<slug>`, `/changelog/epics/<epic>/<slug>`, `/changelog/projects/<slug>` | One epic's or project's releases |
 
 The old short routes redirect permanently, so existing links continue to work. A deployed project
 runs at its own subdomain and its project page links to it — serving an app under a path would mean
@@ -26,8 +29,9 @@ every project had to be built knowing where it was mounted.
 
 ## Prerendering
 
-`npm run build` refreshes `src/data/github.json` (`scripts/fetch-github.mjs`), type-checks, builds
-the client and SSR bundles, then runs `scripts/prerender.mjs`, which renders every known route to a
+`npm run build` refreshes `src/data/github.json` (`scripts/fetch-github.mjs`), compiles
+`src/data/changelog.json` from `releases/` (`scripts/compile.mjs`), type-checks, builds the client
+and SSR bundles, then runs `scripts/prerender.mjs`, which renders every known route to a
 real `index.html` on disk.
 
 On a static host, prerendering means:
@@ -73,7 +77,7 @@ python ../../platform/scripts/compile.py src/data/registry.json
 | Path | What it is |
 | :--- | :--- |
 | `site/src/components/ProjectCard.tsx` | One project card |
-| `site/src/pages/` | Index, members, member, epics, projects, project and not-found pages |
+| `site/src/pages/` | Index, members, member, epics, projects, project, changelog, member changelog, project changelog and not-found pages |
 | `site/src/registry.ts` | Typed access to the compiled registry, and the route list |
 | `site/src/meta.ts` | Per-route title, description and canonical |
 | `site/src/entry-server.tsx` | Render entry used by prerendering |
@@ -91,9 +95,13 @@ Styling is Tailwind utilities in the markup. The palette is declared once as an 
 | Command | What it does |
 | :--- | :--- |
 | `npm run dev` | Dev server |
-| `npm run build` | Refresh GitHub profiles, type-check, build and prerender to `dist/` |
+| `npm run build` | Refresh GitHub profiles, compile the changelog, type-check, build and prerender to `dist/` |
+| `npm run preview` | Serve the built `dist/` |
+| `npm test` | Node test runner (`scripts/rules.test.mjs`) |
 | `npm run lint` | ESLint |
 | `npm run format:check` | Prettier |
+| `npm run sync:github` | Refresh `src/data/github.json` only |
+| `npm run sync:releases` | Draft missing `releases/` entries from GitHub tags (`GH_TOKEN`; `--cut` also tags untagged changes, `--repo=` limits to one repository) |
 
 ## Deployment
 
