@@ -1,0 +1,20 @@
+project: pixelpocket
+version: 0.2.0
+tag: v0.2.0
+previous: v0.1.1
+date: 2026-10-13
+title: null
+summary: null
+changes:
+  - type: added
+    text: Add route-based SEO metadata and crawl files
+    commit: e38c8e1
+    author: Omar-Mohamed24
+  - type: changed
+    text: Harden auth and account security flows
+    commit: 48fe78f
+    author: Omar-Mohamed24
+  - type: removed
+    text: Remove redundant inline comments
+    commit: 4f37569
+    author: Omar-Mohamed24
