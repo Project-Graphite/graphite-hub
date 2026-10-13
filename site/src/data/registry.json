@@ -193,6 +193,21 @@
       "path": "/members/bluocaroot"
     },
     {
+      "handle": "mahmoudhanyfathalla",
+      "github": "MahmoudHanyFathalla",
+      "name": "Mahmoud Hany Fathalla",
+      "headline": null,
+      "bio": null,
+      "stack": [],
+      "links": [
+        {
+          "label": "github",
+          "url": "https://github.com/MahmoudHanyFathalla"
+        }
+      ],
+      "path": "/members/mahmoudhanyfathalla"
+    },
+    {
       "handle": "omar-mohamed24",
       "github": "Omar-Mohamed24",
       "name": "Omar Mohamed",
@@ -332,7 +347,7 @@
       "listedOn": "2026-09-16",
       "showcase": {
         "problem": "Project Graphite needed an approachable application that visitors could use while proving the complete path from a browser through an API, persistent database and background worker.",
-        "approach": "Visitors submit public or private messages through Django. PostgreSQL stores them, Redis and Celery process them asynchronously, and moderation keeps messages private until an admin chooses to publish them. Coolify redeploys the Compose application when the main branch changes.",
+        "approach": "Visitors submit public or private messages through Django. PostgreSQL stores them, Redis and Celery process them asynchronously, and moderation keeps messages private until an admin chooses to publish them. Each main build publishes the images and records their tag in the platform repository, which deploys them.",
         "outcome": "The live lab demonstrates routing, TLS, application health, persistence, asynchronous work, administrator review and automatic deployment through one interaction visitors can understand.",
         "contributions": [
           {
@@ -376,7 +391,7 @@
         "contributions": [
           {
             "github": "AmrMsCLL",
-            "summary": "Designed and built the NestJS API, Prisma data model, React frontend, source integrations, backup import, release notifications and moderation, and owns the CI and Coolify deployment."
+            "summary": "Designed and built the NestJS API, Prisma data model, React frontend, source integrations, backup import, release notifications and moderation, and owns the CI and platform deployment."
           }
         ]
       },
