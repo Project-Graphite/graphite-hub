@@ -1,0 +1,12 @@
+project: pixelpocket
+version: 0.1.1
+tag: v0.1.1
+previous: v0.1.0
+date: 2026-10-13
+title: null
+summary: null
+changes:
+  - type: changed
+    text: Pad rack rows and preserve real client IP
+    commit: 26d9971
+    author: Omar-Mohamed24
