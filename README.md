@@ -97,16 +97,10 @@ Styling is Tailwind utilities in the markup. The palette is declared once as an 
 
 ## Deployment
 
-Cloudflare Pages, matching the registry entry in `platform`:
-
-| Setting | Value |
-| :--- | :--- |
-| Root directory | `site` |
-| Build command | `npm run build` |
-| Output directory | `dist` |
-| `NODE_VERSION` | `24` |
-
-Every push to `main` deploys. Every pull request gets its own preview URL.
+Every push to `main` that passes **Build** records the commit in `platform`
+(`tags/graphite-hub.json`). The platform **Deploy** workflow then builds `site` with `npm run build`
+on Node 24 and uploads `site/dist` to the `graphite-hub` Cloudflare Pages project, served at
+`project-graphite.com`. Pin a commit with `tag:` in `platform/deploy/graphite-hub/values.yaml`.
 
 ## Not built yet
 

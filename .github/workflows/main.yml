@@ -34,6 +34,14 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       - run: node scripts/check-routes.mjs
 
+  deploy:
+    name: Deploy
+    needs: build
+    uses: project-graphite/actions/.github/workflows/reusable-deploy.yml@main
+    with:
+      services: '["site"]'
+    secrets: inherit
+
   secrets:
     name: Secrets
     uses: project-graphite/actions/.github/workflows/reusable-gitleaks.yml@main
