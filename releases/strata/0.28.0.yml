@@ -1,0 +1,13 @@
+project: strata
+version: 0.28.0
+tag: v0.28.0
+previous: v0.27.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Add the Central Bank of Egypt EGP rate next to the ECB rates
+    commit: "0439606"
+    pr: 115
+    author: AmrMsCLL
