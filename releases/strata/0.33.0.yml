@@ -1,0 +1,13 @@
+project: strata
+version: 0.33.0
+tag: v0.33.0
+previous: v0.32.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Installment plans and credit card due dates with reminders
+    commit: 79b5a8e
+    pr: 120
+    author: AmrMsCLL
