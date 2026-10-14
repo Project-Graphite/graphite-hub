@@ -1,0 +1,13 @@
+project: strata
+version: 0.27.0
+tag: v0.27.0
+previous: v0.26.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Show today's events, followed calendars, renewals and birthdays alongside due tasks
+    commit: 877c3e8
+    pr: 114
+    author: AmrMsCLL
