@@ -1,0 +1,13 @@
+project: strata
+version: 0.37.0
+tag: v0.37.0
+previous: v0.36.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Dashboard background on every page, lighter header, tidier dashboard settings
+    commit: 9a4a636
+    pr: 124
+    author: AmrMsCLL
