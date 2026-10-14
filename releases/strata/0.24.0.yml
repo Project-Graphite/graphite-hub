@@ -1,0 +1,13 @@
+project: strata
+version: 0.24.0
+tag: v0.24.0
+previous: v0.23.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Day and week time grid, coloured entries, and details for followed calendar events
+    commit: 2c8c7e6
+    pr: 110
+    author: AmrMsCLL
