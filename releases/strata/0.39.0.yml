@@ -1,0 +1,13 @@
+project: strata
+version: 0.39.0
+tag: v0.39.0
+previous: v0.38.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Tabs and a lighter overview
+    commit: 32967c0
+    pr: 127
+    author: AmrMsCLL
