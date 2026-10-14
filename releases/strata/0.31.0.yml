@@ -1,0 +1,13 @@
+project: strata
+version: 0.31.0
+tag: v0.31.0
+previous: v0.30.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Editable categories per space and merchant rules
+    commit: 67cd007
+    pr: 118
+    author: AmrMsCLL
