@@ -1,0 +1,13 @@
+project: strata
+version: 0.23.0
+tag: v0.23.0
+previous: v0.22.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Recheck followed calendars when the agenda opens and every 15 minutes
+    commit: c7f988b
+    pr: 109
+    author: AmrMsCLL
