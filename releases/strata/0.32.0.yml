@@ -1,0 +1,13 @@
+project: strata
+version: 0.32.0
+tag: v0.32.0
+previous: v0.31.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Payday months, overall budget, rollover, daily allowance and budget alerts
+    commit: 70bf8ad
+    pr: 119
+    author: AmrMsCLL
