@@ -1,0 +1,13 @@
+project: strata
+version: 0.38.0
+tag: v0.38.0
+previous: v0.37.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Spending in the main areas, Tidy as an extra feature, Today in Agenda, full-width pages
+    commit: 0a32926
+    pr: 125
+    author: AmrMsCLL
