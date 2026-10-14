@@ -1,0 +1,13 @@
+project: strata
+version: 0.36.0
+tag: v0.36.0
+previous: v0.35.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: One-line quick add such as 120 talabat
+    commit: df7a28b
+    pr: 123
+    author: AmrMsCLL
