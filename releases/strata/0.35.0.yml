@@ -1,0 +1,13 @@
+project: strata
+version: 0.35.0
+tag: v0.35.0
+previous: v0.34.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Savings goals, assets and net worth
+    commit: "9536022"
+    pr: 122
+    author: AmrMsCLL
