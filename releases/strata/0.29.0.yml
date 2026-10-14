@@ -1,0 +1,13 @@
+project: strata
+version: 0.29.0
+tag: v0.29.0
+previous: v0.28.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Accounts and cards, with income, refunds and transfers
+    commit: 751cd7d
+    pr: 116
+    author: AmrMsCLL
