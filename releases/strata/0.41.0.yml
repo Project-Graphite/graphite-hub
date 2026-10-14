@@ -1,0 +1,13 @@
+project: strata
+version: 0.41.0
+tag: v0.41.0
+previous: v0.40.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Storage page with usage against the per-person quota
+    commit: 5f80f55
+    pr: 129
+    author: AmrMsCLL
