@@ -1,0 +1,13 @@
+project: strata
+version: 0.25.0
+tag: v0.25.0
+previous: v0.24.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Read Egyptian card exports, Arabic statements and two-month subscriptions
+    commit: 1c047ac
+    pr: 111
+    author: AmrMsCLL
