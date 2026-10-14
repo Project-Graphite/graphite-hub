@@ -1,0 +1,13 @@
+project: strata
+version: 0.34.0
+tag: v0.34.0
+previous: v0.33.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Insights page, CSV export and Home widgets for spending and payments
+    commit: "4698069"
+    pr: 121
+    author: AmrMsCLL
