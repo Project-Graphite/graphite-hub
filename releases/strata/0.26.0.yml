@@ -1,0 +1,13 @@
+project: strata
+version: 0.26.0
+tag: v0.26.0
+previous: v0.25.0
+date: 2026-10-14
+title: null
+summary: null
+changes:
+  - type: added
+    text: Free grid with drag and resize, card look, optional fixed height and dashboard backgrounds
+    commit: 3767b85
+    pr: 112
+    author: AmrMsCLL
