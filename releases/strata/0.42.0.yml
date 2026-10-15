@@ -1,0 +1,13 @@
+project: strata
+version: 0.42.0
+tag: v0.42.0
+previous: v0.41.0
+date: 2026-10-15
+title: null
+summary: null
+changes:
+  - type: added
+    text: 12-hour or 24-hour time; 150 MB default storage limit
+    commit: 8b75e2e
+    pr: 130
+    author: AmrMsCLL
