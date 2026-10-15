@@ -1,0 +1,13 @@
+project: strata
+version: 0.44.0
+tag: v0.44.0
+previous: v0.43.0
+date: 2026-10-15
+title: null
+summary: null
+changes:
+  - type: added
+    text: Steady sidebar, Spending tab, icon-only header actions, Journal behind Pages, nested pages
+    commit: 62ac44d
+    pr: 133
+    author: AmrMsCLL
