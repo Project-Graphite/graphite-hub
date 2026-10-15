@@ -1,0 +1,13 @@
+project: strata
+version: 0.45.0
+tag: v0.45.0
+previous: v0.44.0
+date: 2026-10-15
+title: null
+summary: null
+changes:
+  - type: added
+    text: Admin page with site settings and every account
+    commit: 00a2c5f
+    pr: 134
+    author: AmrMsCLL
