@@ -1,0 +1,13 @@
+project: strata
+version: 0.45.1
+tag: v0.45.1
+previous: v0.45.0
+date: 2026-10-15
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Animate the sidebar again; journal entries get their own Pages tab
+    commit: 9aaab0d
+    pr: 141
+    author: AmrMsCLL
