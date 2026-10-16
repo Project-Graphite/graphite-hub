@@ -1,0 +1,13 @@
+project: strata
+version: 0.47.0
+tag: v0.47.0
+previous: v0.46.6
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: added
+    text: Budgets only when set, category chart, categories in the menu
+    commit: d861761
+    pr: 151
+    author: AmrMsCLL
