@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 0.5.0
+tag: v0.5.0
+previous: v0.4.3
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Undo snacks, danger confirms, safer dialogs and phone-friendly tabs, popovers and touch
+      targets (0.5.0)
+    commit: e4423e1
+    author: AmrMsCLL
