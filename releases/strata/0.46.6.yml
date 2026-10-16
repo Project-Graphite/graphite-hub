@@ -1,0 +1,13 @@
+project: strata
+version: 0.46.6
+tag: v0.46.6
+previous: v0.46.5
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Date beside the heading, no quick add, full-width insights, edit recurring in place
+    commit: 361cdc1
+    pr: 150
+    author: AmrMsCLL
