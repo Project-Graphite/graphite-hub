@@ -1,0 +1,13 @@
+project: strata
+version: 0.48.0
+tag: v0.48.0
+previous: v0.47.0
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: added
+    text: Keep the card ending on each expense and show spending per card
+    commit: 53d7c61
+    pr: 152
+    author: AmrMsCLL
