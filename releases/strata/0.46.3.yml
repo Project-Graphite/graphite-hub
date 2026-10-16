@@ -1,0 +1,23 @@
+project: strata
+version: 0.46.3
+tag: v0.46.3
+previous: v0.46.2
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Strip metadata from GIFs and from every JPEG segment and trailer
+    commit: 35c44c5
+    pr: 149
+    author: AmrMsCLL
+  - type: fixed
+    text: Revoke the calendar link and turn off webhooks when securing an account
+    commit: f5534ef
+    pr: 148
+    author: AmrMsCLL
+  - type: fixed
+    text: Bound outbound fetches and keep webhook deliveries behind other jobs
+    commit: 364ff69
+    pr: 147
+    author: AmrMsCLL
