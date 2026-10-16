@@ -1,0 +1,12 @@
+project: strata
+version: 0.46.0
+tag: v0.46.0
+previous: v0.45.4
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: added
+    text: Move pages and boards to the trash and name browser tabs
+    commit: 4b52840
+    author: AmrMsCLL
