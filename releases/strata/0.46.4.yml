@@ -1,0 +1,12 @@
+project: strata
+version: 0.46.4
+tag: v0.46.4
+previous: v0.46.3
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Make agenda, dashboard, notes and list rows usable on phones and touch tablets
+    commit: cc53a0b
+    author: AmrMsCLL
