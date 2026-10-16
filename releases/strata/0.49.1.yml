@@ -1,0 +1,13 @@
+project: strata
+version: 0.49.1
+tag: v0.49.1
+previous: v0.49.0
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Open subscriptions from the agenda and search on the Recurring tab
+    commit: 823f820
+    pr: 153
+    author: AmrMsCLL
