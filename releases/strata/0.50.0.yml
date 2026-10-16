@@ -1,0 +1,13 @@
+project: strata
+version: 0.50.0
+tag: v0.50.0
+previous: v0.49.2
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: added
+    text: Pick what an expense was paid with from saved cards and online methods
+    commit: 9a37678
+    pr: 154
+    author: AmrMsCLL
