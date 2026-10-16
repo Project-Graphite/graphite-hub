@@ -1,0 +1,16 @@
+project: strata
+version: 0.51.0
+tag: v0.51.0
+previous: v0.50.0
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Keep page content inside narrow screens
+    commit: 790e68f
+    author: AmrMsCLL
+  - type: added
+    text: Keep quick notes alongside pages and save them from Home
+    commit: ec913f8
+    author: AmrMsCLL
