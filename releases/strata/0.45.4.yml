@@ -1,0 +1,12 @@
+project: strata
+version: 0.45.4
+tag: v0.45.4
+previous: v0.45.3
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Stop session refresh locking out everyone behind one address
+    commit: 84aaee1
+    author: AmrMsCLL
