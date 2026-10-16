@@ -1,0 +1,12 @@
+project: strata
+version: 0.45.3
+tag: v0.45.3
+previous: v0.45.2
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Stop raw values leaking into the UI and fix nav, layout and state bugs
+    commit: c404e28
+    author: AmrMsCLL
