@@ -1,0 +1,12 @@
+project: strata
+version: 0.45.2
+tag: v0.45.2
+previous: v0.45.1
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Accept numeric timestamps from the SMS forwarder
+    commit: 1d0a644
+    author: AmrMsCLL
