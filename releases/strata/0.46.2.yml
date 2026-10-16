@@ -1,0 +1,18 @@
+project: strata
+version: 0.46.2
+tag: v0.46.2
+previous: v0.46.1
+date: 2026-10-16
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Revoke what removed members left behind and scope shared files
+    commit: 5a8bed2
+    pr: 146
+    author: AmrMsCLL
+  - type: fixed
+    text: Tighten sign-in origin checks and password confirmation limits
+    commit: 5d04c9b
+    pr: 145
+    author: AmrMsCLL
