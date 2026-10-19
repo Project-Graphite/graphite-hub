@@ -1,0 +1,24 @@
+project: graphite-ui
+version: 0.6.0-rc.1
+tag: v0.6.0-rc.1
+previous: v0.5.1
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: added
+    text: Restyle DatePicker with Material UI parts
+    commit: e8bed4b
+    author: AmrMsCLL
+  - type: added
+    text: Build tabs, pagination, the shell's tab bar and the display pieces on Material UI
+    commit: 3bac782
+    author: AmrMsCLL
+  - type: added
+    text: Build dialogs, menus, popovers, the command palette and snackbars on Material UI
+    commit: 676c272
+    author: AmrMsCLL
+  - type: added
+    text: Build the theme, provider, buttons and form fields on Material UI
+    commit: f5f913f
+    author: AmrMsCLL
