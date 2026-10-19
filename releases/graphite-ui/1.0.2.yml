@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 1.0.2
+tag: v1.0.2
+previous: v1.0.1
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Graphite surfaces for dialogs and popovers, optional field labels (1.0.2)
+    commit: df8ee60
+    pr: 20
+    author: AmrMsCLL
