@@ -1,0 +1,13 @@
+project: strata
+version: 0.52.5
+tag: v0.52.5
+previous: v0.52.4
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Working widget menus, steady edit mode and loading, backdrop on every page
+    commit: 0169bbd
+    pr: 161
+    author: AmrMsCLL
