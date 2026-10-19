@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 1.1.1
+tag: v1.1.1
+previous: v1.1.0
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Stop MUI's scroll lock from shifting the page (1.1.1)
+    commit: bf8eb0e
+    pr: 23
+    author: AmrMsCLL
