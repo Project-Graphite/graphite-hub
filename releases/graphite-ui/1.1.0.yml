@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 1.1.0
+tag: v1.1.0
+previous: v1.0.3
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: added
+    text: Graphite colours across the MUI components and a smooth sidebar collapse (1.1.0)
+    commit: cc1e7e0
+    pr: 22
+    author: AmrMsCLL
