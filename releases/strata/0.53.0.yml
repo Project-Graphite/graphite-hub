@@ -1,0 +1,13 @@
+project: strata
+version: 0.53.0
+tag: v0.53.0
+previous: v0.52.5
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: added
+    text: Every app is a feature you can turn on, off and reorder; Trash moves to settings
+    commit: 2e0ddb8
+    pr: 162
+    author: AmrMsCLL
