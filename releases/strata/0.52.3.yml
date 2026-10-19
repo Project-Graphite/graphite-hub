@@ -1,0 +1,13 @@
+project: strata
+version: 0.52.3
+tag: v0.52.3
+previous: v0.52.2
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Placeholder-only fields where a heading already names them, graphite-ui 1.0.2
+    commit: 2f53721
+    pr: 159
+    author: AmrMsCLL
