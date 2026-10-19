@@ -1,0 +1,13 @@
+project: strata
+version: 0.52.2
+tag: v0.52.2
+previous: v0.52.1
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Give MUI styles a per-request CSP nonce
+    commit: c7fb923
+    pr: 158
+    author: AmrMsCLL
