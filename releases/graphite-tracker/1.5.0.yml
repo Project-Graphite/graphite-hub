@@ -1,0 +1,13 @@
+project: graphite-tracker
+version: 1.5.0
+tag: v1.5.0
+previous: v1.4.1
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: added
+    text: UI on Material UI with graphite-ui 1.0.0
+    commit: ded3923
+    pr: 25
+    author: AmrMsCLL
