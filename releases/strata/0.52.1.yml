@@ -1,0 +1,13 @@
+project: strata
+version: 0.52.1
+tag: v0.52.1
+previous: v0.52.0
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: changed
+    text: Feat/mui migration
+    commit: ced4070
+    pr: 157
+    author: AmrMsCLL
