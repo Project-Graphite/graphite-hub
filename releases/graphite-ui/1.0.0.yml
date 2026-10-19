@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 1.0.0
+tag: v1.0.0
+previous: v0.6.0-rc.3
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: breaking
+    text: Components on Material UI (1.0.0)
+    commit: 5cc78be
+    pr: 18
+    author: AmrMsCLL
