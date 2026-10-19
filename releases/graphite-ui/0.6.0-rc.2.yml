@@ -1,0 +1,12 @@
+project: graphite-ui
+version: 0.6.0-rc.2
+tag: v0.6.0-rc.2
+previous: v0.6.0-rc.1
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: added
+    text: Checkbox, Radio and Material UI menu and popover triggers
+    commit: 79b6234
+    author: AmrMsCLL
