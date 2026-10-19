@@ -1,0 +1,13 @@
+project: strata
+version: 0.52.4
+tag: v0.52.4
+previous: v0.52.3
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Restore the floating field labels, graphite-ui 1.0.3
+    commit: 7d4f8a6
+    pr: 160
+    author: AmrMsCLL
