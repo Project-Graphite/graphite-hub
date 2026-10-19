@@ -1,0 +1,13 @@
+project: graphite-tracker
+version: 1.5.2
+tag: v1.5.2
+previous: v1.5.1
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Restore the floating field labels, graphite-ui 1.0.3
+    commit: 7533f37
+    pr: 27
+    author: AmrMsCLL
