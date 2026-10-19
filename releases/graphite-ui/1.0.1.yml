@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 1.0.1
+tag: v1.0.1
+previous: v1.0.0
+date: 2026-10-19
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Pass the page's CSP nonce to the MUI style cache (1.0.1)
+    commit: 1c37b08
+    pr: 19
+    author: AmrMsCLL
