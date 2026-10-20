@@ -1,0 +1,13 @@
+project: strata
+version: 0.53.1
+tag: v0.53.1
+previous: v0.53.0
+date: 2026-10-20
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Mobile layout and one drag-and-drop area for apps in settings
+    commit: 09e7ba4
+    pr: 163
+    author: AmrMsCLL
