@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 1.2.0
+tag: v1.2.0
+previous: v1.1.1
+date: 2026-10-20
+title: null
+summary: null
+changes:
+  - type: added
+    text: Motion across the shell, overlays and controls (1.2.0)
+    commit: f332716
+    pr: 24
+    author: AmrMsCLL
