@@ -1,0 +1,13 @@
+project: strata
+version: 0.54.0
+tag: v0.54.0
+previous: v0.53.1
+date: 2026-10-20
+title: null
+summary: null
+changes:
+  - type: added
+    text: Widget minimum sizes, Organise, new widgets and empty states
+    commit: cf00773
+    pr: 164
+    author: AmrMsCLL
