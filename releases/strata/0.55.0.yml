@@ -1,0 +1,13 @@
+project: strata
+version: 0.55.0
+tag: v0.55.0
+previous: v0.54.0
+date: 2026-10-20
+title: null
+summary: null
+changes:
+  - type: added
+    text: Page transitions and motion across Strata, graphite-ui 1.2.0
+    commit: b061cde
+    pr: 165
+    author: AmrMsCLL
