@@ -1,0 +1,13 @@
+project: strata
+version: 0.56.0
+tag: v0.56.0
+previous: v0.55.0
+date: 2026-10-20
+title: null
+summary: null
+changes:
+  - type: added
+    text: Skeletons that mirror the loaded layout, with seamless empty states
+    commit: c8e0a92
+    pr: 166
+    author: AmrMsCLL
