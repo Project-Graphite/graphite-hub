@@ -1,0 +1,12 @@
+project: stack-switch
+version: 2.4.0
+tag: stack-switch/v2.4.0
+previous: stack-switch/v2.3.1
+date: 2026-10-20
+title: null
+summary: null
+changes:
+  - type: added
+    text: Move all stack-switch UI into the panel
+    commit: b298f86
+    author: AmrMsCLL
