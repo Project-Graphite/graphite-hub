@@ -1,0 +1,12 @@
+project: stack-switch
+version: 2.4.1
+tag: stack-switch/v2.4.1
+previous: stack-switch/v2.4.0
+date: 2026-10-20
+title: null
+summary: null
+changes:
+  - type: changed
+    text: Update stack-switch.wh.cpp
+    commit: 7ff0413
+    author: AmrMsCLL
