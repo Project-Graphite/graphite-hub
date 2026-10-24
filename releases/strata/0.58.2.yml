@@ -1,0 +1,12 @@
+project: strata
+version: 0.58.2
+tag: v0.58.2
+previous: v0.58.1
+date: 2026-10-24
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Read SMS chats via notification listener to pass Play Protect
+    commit: ec561ed
+    author: AmrMsCLL
