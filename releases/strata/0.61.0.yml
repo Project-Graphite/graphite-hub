@@ -1,0 +1,24 @@
+project: strata
+version: 0.61.0
+tag: v0.61.0
+previous: v0.60.1
+date: 2026-10-24
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Apply the selected dashboard visual patterns
+    commit: 9cdb803
+    author: AmrMsCLL
+  - type: fixed
+    text: Remove the current-month shortcut from overview
+    commit: "4134239"
+    author: AmrMsCLL
+  - type: added
+    text: Use one space selection across workspace apps
+    commit: 76f432d
+    author: AmrMsCLL
+  - type: added
+    text: Support scoped aggregate workspace reads
+    commit: b3fe509
+    author: AmrMsCLL
