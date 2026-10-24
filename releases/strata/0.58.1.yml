@@ -1,0 +1,20 @@
+project: strata
+version: 0.58.1
+tag: v0.58.1
+previous: v0.58.0
+date: 2026-10-24
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Wrap list item content on mobile
+    commit: "8876e69"
+    author: AmrMsCLL
+  - type: fixed
+    text: Skip page transitions on touch screens
+    commit: 5f8ddc6
+    author: AmrMsCLL
+  - type: fixed
+    text: Constrain mobile layouts and improve touch controls
+    commit: bbe4b10
+    author: AmrMsCLL
