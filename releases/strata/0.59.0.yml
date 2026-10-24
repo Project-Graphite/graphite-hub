@@ -1,0 +1,24 @@
+project: strata
+version: 0.59.0
+tag: v0.59.0
+previous: v0.58.2
+date: 2026-10-24
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Use Strata logo for Android adaptive and mipmap launcher icons
+    commit: b60e50e
+    author: AmrMsCLL
+  - type: added
+    text: Add a visual pattern comparison page
+    commit: 6e0dff0
+    author: AmrMsCLL
+  - type: fixed
+    text: Restore color backdrops and constrain page navigation
+    commit: 7ab75b0
+    author: AmrMsCLL
+  - type: fixed
+    text: Serialize session refresh across browser tabs
+    commit: 041f4f5
+    author: AmrMsCLL
