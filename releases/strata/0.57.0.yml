@@ -1,0 +1,44 @@
+project: strata
+version: 0.57.0
+tag: v0.57.0
+previous: v0.56.0
+date: 2026-10-24
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Remove decorative dashboard gradients and effects
+    commit: 3cbe32b
+    author: AmrMsCLL
+  - type: fixed
+    text: Simplify sharing controls and labels
+    commit: 745a549
+    author: AmrMsCLL
+  - type: fixed
+    text: Remove the automatic heading outline
+    commit: "8252775"
+    author: AmrMsCLL
+  - type: fixed
+    text: Disable dragging ordinary text
+    commit: 1d97332
+    author: AmrMsCLL
+  - type: fixed
+    text: Keep slash-menu keyboard selection visible
+    commit: 07702b1
+    author: AmrMsCLL
+  - type: fixed
+    text: Stabilize save feedback and responsive editor layout
+    commit: 14ee104
+    author: AmrMsCLL
+  - type: fixed
+    text: Use sentence case for website actions
+    commit: caa389f
+    author: AmrMsCLL
+  - type: added
+    text: Preview and resume linked Markdown imports
+    commit: af439a0
+    author: AmrMsCLL
+  - type: added
+    text: Add durable collaboration and page-scoped access
+    commit: 88475b6
+    author: AmrMsCLL
