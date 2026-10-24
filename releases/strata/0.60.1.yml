@@ -1,0 +1,12 @@
+project: strata
+version: 0.60.1
+tag: v0.60.1
+previous: v0.60.0
+date: 2026-10-24
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Isolate capture classes from standard APK and use clean applicationId
+    commit: e1fcc54
+    author: AmrMsCLL
