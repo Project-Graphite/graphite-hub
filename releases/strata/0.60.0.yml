@@ -1,0 +1,12 @@
+project: strata
+version: 0.60.0
+tag: v0.60.0
+previous: v0.59.0
+date: 2026-10-24
+title: null
+summary: null
+changes:
+  - type: added
+    text: Split Play Protect-clean standard APK and capture APK flavors
+    commit: 7fca7a5
+    author: AmrMsCLL
