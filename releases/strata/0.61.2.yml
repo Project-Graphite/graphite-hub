@@ -1,0 +1,12 @@
+project: strata
+version: 0.61.2
+tag: v0.61.2
+previous: v0.61.1
+date: 2026-10-25
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Load production strata origin in capacitor android webview
+    commit: 8ea4f90
+    author: AmrMsCLL
