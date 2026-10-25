@@ -1,0 +1,12 @@
+project: strata
+version: 0.62.1
+tag: v0.62.1
+previous: v0.62.0
+date: 2026-10-25
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Align mobile tab icons with selection indicators
+    commit: "1212751"
+    author: AmrMsCLL
