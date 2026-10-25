@@ -1,0 +1,16 @@
+project: strata
+version: 0.62.0
+tag: v0.62.0
+previous: v0.61.2
+date: 2026-10-25
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Stack public landing actions on mobile
+    commit: 28094c6
+    author: AmrMsCLL
+  - type: added
+    text: Move workspace selection and breadcrumbs into navbar
+    commit: 94c5695
+    author: AmrMsCLL
