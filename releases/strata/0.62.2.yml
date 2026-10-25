@@ -1,0 +1,12 @@
+project: strata
+version: 0.62.2
+tag: v0.62.2
+previous: v0.62.1
+date: 2026-10-25
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Unify android capture into main apk and streamline native phone setup
+    commit: 7cd1b50
+    author: AmrMsCLL
