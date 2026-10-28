@@ -1,0 +1,13 @@
+project: strata
+version: 0.64.1
+tag: v0.64.1
+previous: v0.64.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: changed
+    text: Lazy routes, vendor chunks and a bundle budget
+    commit: 0149e3b
+    pr: 171
+    author: AmrMsCLL
