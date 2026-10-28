@@ -1,0 +1,14 @@
+project: strata
+version: 0.64.0
+tag: v0.64.0
+previous: v0.63.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Compress responses, validate TRUST_PROXY, no-store API and real files for robots, sitemap and
+      llms
+    commit: febea6d
+    pr: 170
+    author: AmrMsCLL
