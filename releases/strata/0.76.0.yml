@@ -1,0 +1,13 @@
+project: strata
+version: 0.76.0
+tag: v0.76.0
+previous: v0.75.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Page-height calendar grid with drag to create, move and resize, a Day view and an event sheet
+    commit: c38363d
+    pr: 190
+    author: AmrMsCLL
