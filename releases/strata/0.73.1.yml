@@ -1,0 +1,13 @@
+project: strata
+version: 0.73.1
+tag: v0.73.1
+previous: v0.73.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: changed
+    text: Cheaper editor and realtime hot paths, no drag and drop in the editor
+    commit: 5bc5428
+    pr: 187
+    author: AmrMsCLL
