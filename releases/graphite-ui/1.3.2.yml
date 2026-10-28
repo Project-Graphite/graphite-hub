@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 1.3.2
+tag: v1.3.2
+previous: v1.3.1
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Outage copy per cause and IconButton target and rel (1.3.2)
+    commit: 7d1a4d9
+    pr: 31
+    author: AmrMsCLL
