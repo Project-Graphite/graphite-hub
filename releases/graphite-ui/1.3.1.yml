@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 1.3.1
+tag: v1.3.1
+previous: v1.3.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: One continuous border under tabs in PageActionsRow, typed IconButton href (1.3.1)
+    commit: c575c24
+    pr: 30
+    author: AmrMsCLL
