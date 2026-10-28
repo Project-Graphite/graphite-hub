@@ -1,0 +1,13 @@
+project: strata
+version: 0.69.1
+tag: v0.69.1
+previous: v0.69.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: One date format, quiet metadata lines, an Overdue label and a focus ring on page titles
+    commit: db1739d
+    pr: 181
+    author: AmrMsCLL
