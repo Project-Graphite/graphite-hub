@@ -1,0 +1,13 @@
+project: strata
+version: 0.74.0
+tag: v0.74.0
+previous: v0.73.1
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Money model with account kinds, cards, merchants, balance history and 64-bit amounts
+    commit: a0e30ca
+    pr: 185
+    author: AmrMsCLL
