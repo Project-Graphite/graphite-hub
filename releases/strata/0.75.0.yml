@@ -1,0 +1,13 @@
+project: strata
+version: 0.75.0
+tag: v0.75.0
+previous: v0.74.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Grouped list, task sheet, quick-add suggestions, board view and phone swipe
+    commit: af9a7ad
+    pr: 189
+    author: AmrMsCLL
