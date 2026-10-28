@@ -1,0 +1,13 @@
+project: strata
+version: 0.71.0
+tag: v0.71.0
+previous: v0.70.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Report 500s to Sentry and expose Prometheus metrics behind a token
+    commit: a4e2a1d
+    pr: 183
+    author: AmrMsCLL
