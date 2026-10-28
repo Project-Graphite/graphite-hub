@@ -1,0 +1,14 @@
+project: strata
+version: 0.77.0
+tag: v0.77.0
+previous: v0.76.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Capture v2 with confidence gate, dedup, confirmed transfer pairing, learned rules and parsing
+      reports
+    commit: 4ff8150
+    pr: 191
+    author: AmrMsCLL
