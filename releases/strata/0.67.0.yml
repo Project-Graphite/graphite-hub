@@ -1,0 +1,13 @@
+project: strata
+version: 0.67.0
+tag: v0.67.0
+previous: v0.66.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Authentication on by default with a global guard and explicit public routes
+    commit: 818e10b
+    pr: 176
+    author: AmrMsCLL
