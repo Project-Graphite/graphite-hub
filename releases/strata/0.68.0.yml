@@ -1,0 +1,18 @@
+project: strata
+version: 0.68.0
+tag: v0.68.0
+previous: v0.67.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Per-sender SMS templates for six institutions with a corpus harness
+    commit: 9e4696c
+    pr: 178
+    author: AmrMsCLL
+  - type: added
+    text: Correlate 500s with a request id and log slow or failed queries
+    commit: ea2bec5
+    pr: 177
+    author: AmrMsCLL
