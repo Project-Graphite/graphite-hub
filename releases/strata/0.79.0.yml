@@ -1,0 +1,13 @@
+project: strata
+version: 0.79.0
+tag: v0.79.0
+previous: v0.78.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Now strip with next event, due today, safe to spend and Needs you chips from one GET /me/home
+    commit: 9f1fdda
+    pr: 193
+    author: AmrMsCLL
