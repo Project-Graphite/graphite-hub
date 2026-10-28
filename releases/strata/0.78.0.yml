@@ -1,0 +1,13 @@
+project: strata
+version: 0.78.0
+tag: v0.78.0
+previous: v0.77.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Selection bubble menu, grouped slash menu, columns, callout tints and code highlighting
+    commit: 6ab45a9
+    pr: 192
+    author: AmrMsCLL
