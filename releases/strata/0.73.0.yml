@@ -1,0 +1,13 @@
+project: strata
+version: 0.73.0
+tag: v0.73.0
+previous: v0.72.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: SMS templates for the remaining eighteen institutions
+    commit: 85d7395
+    pr: 186
+    author: AmrMsCLL
