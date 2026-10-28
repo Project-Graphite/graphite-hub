@@ -1,0 +1,13 @@
+project: strata
+version: 0.66.0
+tag: v0.66.0
+previous: v0.65.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Designed 404, themed offline and maintenance pages, crash report link
+    commit: 37d8191
+    pr: 175
+    author: AmrMsCLL
