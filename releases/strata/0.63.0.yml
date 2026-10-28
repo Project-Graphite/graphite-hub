@@ -1,0 +1,13 @@
+project: strata
+version: 0.63.0
+tag: v0.63.0
+previous: v0.62.2
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Page actions share the tabs row, auth pages on one panel frame
+    commit: 2e160c2
+    pr: 169
+    author: AmrMsCLL
