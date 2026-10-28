@@ -1,0 +1,13 @@
+project: strata
+version: 0.64.2
+tag: v0.64.2
+previous: v0.64.1
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: changed
+    text: Share resource requests and refresh calendars once per 15 minutes
+    commit: 491d33b
+    pr: 172
+    author: AmrMsCLL
