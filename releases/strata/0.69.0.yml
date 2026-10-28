@@ -1,0 +1,14 @@
+project: strata
+version: 0.69.0
+tag: v0.69.0
+previous: v0.68.0
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Default write limit and stream cap, Redis state logging, safer cookies, HSTS preload and
+      per-address sign-in lockout
+    commit: 96a86aa
+    pr: 179
+    author: AmrMsCLL
