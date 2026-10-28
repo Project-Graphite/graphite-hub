@@ -1,0 +1,19 @@
+project: strata
+version: 0.65.0
+tag: v0.65.0
+previous: v0.64.2
+date: 2026-10-28
+title: null
+summary: null
+changes:
+  - type: added
+    text: Meta description, Open Graph, canonical, JSON-LD and a social image
+    commit: 265fe29
+    pr: 174
+    author: AmrMsCLL
+  - type: changed
+    text: One blurred backdrop layer on Home, scroll only on area change, steady time grid and a
+      shell-only precache
+    commit: 8a9b2af
+    pr: 173
+    author: AmrMsCLL
