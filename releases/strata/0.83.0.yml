@@ -1,0 +1,14 @@
+project: strata
+version: 0.83.0
+tag: v0.83.0
+previous: v0.82.0
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: added
+    text: Image resize, captions and alt text, file attachments, PDF preview, embeds, contents block,
+      page links and people mentions
+    commit: 76cb840
+    pr: 204
+    author: AmrMsCLL
