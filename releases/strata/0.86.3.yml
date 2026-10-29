@@ -1,0 +1,13 @@
+project: strata
+version: 0.86.3
+tag: v0.86.3
+previous: v0.86.2
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Give the editor's injected base styles the page's CSP nonce
+    commit: "5473382"
+    pr: 213
+    author: AmrMsCLL
