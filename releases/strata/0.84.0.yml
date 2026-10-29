@@ -1,0 +1,13 @@
+project: strata
+version: 0.84.0
+tag: v0.84.0
+previous: v0.83.0
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: added
+    text: Overview with a Now block, review cards, balances by account and live updates
+    commit: c2d6717
+    pr: 201
+    author: AmrMsCLL
