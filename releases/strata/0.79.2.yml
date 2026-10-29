@@ -1,0 +1,13 @@
+project: strata
+version: 0.79.2
+tag: v0.79.2
+previous: v0.79.1
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: changed
+    text: Send finished strokes once, reconcile changed keys and store thumbnails at save
+    commit: 201fea8
+    pr: 197
+    author: AmrMsCLL
