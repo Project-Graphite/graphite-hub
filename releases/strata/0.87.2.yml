@@ -1,0 +1,14 @@
+project: strata
+version: 0.87.2
+tag: v0.87.2
+previous: v0.87.1
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Page scroll ends above the tab bar, exclusive row and tab swipes, compact phone header, Legal
+      only in Settings
+    commit: ba561a8
+    pr: 221
+    author: AmrMsCLL
