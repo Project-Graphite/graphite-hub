@@ -1,0 +1,13 @@
+project: strata
+version: 0.87.0
+tag: v0.87.0
+previous: v0.86.3
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: added
+    text: Accounts grouped by kind with their cards, handles, funding, balance history and reconcile
+    commit: 39f614f
+    pr: 209
+    author: AmrMsCLL
