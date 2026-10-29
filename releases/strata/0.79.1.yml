@@ -1,0 +1,13 @@
+project: strata
+version: 0.79.1
+tag: v0.79.1
+previous: v0.79.0
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: The dashboard background shows on every page, with cards, stats and notices tinted alike
+    commit: 76b1d66
+    pr: 196
+    author: AmrMsCLL
