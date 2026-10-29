@@ -1,0 +1,13 @@
+project: graphite-ui
+version: 1.3.3
+tag: v1.3.3
+previous: v1.3.2
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: No keyboard on touch when a dialog or sheet opens, native scrollbars on touch (1.3.3)
+    commit: e239648
+    pr: 32
+    author: AmrMsCLL
