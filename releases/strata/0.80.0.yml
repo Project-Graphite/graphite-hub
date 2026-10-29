@@ -1,0 +1,14 @@
+project: strata
+version: 0.80.0
+tag: v0.80.0
+previous: v0.79.2
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: added
+    text: Private, reliable Android capture with sender allow-list, retrying outbox and re-authenticated
+      90-day phone tokens
+    commit: 57759a2
+    pr: 199
+    author: AmrMsCLL
