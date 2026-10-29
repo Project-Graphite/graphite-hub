@@ -1,0 +1,14 @@
+project: strata
+version: 0.86.0
+tag: v0.86.0
+previous: v0.85.0
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: added
+    text: Page covers, full width by default with a narrow option, presence in the title row, collapsed
+      sections and a Pages tree
+    commit: 697ee41
+    pr: 210
+    author: AmrMsCLL
