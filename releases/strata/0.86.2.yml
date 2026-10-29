@@ -1,0 +1,13 @@
+project: strata
+version: 0.86.2
+tag: v0.86.2
+previous: v0.86.1
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Free a live update stream's place when the server ends it
+    commit: 802d742
+    pr: 215
+    author: AmrMsCLL
