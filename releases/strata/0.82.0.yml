@@ -1,0 +1,14 @@
+project: strata
+version: 0.82.0
+tag: v0.82.0
+previous: v0.81.0
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: added
+    text: Audit share links, page grants, webhooks, roles, admin and deletions; alert on refresh token
+      reuse; hashed network context on auth events; sealed capture suggestions
+    commit: f0ad65e
+    pr: 205
+    author: AmrMsCLL
