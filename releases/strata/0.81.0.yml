@@ -1,0 +1,13 @@
+project: strata
+version: 0.81.0
+tag: v0.81.0
+previous: v0.80.0
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: added
+    text: Cut time format, app tiles and push groups; space Overview tab and week start in calendars
+    commit: 88ad010
+    pr: 200
+    author: AmrMsCLL
