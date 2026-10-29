@@ -1,0 +1,13 @@
+project: strata
+version: 0.86.1
+tag: v0.86.1
+previous: v0.86.0
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Reachable tabs with swipe, phone-sized dialogs, 44px targets and a bordered space switcher
+    commit: a738d62
+    pr: 212
+    author: AmrMsCLL
