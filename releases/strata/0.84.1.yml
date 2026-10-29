@@ -1,0 +1,13 @@
+project: strata
+version: 0.84.1
+tag: v0.84.1
+previous: v0.84.0
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Empty, loading and error states for every data region, one h1 per page
+    commit: 4e311e2
+    pr: 207
+    author: AmrMsCLL
