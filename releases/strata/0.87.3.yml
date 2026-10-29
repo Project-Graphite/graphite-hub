@@ -1,0 +1,13 @@
+project: strata
+version: 0.87.3
+tag: v0.87.3
+previous: v0.87.2
+date: 2026-10-29
+title: null
+summary: null
+changes:
+  - type: changed
+    text: Parallel first data, route preloads, smaller first load and transition-rendered updates
+    commit: 57181c7
+    pr: 222
+    author: AmrMsCLL
