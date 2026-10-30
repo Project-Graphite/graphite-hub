@@ -1,0 +1,13 @@
+project: strata
+version: 0.87.4
+tag: v0.87.4
+previous: v0.87.3
+date: 2026-10-30
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Identical phone header, 7-day phone week, row-safe tab swipe, update check on resume
+    commit: faaa7cc
+    pr: 226
+    author: AmrMsCLL
