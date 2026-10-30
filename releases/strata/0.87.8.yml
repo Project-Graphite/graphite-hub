@@ -1,0 +1,13 @@
+project: strata
+version: 0.87.8
+tag: v0.87.8
+previous: v0.87.7
+date: 2026-10-30
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Settings, spaces, people, goals, recipes, trips, tidy, wall and public pages consistency pass
+    commit: ffc5ab6
+    pr: 229
+    author: AmrMsCLL
