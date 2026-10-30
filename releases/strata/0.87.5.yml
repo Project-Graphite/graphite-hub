@@ -1,0 +1,14 @@
+project: strata
+version: 0.87.5
+tag: v0.87.5
+previous: v0.87.4
+date: 2026-10-30
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Shared design-consistency fixes for errors, empty states, chips, dialogs, stats, task and
+      habit rows
+    commit: c634d74
+    pr: 227
+    author: AmrMsCLL
