@@ -1,0 +1,13 @@
+project: strata
+version: 0.87.6
+tag: v0.87.6
+previous: v0.87.5
+date: 2026-10-30
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Pages, boards, files and bookmarks consistency pass
+    commit: b556cce
+    pr: 228
+    author: AmrMsCLL
