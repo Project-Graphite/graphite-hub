@@ -1,0 +1,13 @@
+project: strata
+version: 0.87.7
+tag: v0.87.7
+previous: v0.87.6
+date: 2026-10-30
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Spending consistency pass
+    commit: 4df6af1
+    pr: 230
+    author: AmrMsCLL
