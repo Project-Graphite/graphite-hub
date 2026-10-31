@@ -1,0 +1,13 @@
+project: strata
+version: 0.87.12
+tag: v0.87.12
+previous: v0.87.11
+date: 2026-10-31
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Bare plus add buttons, recurring stat wrap and phone dialog layout
+    commit: 1013d96
+    pr: 235
+    author: AmrMsCLL
