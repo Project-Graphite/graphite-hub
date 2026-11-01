@@ -1,0 +1,13 @@
+project: strata
+version: 0.90.1
+tag: v0.90.1
+previous: v0.90.0
+date: 2026-11-01
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Load the sidebar page tree only while the sidebar shows
+    commit: d57577e
+    pr: 241
+    author: AmrMsCLL
