@@ -1,0 +1,13 @@
+project: strata
+version: 0.91.0
+tag: v0.91.0
+previous: v0.90.1
+date: 2026-11-01
+title: null
+summary: null
+changes:
+  - type: added
+    text: Confluence-style toolbar, nested menus, side panel comments and /pages URLs
+    commit: f6ece99
+    pr: 244
+    author: AmrMsCLL
