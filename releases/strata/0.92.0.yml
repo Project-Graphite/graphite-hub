@@ -1,0 +1,13 @@
+project: strata
+version: 0.92.0
+tag: v0.92.0
+previous: v0.91.2
+date: 2026-11-01
+title: null
+summary: null
+changes:
+  - type: added
+    text: Save any shared link as a bookmark straight away
+    commit: 242c48a
+    pr: 248
+    author: AmrMsCLL
