@@ -1,0 +1,13 @@
+project: strata
+version: 0.89.0
+tag: v0.89.0
+previous: v0.88.0
+date: 2026-11-01
+title: null
+summary: null
+changes:
+  - type: added
+    text: Record InstaPay transfers, ignore a card ending and date text balances
+    commit: 283e15c
+    pr: 239
+    author: AmrMsCLL
