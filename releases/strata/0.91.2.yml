@@ -1,0 +1,13 @@
+project: strata
+version: 0.91.2
+tag: v0.91.2
+previous: v0.91.1
+date: 2026-11-01
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Pages no longer scroll sideways, Strata in the share sheet and a working back button
+    commit: 40be64e
+    pr: 246
+    author: AmrMsCLL
