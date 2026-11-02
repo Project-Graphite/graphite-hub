@@ -1,0 +1,13 @@
+project: strata
+version: 0.94.0
+tag: v0.94.0
+previous: v0.93.0
+date: 2026-11-02
+title: null
+summary: null
+changes:
+  - type: added
+    text: Events, bookmarks, goals, people, recipes, habits and files belong to the account
+    commit: 80f0198
+    pr: 250
+    author: AmrMsCLL
