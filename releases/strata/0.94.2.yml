@@ -1,0 +1,13 @@
+project: strata
+version: 0.94.2
+tag: v0.94.2
+previous: v0.94.1
+date: 2026-11-03
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Steady scrollbar, widget scrolling, aligned block handle, board tasks
+    commit: 00e840f
+    pr: 252
+    author: AmrMsCLL
