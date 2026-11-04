@@ -1,0 +1,12 @@
+project: strata
+version: 1.0.5
+tag: v1.0.5
+previous: v1.0.4
+date: 2026-11-04
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Open the mention list at the caret instead of below the comment box
+    commit: e298581
+    author: AmrMsCLL
