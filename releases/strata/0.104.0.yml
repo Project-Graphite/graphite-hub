@@ -1,0 +1,13 @@
+project: strata
+version: 0.104.0
+tag: v0.104.0
+previous: v0.103.1
+date: 2026-11-04
+title: null
+summary: null
+changes:
+  - type: added
+    text: An eye button with a Jira-style watch menu, a clearer view toggle and even spacing in the task
+      panel
+    commit: 3a79289
+    author: AmrMsCLL
