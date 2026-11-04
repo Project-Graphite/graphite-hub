@@ -1,0 +1,16 @@
+project: strata
+version: 1.0.4
+tag: v1.0.4
+previous: v1.0.3
+date: 2026-11-04
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Show mentions as chips and ease in the mention list, comment box and shared task page
+    commit: e35bf9c
+    author: AmrMsCLL
+  - type: added
+    text: Share tasks with teammates or by link, @mentions in comments and even panel spacing
+    commit: 246a332
+    author: AmrMsCLL
