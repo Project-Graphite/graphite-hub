@@ -1,0 +1,13 @@
+project: strata
+version: 1.0.1
+tag: v1.0.1
+previous: v1.0.0
+date: 2026-11-04
+title: null
+summary: null
+changes:
+  - type: added
+    text: Folders and subfolders, sharing any file or folder by link, and Drive-style bulk actions
+    commit: c69c826
+    pr: 261
+    author: AmrMsCLL
