@@ -1,0 +1,13 @@
+project: strata
+version: 0.98.0
+tag: v0.98.0
+previous: v0.97.0
+date: 2026-11-04
+title: null
+summary: null
+changes:
+  - type: added
+    text: Task types, assignee and type filters, task relations, and closing the sheet after adding
+    commit: c83725d
+    pr: 258
+    author: AmrMsCLL
