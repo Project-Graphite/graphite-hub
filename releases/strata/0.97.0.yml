@@ -1,0 +1,13 @@
+project: strata
+version: 0.97.0
+tag: v0.97.0
+previous: v0.96.1
+date: 2026-11-04
+title: null
+summary: null
+changes:
+  - type: added
+    text: File tabs, drafts tabs, filter menus, full-height task board columns and a steady sidebar
+    commit: b8c216d
+    pr: 257
+    author: AmrMsCLL
