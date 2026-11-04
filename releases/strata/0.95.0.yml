@@ -1,0 +1,13 @@
+project: strata
+version: 0.95.0
+tag: v0.95.0
+previous: v0.94.3
+date: 2026-11-04
+title: null
+summary: null
+changes:
+  - type: added
+    text: Removing viewers, signed-in link visitors, away checks, cursor toggle and named links
+    commit: 7f8d8b6
+    pr: 254
+    author: AmrMsCLL
