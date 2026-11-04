@@ -1,0 +1,13 @@
+project: strata
+version: 0.99.0
+tag: v0.99.0
+previous: v0.98.0
+date: 2026-11-04
+title: null
+summary: null
+changes:
+  - type: added
+    text: Assignee button on task cards and rows, and a roomier description
+    commit: 6a363b8
+    pr: 259
+    author: AmrMsCLL
