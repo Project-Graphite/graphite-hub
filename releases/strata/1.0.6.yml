@@ -1,0 +1,12 @@
+project: strata
+version: 1.0.6
+tag: v1.0.6
+previous: v1.0.5
+date: 2026-11-04
+title: null
+summary: null
+changes:
+  - type: fixed
+    text: Let the file bar blend into the page and float the selection bar
+    commit: 2ba0bef
+    author: AmrMsCLL
