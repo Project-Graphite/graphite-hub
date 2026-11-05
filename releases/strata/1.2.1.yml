@@ -1,0 +1,12 @@
+project: strata
+version: 1.2.1
+tag: v1.2.1
+previous: v1.2.0
+date: 2026-11-05
+title: null
+summary: null
+changes:
+  - type: changed
+    text: Gitignore.
+    commit: 1fef04d
+    author: AmrMsCLL
