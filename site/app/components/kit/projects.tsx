@@ -64,9 +64,13 @@ export function Window({ project, owner }: Props) {
 }
 
 export function AccentCard({ project, owner }: Props) {
-  const spot = useSpotlight<HTMLElement>();
+  const pointer = useCardPointer<HTMLElement>();
   return (
-    <article ref={spot} className="card spot" style={accentStyle(project.accent ?? owner?.accent)}>
+    <article
+      ref={pointer}
+      className="card spot tilt"
+      style={accentStyle(project.accent ?? owner?.accent)}
+    >
       <div className="title">
         <h3>
           <Link to={project.path}>{project.name}</Link>

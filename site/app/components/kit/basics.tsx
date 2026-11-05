@@ -79,16 +79,15 @@ export function Band({ title, description, more, children }: BandProps) {
       <div className="band-head">
         <h2>{title}</h2>
         <div className="rule" />
+        {more && (
+          <Link to={more.to} className="more">
+            {more.label}
+            <span className="arrow">→</span>
+          </Link>
+        )}
         {description}
       </div>
       {children}
-      {more && (
-        <div className="band-more">
-          <Button to={more.to} arrow>
-            {more.label}
-          </Button>
-        </div>
-      )}
     </section>
   );
 }
