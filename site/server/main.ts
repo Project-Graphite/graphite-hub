@@ -2,7 +2,10 @@ import path from 'node:path';
 import type { RequestHandler } from 'express';
 import type { ServerBuild } from 'react-router';
 import { refreshCloudflareRanges } from './address.ts';
+import { createAdmin } from './admin.ts';
 import { createApp } from './app.ts';
+import { createMessages } from './messages.ts';
+import { createShare } from './share.ts';
 import { createAuth } from './auth.ts';
 import { createBus } from './bus.ts';
 import { config } from './config.ts';
@@ -13,8 +16,10 @@ import { createLive } from './live.ts';
 import { log } from './log.ts';
 import { alertOwner } from './mail.ts';
 import { createMetrics } from './metrics.ts';
-import { connectRedis } from './redis.ts';
+import { connectRedis, slidingLimit } from './redis.ts';
 import { createSessions } from './sessions.ts';
+import { createReads } from './reads.ts';
+import { createSettings } from './settings.ts';
 import { createSnapshot } from './snapshot.ts';
 import { createSync } from './sync.ts';
 import { pingAll } from './uptime.ts';
@@ -32,7 +37,8 @@ const sessions = createSessions(redis, config.sessionSecret);
 const auth = createAuth(sessions, redis);
 const live = createLive(bus, auth);
 const sync = createSync(db, bus, sessions);
-const snapshot = createSnapshot(db, bus);
+const settings = createSettings(db, bus);
+const snapshot = createSnapshot(db, bus, settings);
 
 process.on('unhandledRejection', (reason) => capture(reason, { route: 'process' }));
 process.on('uncaughtExceptionMonitor', (error) => capture(error, { route: 'process' }));
@@ -53,7 +59,27 @@ if (config.production) {
 }
 
 const app = createApp(
-  { db, redis, bus, snapshot, auth, live, sync, capture, metrics: createMetrics() },
+  {
+    db,
+    redis,
+    bus,
+    snapshot,
+    settings,
+    reads: createReads(db),
+    admin: createAdmin(db, bus, settings, sessions),
+    share: createShare(),
+    messages: createMessages(
+      db,
+      bus,
+      (address) => slidingLimit(redis, `messages:${address}`, 3, 3_600_000),
+      config.sessionSecret,
+    ),
+    auth,
+    live,
+    sync,
+    capture,
+    metrics: createMetrics(),
+  },
   loadBuild,
   assets,
 );

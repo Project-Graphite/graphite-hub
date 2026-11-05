@@ -16,6 +16,12 @@ import type { Live } from './live.ts';
 import { log } from './log.ts';
 import type { createMetrics } from './metrics.ts';
 import { slidingLimit, type Redis } from './redis.ts';
+import { clientAddress } from './address.ts';
+import type { Admin } from './admin.ts';
+import type { Messages } from './messages.ts';
+import type { Share } from './share.ts';
+import type { Reads } from './reads.ts';
+import type { Settings } from './settings.ts';
 import type { Snapshot } from './snapshot.ts';
 import type { Sync } from './sync.ts';
 
@@ -24,6 +30,11 @@ export interface Services {
   redis: Redis;
   bus: Bus;
   snapshot: Snapshot;
+  settings: Settings;
+  reads: Reads;
+  admin: Admin;
+  messages: Messages;
+  share: Share;
   auth: Auth;
   live: Live;
   sync: Sync;
@@ -45,7 +56,8 @@ export function createApp(
   loadBuild: () => Promise<ServerBuild>,
   assets?: express.RequestHandler,
 ) {
-  const { db, redis, bus, snapshot, auth, live, sync, capture, metrics } = services;
+  const { db, redis, bus, snapshot, settings, reads, admin, auth, live, sync, capture, metrics } =
+    services;
   const verified = createVerifier(config.deployReportSecret);
   const app = express();
   app.disable('x-powered-by');
@@ -202,6 +214,13 @@ export function createApp(
           (build.entry.module as unknown as { hubContext: RouterContext<Hub> }).hubContext,
           {
             directory: snapshot.get(),
+            settings: settings.get(),
+            reads,
+            admin,
+            messages: services.messages,
+            share: services.share,
+            address: clientAddress(request),
+            origin: new URL(config.appUrl).origin,
             viewer: signedIn
               ? {
                   login: signedIn.session.login,

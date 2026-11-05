@@ -46,6 +46,12 @@ export const CHANGELOG: PageMeta = {
   canonical: `${ORIGIN}/changelog/`,
 };
 
+export const STATUS: PageMeta = {
+  title: `Status — ${SITE}`,
+  description: 'Every live project, its uptime over the last thirty days, and what just happened.',
+  canonical: `${ORIGIN}/status/`,
+};
+
 const NOT_FOUND = (path: string): PageMeta => ({
   title: `Not found — ${SITE}`,
   description: 'That page does not exist.',
@@ -60,6 +66,32 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
     '/epics': EPICS,
     '/projects': PROJECTS,
     '/changelog': CHANGELOG,
+    '/status': STATUS,
+    '/messages': {
+      title: `Messages — ${SITE}`,
+      description: 'Leave a message for the members of Project Graphite.',
+      canonical: `${ORIGIN}/messages/`,
+    },
+    '/search': {
+      title: `Search — ${SITE}`,
+      description: 'Search members, projects and releases.',
+      canonical: `${ORIGIN}/search/`,
+    },
+    '/privacy': {
+      title: `Privacy — ${SITE}`,
+      description: 'What Project Graphite keeps, and for how long.',
+      canonical: `${ORIGIN}/privacy/`,
+    },
+    '/sign-in': {
+      title: `Sign in — ${SITE}`,
+      description: 'Members sign in with GitHub.',
+      canonical: `${ORIGIN}/sign-in/`,
+    },
+    '/admin': {
+      title: `Admin — ${SITE}`,
+      description: 'Site settings and errors.',
+      canonical: `${ORIGIN}/admin/`,
+    },
   };
   if (fixed[path]) {
     return fixed[path];
@@ -110,7 +142,10 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
   return NOT_FOUND(path);
 }
 
-export function metaTags({ title, description, canonical }: PageMeta): MetaDescriptor[] {
+export function metaTags(
+  { title, description, canonical }: PageMeta,
+  image: string | undefined,
+): MetaDescriptor[] {
   return [
     { title },
     { name: 'description', content: description },
@@ -120,6 +155,13 @@ export function metaTags({ title, description, canonical }: PageMeta): MetaDescr
     { property: 'og:url', content: canonical },
     { property: 'og:type', content: 'website' },
     { property: 'og:site_name', content: SITE },
-    { name: 'twitter:card', content: 'summary' },
+    ...(image
+      ? [
+          { property: 'og:image', content: `${ORIGIN}${image}` },
+          { property: 'og:image:width', content: '1200' },
+          { property: 'og:image:height', content: '630' },
+          { name: 'twitter:card', content: 'summary_large_image' },
+        ]
+      : [{ name: 'twitter:card', content: 'summary' }]),
   ];
 }

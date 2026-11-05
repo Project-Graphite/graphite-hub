@@ -9,7 +9,7 @@ export function contentSecurityPolicy(nonce: string) {
     'font-src': ["'self'"],
     'connect-src': ["'self'"],
     'form-action': ["'self'"],
-    'frame-ancestors': ["'none'"],
+    'frame-ancestors': ["'self'"],
     'object-src': ["'none'"],
     'base-uri': ["'self'"],
     'upgrade-insecure-requests': [],
@@ -26,6 +26,6 @@ export function securityHeaders(_request: Request, response: Response, next: Nex
     'Permissions-Policy',
     'camera=(), geolocation=(), microphone=(), payment=(), usb=()',
   );
-  response.setHeader('X-Frame-Options', 'DENY');
+  response.setHeader('X-Frame-Options', 'SAMEORIGIN');
   next();
 }

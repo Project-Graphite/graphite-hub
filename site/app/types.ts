@@ -52,6 +52,7 @@ export interface Member {
   publicRepos: number | null;
   followers: number | null;
   joined: string | null;
+  accent: string;
   path: string;
 }
 
@@ -85,6 +86,55 @@ export interface Directory {
   members: Member[];
   projects: Project[];
   releases: Release[];
+}
+
+export interface ConsoleLine {
+  id: string;
+  kind: string;
+  at: string;
+  summary: string;
+  detail: Record<string, unknown>;
+}
+
+export type Day = 'up' | 'down' | 'none';
+
+export interface Running {
+  slug: string;
+  name: string;
+  path: string;
+  deploy: { tag: string; at: string } | null;
+  week: Day[];
+}
+
+export interface Deploy {
+  tag: string;
+  at: string;
+  ok: boolean;
+  healthStatus: number | null;
+  durationMs: number;
+}
+
+export interface ProjectUptime {
+  days: Day[];
+  p95Ms: number | null;
+}
+
+export interface Counts {
+  members: number;
+  projects: number;
+  live: number;
+  releases: number;
+  deploys: number;
+}
+
+export interface Message {
+  id: number;
+  name: string | null;
+  body: string;
+  public: boolean;
+  publishedBy: string | null;
+  publishedAt: string | null;
+  at: string;
 }
 
 export interface Viewer {

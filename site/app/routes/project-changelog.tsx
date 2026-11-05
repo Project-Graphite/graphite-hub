@@ -1,3 +1,6 @@
+import Browse from '../components/Browse';
+import { Panel } from '../components/kit/basics';
+import { Page } from '../components/Shell';
 import { Link } from 'react-router';
 import type { Route } from './+types/project-changelog';
 import Status from '../components/Status';
@@ -20,8 +23,14 @@ export default function ProjectChangelog({ loaderData }: Route.ComponentProps) {
   const children = childProjects(project.slug);
 
   return (
-    <>
-      <section className="pt-22 pb-5">
+    <Page
+      rail={
+        <Panel title="browse">
+          <Browse />
+        </Panel>
+      }
+    >
+      <section className="page-hero">
         <p className="mono-sm m-0 text-faint">
           /changelog/{project.path.split('/')[1]}/
           {epic && (
@@ -103,6 +112,6 @@ export default function ProjectChangelog({ loaderData }: Route.ComponentProps) {
       </section>
 
       <Timeline releases={releasesForProject(project)} showProject={children.length > 0} />
-    </>
+    </Page>
   );
 }

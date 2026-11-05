@@ -36,7 +36,7 @@ export async function pingAll(db: Database, bus: Bus) {
       const { ok, ms } = await probe(host);
       upsert.run(project, minute, ok ? 1 : 0, ms);
       await bus.publish({
-        topic: 'uptime',
+        topic: 'ping',
         key: project,
         kind: 'ping',
         public: true,

@@ -1,3 +1,6 @@
+import Browse from '../components/Browse';
+import { Panel } from '../components/kit/basics';
+import { Page } from '../components/Shell';
 import { Link } from 'react-router';
 import type { Route } from './+types/member-changelog';
 import Timeline from '../components/Timeline';
@@ -14,8 +17,14 @@ export default function MemberChangelog({ loaderData }: Route.ComponentProps) {
   const owned = projectsOwnedBy(member);
 
   return (
-    <>
-      <section className="pt-22 pb-5">
+    <Page
+      rail={
+        <Panel title="browse">
+          <Browse />
+        </Panel>
+      }
+    >
+      <section className="page-hero">
         <p className="mono-sm m-0 text-faint">/changelog/members/{member.handle}</p>
         <h1 className="page-title mt-3 max-w-[18ch]">{member.name}</h1>
         {member.headline && <p className="mt-2 mb-0 text-muted">{member.headline}</p>}
@@ -47,6 +56,6 @@ export default function MemberChangelog({ loaderData }: Route.ComponentProps) {
       </section>
 
       <Timeline releases={releasesOwnedBy(member)} showProject />
-    </>
+    </Page>
   );
 }

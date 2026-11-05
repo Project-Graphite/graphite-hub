@@ -14,14 +14,16 @@ import { hubContext, NonceContext } from './context';
 import { useLive } from './live';
 import { metaFor, metaTags } from './meta';
 import { createModel } from './model';
+import { shareCard, sharePath } from './share';
 import './styles/global.css';
 
-export const handle = { topics: ['members', 'profiles', 'projects', 'releases'] };
+export const handle = { topics: ['members', 'profiles', 'projects', 'releases', 'settings'] };
 
 export function loader({ context, request }: Route.LoaderArgs) {
-  const { directory, viewer, csrf } = context.get(hubContext);
+  const { directory, settings, viewer, csrf } = context.get(hubContext);
   return {
     directory,
+    settings,
     viewer,
     csrf,
     signIn: new URL(request.url).searchParams.has('graphite'),
@@ -29,7 +31,17 @@ export function loader({ context, request }: Route.LoaderArgs) {
 }
 
 export function meta({ loaderData, location }: Route.MetaArgs) {
-  return metaTags(metaFor(loaderData && createModel(loaderData.directory), location.pathname));
+  const model = loaderData && createModel(loaderData.directory);
+  const path = location.pathname.replace(/(.)\/$/, '$1');
+  const card =
+    model &&
+    shareCard(
+      model,
+      path,
+      loaderData.settings['home.hero.headline'],
+      loaderData.settings['site.accents'],
+    );
+  return metaTags(metaFor(model, path), card && sharePath(path, card));
 }
 
 export function Layout({ children }: { children: ReactNode }) {

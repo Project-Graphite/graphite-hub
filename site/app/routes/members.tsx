@@ -1,25 +1,32 @@
-import MemberCard from '../components/MemberCard';
-import Section from '../components/Section';
-import { MEMBERS } from '../meta';
+import type { Route } from './+types/members';
+import { Orbit, People } from '../components/kit/members';
+import { loadRail, PageHero, RAIL_TOPICS, StandardRail } from '../components/kit/page';
+import { Page } from '../components/Shell';
+import { hubContext } from '../context';
 import { useHub } from '../hub';
+import { MEMBERS } from '../meta';
 
-export default function Members() {
-  const { members } = useHub();
+export const handle = { topics: RAIL_TOPICS };
+
+export function loader({ context }: Route.LoaderArgs) {
+  return loadRail(context.get(hubContext));
+}
+
+export default function Members({ loaderData }: Route.ComponentProps) {
+  const hub = useHub();
+  const projectsOf = (member: (typeof hub.members)[number]) =>
+    hub.projectsForMember(member).length + hub.epicsForMember(member).length;
   return (
-    <>
-      <section className="pt-22 pb-5">
-        <p className="mono-sm m-0 mb-3 text-faint">/members</p>
-        <h1 className="page-title max-w-[20ch]">Members</h1>
-        <p className="mt-5.5 mb-0 max-w-[52ch] text-muted">{MEMBERS.description}</p>
-      </section>
-
-      <Section label="all members">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {members.map((member) => (
-            <MemberCard key={member.handle} member={member} />
-          ))}
+    <Page rail={<StandardRail {...loaderData} />}>
+      <PageHero crumb="/members" title="Members">
+        <p className="lede">{MEMBERS.description}</p>
+      </PageHero>
+      <section className="band">
+        <div className="split">
+          <People members={hub.members} projectsOf={projectsOf} />
+          <Orbit members={hub.members} count={hub.members.length} label="members" />
         </div>
-      </Section>
-    </>
+      </section>
+    </Page>
   );
 }

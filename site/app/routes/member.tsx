@@ -1,3 +1,7 @@
+import { accentStyle, Avatar } from '../components/kit/basics';
+import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
+import { Page } from '../components/Shell';
+import { hubContext } from '../context';
 import { Fragment } from 'react';
 import type { Route } from './+types/member';
 import EpicCard from '../components/EpicCard';
@@ -6,8 +10,17 @@ import Section from '../components/Section';
 import TagList from '../components/TagList';
 import { found, modelFrom, useHub } from '../hub';
 
+export const handle = { topics: ['deploys', 'releases', 'projects', 'uptime'] };
+
 export function loader({ context, params }: Route.LoaderArgs) {
-  return { handle: found(modelFrom(context).memberByHandle(params.handle)).handle };
+  const model = modelFrom(context);
+  const member = found(model.memberByHandle(params.handle));
+  const { reads, directory } = context.get(hubContext);
+  const owned = new Set(model.projectsOwnedBy(member).map((project) => project.slug));
+  return {
+    handle: member.handle,
+    running: reads.running(directory).filter((running) => owned.has(running.slug)),
+  };
 }
 
 export default function Member({ loaderData }: Route.ComponentProps) {
@@ -16,26 +29,36 @@ export default function Member({ loaderData }: Route.ComponentProps) {
     contributionForMember,
     epicsForMember,
     memberByHandle,
+    projectBySlug,
     projectsForMember,
+    releasesOwnedBy,
   } = useHub();
   const member = memberByHandle(loaderData.handle)!;
 
   const memberProjects = projectsForMember(member);
   const memberEpics = epicsForMember(member);
 
+  const releases = releasesOwnedBy(member);
+
   return (
-    <>
-      <section className="pt-22 pb-5">
+    <Page
+      rail={
+        <>
+          {releases.length > 0 && (
+            <ChangelogPanel
+              releases={releases.slice(0, 4)}
+              projectOf={(release) => projectBySlug(release.project)}
+            />
+          )}
+          {loaderData.running.length > 0 && <RunningPanel running={loaderData.running} />}
+        </>
+      }
+    >
+      <section className="page-hero" style={accentStyle(member.accent)}>
         <p className="mono-sm m-0 text-faint">/members/{member.handle}</p>
 
         <div className="mt-3 flex items-center gap-5">
-          <img
-            src={member.avatarUrl}
-            alt={`${member.name}'s GitHub avatar`}
-            width={64}
-            height={64}
-            className="size-16 shrink-0 rounded-full border border-line-soft"
-          />
+          <Avatar member={member} size="lg" />
           <div>
             <h1 className="page-title max-w-[18ch]">{member.name}</h1>
             {member.headline && <p className="mt-2 mb-0 text-muted">{member.headline}</p>}
@@ -120,6 +143,6 @@ export default function Member({ loaderData }: Route.ComponentProps) {
           </div>
         </Section>
       )}
-    </>
+    </Page>
   );
 }
