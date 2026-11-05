@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { useFolded } from '../../folds';
 import { clock, day, describe } from '../../format';
 import { useLiveMessages } from '../../live';
+import { releaseLine } from '../../model';
 import { useCountUp, useCycle } from '../../motion/motion';
 import type { COUNTERS } from '../../settings';
 import type { ConsoleLine, Counts, Release } from '../../types';
@@ -165,9 +166,7 @@ export function ReleaseTimeline({ releases, accentOf, nameOf, today, days }: Tim
             <span className="d">{tip.date}</span>
             <span className="l">
               {tip.releases.length === 1
-                ? (tip.releases[0].title ??
-                  tip.releases[0].summary ??
-                  tip.releases[0].groups[0]?.changes[0]?.text)
+                ? releaseLine(tip.releases[0], nameOf(tip.releases[0]))
                 : [
                     ...tip.releases.slice(0, 4).map(label),
                     ...(tip.releases.length > 4 ? [`${tip.releases.length - 4} more`] : []),

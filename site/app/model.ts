@@ -26,6 +26,28 @@ export function compareUrl(project: Project, release: Release) {
     : `${project.repoUrl}/commits/${release.tag}`;
 }
 
+export function releaseTitle(release: Release, projectName: string) {
+  const title = release.title?.trim();
+  if (!title) {
+    return null;
+  }
+  const echo = title
+    .toLowerCase()
+    .replace(projectName.toLowerCase(), '')
+    .replace(/^[\s:·—-]*v?/, '')
+    .trim();
+  return echo === release.version ? null : title;
+}
+
+export function releaseLine(release: Release, projectName: string) {
+  return (
+    releaseTitle(release, projectName) ??
+    release.summary ??
+    release.groups[0]?.changes[0]?.text ??
+    null
+  );
+}
+
 export function createModel({ members, projects, releases }: Directory) {
   const rootProjects = projects.filter((project) => project.kind === 'project' && !project.parent);
   const epics = projects.filter((project) => project.kind === 'epic');

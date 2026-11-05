@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { day, shortTag } from '../../format';
-import { changelogPath } from '../../model';
+import { changelogPath, releaseLine } from '../../model';
 import type { Member, Message, Project, Release, Running } from '../../types';
 import Status from '../Status';
 import { Avatar, Panel } from './basics';
@@ -82,7 +82,7 @@ export function ChangelogPanel({
                   <time dateTime={release.date}>{release.date}</time>
                 </span>
                 <span className="line">
-                  {release.title ?? release.summary ?? release.groups[0]?.changes[0]?.text}
+                  {releaseLine(release, project?.name ?? release.project)}
                 </span>
               </Link>
             </li>
