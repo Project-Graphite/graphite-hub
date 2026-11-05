@@ -13,22 +13,25 @@ function setup(allowed = true) {
 }
 
 describe('messages', () => {
-  it('keeps a new message in the queue until a member publishes it', async () => {
+  it('puts a public message on the wall as soon as it is left', async () => {
     const { messages, leave, published } = setup();
     assert.deepEqual(await leave('  Hello from Cairo  ', { name: 'Mona' }), { ok: true });
-    assert.equal(messages.wall(10).length, 0);
-    const [waiting] = messages.queue();
-    assert.equal(waiting.body, 'Hello from Cairo');
-    assert.equal(published[0].public, false);
-
-    assert.equal(await messages.publish(waiting.id, 'amrmscll'), true);
-    assert.equal(messages.wall(10)[0].publishedBy, 'amrmscll');
+    const [onWall] = messages.wall(10);
+    assert.equal(onWall.body, 'Hello from Cairo');
+    assert.equal(onWall.publishedBy, null);
     assert.equal(messages.queue().length, 0);
+    assert.equal(published[0].public, true);
+
+    await messages.unpublish(onWall.id);
+    assert.equal(messages.wall(10).length, 0);
+    assert.equal(await messages.publish(onWall.id, 'amrmscll'), true);
+    assert.equal(messages.wall(10)[0].publishedBy, 'amrmscll');
   });
 
-  it('never publishes a message its writer kept private', async () => {
-    const { messages, leave } = setup();
+  it('keeps a private message in the queue and never publishes it', async () => {
+    const { messages, leave, published } = setup();
     await leave('only for you', { public: false });
+    assert.equal(published[0].public, false);
     assert.equal(await messages.publish(messages.queue()[0].id, 'amrmscll'), false);
     assert.equal(messages.wall(10).length, 0);
   });

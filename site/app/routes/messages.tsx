@@ -125,8 +125,7 @@ export default function Messages({ loaderData }: Route.ComponentProps) {
             />
             <fieldset className="mono-sm flex flex-wrap gap-4 text-muted">
               <label className="flex items-center gap-1.5">
-                <input type="radio" name="visibility" value="public" defaultChecked /> may appear on
-                the wall
+                <input type="radio" name="visibility" value="public" defaultChecked /> on the wall
               </label>
               <label className="flex items-center gap-1.5">
                 <input type="radio" name="visibility" value="private" /> only for the members
@@ -153,7 +152,7 @@ export default function Messages({ loaderData }: Route.ComponentProps) {
             {loaderData.queue.map((message) => (
               <div key={message.id} className="grid gap-1">
                 <span className="mono-sm text-faint">
-                  {message.public ? 'asked to be public' : 'private'}
+                  {message.public ? 'public, off the wall' : 'private'}
                 </span>
                 <Note message={message} csrf={csrf} />
               </div>
@@ -163,7 +162,7 @@ export default function Messages({ loaderData }: Route.ComponentProps) {
       )}
 
       <Section label={`the wall · ${loaderData.wall.length}`}>
-        <div className="band-grid two mt-0">
+        <div className="band-grid two mt-0 auto-rows-auto items-start">
           {loaderData.wall.length === 0 && (
             <p className="mono-sm text-faint">Nothing on the wall yet.</p>
           )}
