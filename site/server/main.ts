@@ -15,6 +15,7 @@ import { alertOwner } from './mail.ts';
 import { createMetrics } from './metrics.ts';
 import { connectRedis } from './redis.ts';
 import { createSessions } from './sessions.ts';
+import { createReads } from './reads.ts';
 import { createSettings } from './settings.ts';
 import { createSnapshot } from './snapshot.ts';
 import { createSync } from './sync.ts';
@@ -55,7 +56,19 @@ if (config.production) {
 }
 
 const app = createApp(
-  { db, redis, bus, snapshot, settings, auth, live, sync, capture, metrics: createMetrics() },
+  {
+    db,
+    redis,
+    bus,
+    snapshot,
+    settings,
+    reads: createReads(db),
+    auth,
+    live,
+    sync,
+    capture,
+    metrics: createMetrics(),
+  },
   loadBuild,
   assets,
 );

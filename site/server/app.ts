@@ -16,6 +16,7 @@ import type { Live } from './live.ts';
 import { log } from './log.ts';
 import type { createMetrics } from './metrics.ts';
 import { slidingLimit, type Redis } from './redis.ts';
+import type { Reads } from './reads.ts';
 import type { Settings } from './settings.ts';
 import type { Snapshot } from './snapshot.ts';
 import type { Sync } from './sync.ts';
@@ -26,6 +27,7 @@ export interface Services {
   bus: Bus;
   snapshot: Snapshot;
   settings: Settings;
+  reads: Reads;
   auth: Auth;
   live: Live;
   sync: Sync;
@@ -47,7 +49,8 @@ export function createApp(
   loadBuild: () => Promise<ServerBuild>,
   assets?: express.RequestHandler,
 ) {
-  const { db, redis, bus, snapshot, settings, auth, live, sync, capture, metrics } = services;
+  const { db, redis, bus, snapshot, settings, reads, auth, live, sync, capture, metrics } =
+    services;
   const verified = createVerifier(config.deployReportSecret);
   const app = express();
   app.disable('x-powered-by');
@@ -205,6 +208,7 @@ export function createApp(
           {
             directory: snapshot.get(),
             settings: settings.get(),
+            reads,
             viewer: signedIn
               ? {
                   login: signedIn.session.login,
