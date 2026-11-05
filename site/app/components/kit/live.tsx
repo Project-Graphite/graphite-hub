@@ -168,7 +168,10 @@ export function ReleaseTimeline({ releases, accentOf, nameOf, today, days }: Tim
                 ? (tip.releases[0].title ??
                   tip.releases[0].summary ??
                   tip.releases[0].groups[0]?.changes[0]?.text)
-                : tip.releases.map(label).join(' · ')}
+                : [
+                    ...tip.releases.slice(0, 4).map(label),
+                    ...(tip.releases.length > 4 ? [`${tip.releases.length - 4} more`] : []),
+                  ].join(' · ')}
             </span>
           </div>
         )}
