@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { data, Link, useFetcher } from 'react-router';
 import type { Route } from './+types/admin';
 import { Panel } from '../components/kit/basics';
@@ -254,6 +254,75 @@ function SettingRow({ settingKey, csrf }: { settingKey: SettingKey; csrf: string
   );
 }
 
+const PREVIEWS = [
+  ['/', 'home'],
+  ['/members', 'members'],
+  ['/projects', 'projects'],
+  ['/status', 'status'],
+  ['/messages', 'messages'],
+] as const;
+const DEVICES = { desktop: { width: 1440, height: 900 }, phone: { width: 390, height: 844 } };
+
+function Preview() {
+  const [path, setPath] = useState<string>('/');
+  const [device, setDevice] = useState<keyof typeof DEVICES>('desktop');
+  const [scale, setScale] = useState(0.4);
+  const box = useRef<HTMLDivElement>(null);
+  const size = DEVICES[device];
+
+  useEffect(() => {
+    const element = box.current;
+    if (!element) {
+      return;
+    }
+    const observer = new ResizeObserver(([entry]) =>
+      setScale(Math.min(1, entry.contentRect.width / size.width)),
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [size.width]);
+
+  return (
+    <Panel title="preview">
+      <div className="mono-sm mb-3 flex flex-wrap items-center gap-3">
+        <select
+          value={path}
+          onChange={(event) => setPath(event.target.value)}
+          aria-label="Page to preview"
+          className="rounded-md border border-line bg-paper px-2 py-1 text-ink"
+        >
+          {PREVIEWS.map(([to, label]) => (
+            <option key={to} value={to}>
+              {label}
+            </option>
+          ))}
+        </select>
+        {(Object.keys(DEVICES) as (keyof typeof DEVICES)[]).map((name) => (
+          <button
+            key={name}
+            type="button"
+            aria-pressed={device === name}
+            onClick={() => setDevice(name)}
+            className={device === name ? 'text-ink' : 'text-faint'}
+          >
+            {name}
+          </button>
+        ))}
+        <span className="text-faint">updates as you save</span>
+      </div>
+      <div ref={box} className="preview" style={{ height: size.height * scale }}>
+        <iframe
+          src={path}
+          title="Preview of the live site"
+          width={size.width}
+          height={size.height}
+          style={{ transform: `scale(${scale})`, marginInline: scale < 1 ? 0 : 'auto' }}
+        />
+      </div>
+    </Panel>
+  );
+}
+
 export default function AdminPage({ loaderData }: Route.ComponentProps) {
   const root = useRoot()!;
   const csrf = root.csrf ?? '';
@@ -263,105 +332,116 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
   const keys = Object.keys(SETTINGS) as SettingKey[];
 
   return (
-    <Page
-      rail={
-        <>
-          <Panel title={loaderData.history ? `history · ${loaderData.history.key}` : 'history'}>
-            {loaderData.history ? (
-              <ol className="grid gap-3">
-                {loaderData.history.versions.map((version) => (
-                  <li key={version.id} className="mono-sm grid gap-1">
-                    <span className="text-faint">
-                      {version.at.slice(0, 16).replace('T', ' ')} · {version.by}
-                    </span>
-                    <code className="truncate text-muted">{JSON.stringify(version.value)}</code>
-                    <revert.Form method="post">
-                      <input type="hidden" name="csrf" value={csrf} />
-                      <input type="hidden" name="version" value={version.id} />
-                      <button type="submit" name="intent" value="revert" className="rule-link">
-                        revert to this
-                      </button>
-                    </revert.Form>
-                  </li>
+    <Page>
+      <div className="admin-layout">
+        <div className="min-w-0">
+          <PageHero crumb="/admin" title="Admin">
+            <p className="lede">
+              Every setting on the site. A save is live on every open tab within a second and kept
+              as a version you can revert.
+            </p>
+          </PageHero>
+          {(Object.keys(AREAS) as Area[]).map((area) => (
+            <Section key={area} label={AREAS[area]}>
+              {keys
+                .filter((key) => SETTINGS[key].area === area)
+                .map((key) => (
+                  <SettingRow key={key} settingKey={key} csrf={csrf} />
                 ))}
-                {loaderData.history.versions.length === 0 && (
-                  <li className="mono-sm text-faint">Never changed; on its default.</li>
-                )}
-              </ol>
-            ) : (
-              <p className="mono-sm text-faint">Choose history on a setting to see its versions.</p>
-            )}
-          </Panel>
-          <Panel title="sessions">
-            <signOut.Form method="post" className="grid gap-2">
-              <input type="hidden" name="csrf" value={csrf} />
-              <p className="text-sm text-muted">Ends every member's session, yours included.</p>
-              <button type="submit" name="intent" value="sign-out-everyone" className="btn">
-                sign everyone out
-              </button>
-              {signOut.data && 'ok' in signOut.data && (
-                <span className="mono-sm text-live">{signOut.data.ok}</span>
-              )}
-            </signOut.Form>
-          </Panel>
-        </>
-      }
-    >
-      <PageHero crumb="/admin" title="Admin">
-        <p className="lede">
-          Every setting on the site. A save is live on every open tab within a second and kept as a
-          version you can revert.
-        </p>
-      </PageHero>
-      {(Object.keys(AREAS) as Area[]).map((area) => (
-        <Section key={area} label={AREAS[area]}>
-          {keys
-            .filter((key) => SETTINGS[key].area === area)
-            .map((key) => (
-              <SettingRow key={key} settingKey={key} csrf={csrf} />
-            ))}
-        </Section>
-      ))}
-      <Section label={`messages · ${loaderData.waiting} waiting`}>
-        <Link to="/messages" className="rule-link mono-sm">
-          moderate on /messages
-        </Link>
-      </Section>
-      <Section
-        label={`errors · ${loaderData.errors.filter((error) => !error.resolvedAt).length} open`}
-      >
-        <div className="grid gap-3">
-          {loaderData.errors.length === 0 && (
-            <p className="mono-sm text-faint">No errors recorded.</p>
-          )}
-          {loaderData.errors.map((error) => (
-            <article
-              key={error.fingerprint}
-              className={`panel ${error.resolvedAt ? 'opacity-60' : ''}`}
-            >
-              <div className="flex flex-wrap items-baseline justify-between gap-3">
-                <strong className="font-semibold">{error.message}</strong>
-                <span className="mono-sm text-faint">
-                  {error.count}× · last {error.lastAt.slice(0, 16).replace('T', ' ')}
-                </span>
-              </div>
-              <p className="mono-sm mt-2 text-faint">
-                {error.route ?? 'no route'} · request {error.requestId ?? 'none'} ·{' '}
-                {error.fingerprint}
-              </p>
-              {!error.resolvedAt && (
-                <resolve.Form method="post" className="mt-3">
-                  <input type="hidden" name="csrf" value={csrf} />
-                  <input type="hidden" name="fingerprint" value={error.fingerprint} />
-                  <button type="submit" name="intent" value="resolve" className="rule-link mono-sm">
-                    resolve
-                  </button>
-                </resolve.Form>
-              )}
-            </article>
+            </Section>
           ))}
+          <Section label={`messages · ${loaderData.waiting} waiting`}>
+            <Link to="/messages" className="rule-link mono-sm">
+              moderate on /messages
+            </Link>
+          </Section>
+          <Section
+            label={`errors · ${loaderData.errors.filter((error) => !error.resolvedAt).length} open`}
+          >
+            <div className="grid gap-3">
+              {loaderData.errors.length === 0 && (
+                <p className="mono-sm text-faint">No errors recorded.</p>
+              )}
+              {loaderData.errors.map((error) => (
+                <article
+                  key={error.fingerprint}
+                  className={`panel ${error.resolvedAt ? 'opacity-60' : ''}`}
+                >
+                  <div className="flex flex-wrap items-baseline justify-between gap-3">
+                    <strong className="font-semibold">{error.message}</strong>
+                    <span className="mono-sm text-faint">
+                      {error.count}× · last {error.lastAt.slice(0, 16).replace('T', ' ')}
+                    </span>
+                  </div>
+                  <p className="mono-sm mt-2 text-faint">
+                    {error.route ?? 'no route'} · request {error.requestId ?? 'none'} ·{' '}
+                    {error.fingerprint}
+                  </p>
+                  {!error.resolvedAt && (
+                    <resolve.Form method="post" className="mt-3">
+                      <input type="hidden" name="csrf" value={csrf} />
+                      <input type="hidden" name="fingerprint" value={error.fingerprint} />
+                      <button
+                        type="submit"
+                        name="intent"
+                        value="resolve"
+                        className="rule-link mono-sm"
+                      >
+                        resolve
+                      </button>
+                    </resolve.Form>
+                  )}
+                </article>
+              ))}
+            </div>
+          </Section>
         </div>
-      </Section>
+        <aside className="admin-side">
+          <Preview />
+          <>
+            <Panel title={loaderData.history ? `history · ${loaderData.history.key}` : 'history'}>
+              {loaderData.history ? (
+                <ol className="grid gap-3">
+                  {loaderData.history.versions.map((version) => (
+                    <li key={version.id} className="mono-sm grid gap-1">
+                      <span className="text-faint">
+                        {version.at.slice(0, 16).replace('T', ' ')} · {version.by}
+                      </span>
+                      <code className="truncate text-muted">{JSON.stringify(version.value)}</code>
+                      <revert.Form method="post">
+                        <input type="hidden" name="csrf" value={csrf} />
+                        <input type="hidden" name="version" value={version.id} />
+                        <button type="submit" name="intent" value="revert" className="rule-link">
+                          revert to this
+                        </button>
+                      </revert.Form>
+                    </li>
+                  ))}
+                  {loaderData.history.versions.length === 0 && (
+                    <li className="mono-sm text-faint">Never changed; on its default.</li>
+                  )}
+                </ol>
+              ) : (
+                <p className="mono-sm text-faint">
+                  Choose history on a setting to see its versions.
+                </p>
+              )}
+            </Panel>
+            <Panel title="sessions">
+              <signOut.Form method="post" className="grid gap-2">
+                <input type="hidden" name="csrf" value={csrf} />
+                <p className="text-sm text-muted">Ends every member's session, yours included.</p>
+                <button type="submit" name="intent" value="sign-out-everyone" className="btn">
+                  sign everyone out
+                </button>
+                {signOut.data && 'ok' in signOut.data && (
+                  <span className="mono-sm text-live">{signOut.data.ok}</span>
+                )}
+              </signOut.Form>
+            </Panel>
+          </>
+        </aside>
+      </div>
     </Page>
   );
 }
