@@ -256,7 +256,7 @@ export function Backdrop() {
   return <canvas ref={canvas} className="backdrop" aria-hidden="true" />;
 }
 
-export function Mark() {
+export function Mark({ text }: { text?: string } = {}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const allowed = useMotion('mark');
 
@@ -272,33 +272,40 @@ export function Mark() {
     const stencil = document.createElement('canvas');
     stencil.width = stencil.height = size;
     const pen = stencil.getContext('2d')!;
-    const unit = (size * 0.78) / 46;
-    pen.setTransform(
-      unit,
-      0,
-      0,
-      unit,
-      (size - 36 * unit) / 2 + 3 * unit,
-      (size - 46 * unit) / 2 + 3 * unit,
-    );
-    pen.lineWidth = 6;
-    pen.lineCap = 'round';
-    pen.lineJoin = 'round';
     pen.strokeStyle = '#fff';
     pen.fillStyle = '#fff';
-    pen.beginPath();
-    pen.moveTo(5.62, 25);
-    pen.lineTo(0, 40);
-    pen.moveTo(24.38, 25);
-    pen.lineTo(30, 40);
-    pen.stroke();
-    pen.beginPath();
-    pen.moveTo(15, 0);
-    pen.lineTo(8.25, 18);
-    pen.lineTo(21.75, 18);
-    pen.closePath();
-    pen.fill();
-    pen.stroke();
+    if (text) {
+      pen.font = `700 ${Math.round(size * 0.46)}px ${getComputedStyle(element).fontFamily}`;
+      pen.textAlign = 'center';
+      pen.textBaseline = 'middle';
+      pen.fillText(text, size / 2, size / 2, size * 0.9);
+    } else {
+      const unit = (size * 0.78) / 46;
+      pen.setTransform(
+        unit,
+        0,
+        0,
+        unit,
+        (size - 36 * unit) / 2 + 3 * unit,
+        (size - 46 * unit) / 2 + 3 * unit,
+      );
+      pen.lineWidth = 6;
+      pen.lineCap = 'round';
+      pen.lineJoin = 'round';
+      pen.beginPath();
+      pen.moveTo(5.62, 25);
+      pen.lineTo(0, 40);
+      pen.moveTo(24.38, 25);
+      pen.lineTo(30, 40);
+      pen.stroke();
+      pen.beginPath();
+      pen.moveTo(15, 0);
+      pen.lineTo(8.25, 18);
+      pen.lineTo(21.75, 18);
+      pen.closePath();
+      pen.fill();
+      pen.stroke();
+    }
     const pixels = pen.getImageData(0, 0, size, size).data;
     const step = Math.max(3, Math.round(2.8 * dpr));
     const points: Particle[] = [];
@@ -354,7 +361,7 @@ export function Mark() {
       stop();
       untrack();
     };
-  }, [allowed]);
+  }, [allowed, text]);
 
   return <canvas ref={canvas} aria-hidden="true" />;
 }
