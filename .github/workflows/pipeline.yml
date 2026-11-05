@@ -43,3 +43,30 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm run size
+
+  image:
+    name: Image starts
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:8-alpine
+        ports: ["6379:6379"]
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t hub-check site
+      - name: Start the image and wait for readiness
+        run: |
+          docker run -d --name hub --network host \
+            -e APP_URL=http://localhost:3000 -e REDIS_URL=redis://localhost:6379 \
+            -e SESSION_SECRET=check -e GITHUB_CLIENT_ID=check -e GITHUB_CLIENT_SECRET=check \
+            -e PLATFORM_APP_CLIENT_ID=check -e PLATFORM_APP_PRIVATE_KEY=check \
+            -e GITHUB_WEBHOOK_SECRET=check -e DEPLOY_REPORT_SECRET=check \
+            hub-check
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/health/ready; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs hub
+          exit 1
