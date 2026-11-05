@@ -12,6 +12,9 @@ export default [
   route('changelog', 'routes/changelog.tsx'),
   route('status', 'routes/status.tsx'),
   route('admin', 'routes/admin.tsx'),
+  route('search', 'routes/search.tsx'),
+  route('privacy', 'routes/privacy.tsx'),
+  route('sign-in', 'routes/sign-in.tsx'),
   route('changelog/members/:handle', 'routes/member-changelog.tsx'),
   route('changelog/epics/:parentSlug/:slug', 'routes/project-changelog.tsx', {
     id: 'epic-project-changelog',

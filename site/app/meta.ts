@@ -67,6 +67,21 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
     '/projects': PROJECTS,
     '/changelog': CHANGELOG,
     '/status': STATUS,
+    '/search': {
+      title: `Search — ${SITE}`,
+      description: 'Search members, projects and releases.',
+      canonical: `${ORIGIN}/search/`,
+    },
+    '/privacy': {
+      title: `Privacy — ${SITE}`,
+      description: 'What Project Graphite keeps, and for how long.',
+      canonical: `${ORIGIN}/privacy/`,
+    },
+    '/sign-in': {
+      title: `Sign in — ${SITE}`,
+      description: 'Members sign in with GitHub.',
+      canonical: `${ORIGIN}/sign-in/`,
+    },
     '/admin': {
       title: `Admin — ${SITE}`,
       description: 'Site settings and errors.',

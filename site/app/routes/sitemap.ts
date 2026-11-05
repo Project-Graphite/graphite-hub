@@ -14,6 +14,7 @@ export function loader({ context }: Route.LoaderArgs) {
     ...projects.map((project) => project.path),
     '/changelog',
     '/status',
+    '/privacy',
     ...members.map(changelogPath),
     ...projects.map(changelogPath),
   ];

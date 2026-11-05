@@ -63,6 +63,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               {settings['home.hero.primary']}
             </Button>
             <Button to="https://github.com/project-graphite">github ↗</Button>
+            <span className="hint">
+              <span className="kbd">/</span> to search
+            </span>
           </div>
           <Counters counts={counts} shown={visible(settings['home.counters'])} />
         </div>

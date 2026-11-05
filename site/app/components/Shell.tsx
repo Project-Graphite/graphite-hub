@@ -4,6 +4,7 @@ import { useRoot } from '../hub';
 import { MotionContext } from '../motion/motion';
 import { defaults, visible, type NAV } from '../settings';
 import { accentStyle } from './kit/basics';
+import { Palette } from './kit/Palette';
 
 const NAV_TARGET: Record<(typeof NAV)[number], { to: string; label: string }> = {
   members: { to: '/members', label: 'members' },
@@ -96,8 +97,14 @@ export default function Shell({ children }: { children: ReactNode }) {
       </main>
 
       <footer className="frame-footer">
-        <div className="shell">{settings['site.footer']}</div>
+        <div className="shell flex flex-wrap justify-between gap-4">
+          <span>{settings['site.footer']}</span>
+          <Link to="/privacy" className="hover:text-ink">
+            privacy
+          </Link>
+        </div>
       </footer>
+      <Palette />
     </MotionContext>
   );
 }
