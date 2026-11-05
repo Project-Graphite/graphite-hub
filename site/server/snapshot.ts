@@ -3,8 +3,9 @@ import { compareVersions } from '../scripts/rules.mjs';
 import type { Bus } from './bus.ts';
 import { json, type Database } from './db.ts';
 import { storedEntries, type RegistryEntry } from './registry.ts';
+import type { Settings } from './settings.ts';
 
-const TOPICS = new Set(['members', 'profiles', 'projects', 'releases']);
+const TOPICS = new Set(['members', 'profiles', 'projects', 'releases', 'settings']);
 
 type Block = { type: 'stack'; groups: StackGroup[] } | { type: 'links'; links: MemberLink[] };
 
@@ -30,15 +31,36 @@ export function projectFromEntry(entry: RegistryEntry): Project {
   };
 }
 
-function build(db: Database): Directory {
-  const members = db
+export function accentsFor(handles: string[], chosen: Map<string, string>, palette: string[]) {
+  const taken = new Set(chosen.values());
+  const free = palette.filter((colour) => !taken.has(colour));
+  let next = 0;
+  return new Map(
+    handles.map((handle) => [
+      handle,
+      chosen.get(handle) ??
+        (free.length > 0 ? free[next++ % free.length] : palette[next++ % palette.length]),
+    ]),
+  );
+}
+
+function build(db: Database, palette: string[]): Directory {
+  const rows = db
     .prepare(
       `SELECT m.handle, m.login, m.name, m.avatar_url, m.public_repos, m.followers, m.github_since,
-              p.headline, p.bio, p.blocks
+              p.headline, p.bio, p.blocks, p.accent
          FROM members m LEFT JOIN profiles p USING (handle)
-        ORDER BY m.name COLLATE NOCASE`,
+        ORDER BY m.joined_at, m.handle`,
     )
-    .all()
+    .all();
+  const accents = accentsFor(
+    rows.map((row) => row.handle as string),
+    new Map(
+      rows.flatMap((row) => (row.accent ? [[row.handle as string, row.accent as string]] : [])),
+    ),
+    palette,
+  );
+  const members = rows
     .map((row): Member => {
       const blocks = json<Block[]>(row.blocks ?? '[]');
       return {
@@ -53,9 +75,11 @@ function build(db: Database): Directory {
         publicRepos: row.public_repos as number | null,
         followers: row.followers as number | null,
         joined: row.github_since as string | null,
+        accent: accents.get(row.handle as string)!,
         path: `/members/${row.handle as string}`,
       };
-    });
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const projects = storedEntries(db)
     .filter((entry) => entry.listed !== false)
@@ -87,7 +111,7 @@ function build(db: Database): Directory {
   return { members, projects, releases };
 }
 
-export function createSnapshot(db: Database, bus: Bus) {
+export function createSnapshot(db: Database, bus: Bus, settings: Settings) {
   let current: Directory | undefined;
   let healthy = false;
   bus.listen(({ event }) => {
@@ -99,7 +123,7 @@ export function createSnapshot(db: Database, bus: Bus) {
     get() {
       if (!current) {
         healthy = false;
-        current = build(db);
+        current = build(db, settings.get()['site.accents']);
         healthy = true;
       }
       return current;

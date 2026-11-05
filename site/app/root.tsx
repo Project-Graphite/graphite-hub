@@ -16,12 +16,13 @@ import { metaFor, metaTags } from './meta';
 import { createModel } from './model';
 import './styles/global.css';
 
-export const handle = { topics: ['members', 'profiles', 'projects', 'releases'] };
+export const handle = { topics: ['members', 'profiles', 'projects', 'releases', 'settings'] };
 
 export function loader({ context, request }: Route.LoaderArgs) {
-  const { directory, viewer, csrf } = context.get(hubContext);
+  const { directory, settings, viewer, csrf } = context.get(hubContext);
   return {
     directory,
+    settings,
     viewer,
     csrf,
     signIn: new URL(request.url).searchParams.has('graphite'),

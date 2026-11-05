@@ -52,6 +52,7 @@ export interface Member {
   publicRepos: number | null;
   followers: number | null;
   joined: string | null;
+  accent: string;
   path: string;
 }
 

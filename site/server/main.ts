@@ -15,6 +15,7 @@ import { alertOwner } from './mail.ts';
 import { createMetrics } from './metrics.ts';
 import { connectRedis } from './redis.ts';
 import { createSessions } from './sessions.ts';
+import { createSettings } from './settings.ts';
 import { createSnapshot } from './snapshot.ts';
 import { createSync } from './sync.ts';
 import { pingAll } from './uptime.ts';
@@ -32,7 +33,8 @@ const sessions = createSessions(redis, config.sessionSecret);
 const auth = createAuth(sessions, redis);
 const live = createLive(bus, auth);
 const sync = createSync(db, bus, sessions);
-const snapshot = createSnapshot(db, bus);
+const settings = createSettings(db, bus);
+const snapshot = createSnapshot(db, bus, settings);
 
 process.on('unhandledRejection', (reason) => capture(reason, { route: 'process' }));
 process.on('uncaughtExceptionMonitor', (error) => capture(error, { route: 'process' }));
@@ -53,7 +55,7 @@ if (config.production) {
 }
 
 const app = createApp(
-  { db, redis, bus, snapshot, auth, live, sync, capture, metrics: createMetrics() },
+  { db, redis, bus, snapshot, settings, auth, live, sync, capture, metrics: createMetrics() },
   loadBuild,
   assets,
 );

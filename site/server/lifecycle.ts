@@ -42,6 +42,13 @@ export function applyRetention(db: Database, now = Date.now()) {
       webhookDeliveries: db
         .prepare('DELETE FROM webhook_deliveries WHERE received_at < ?')
         .run(before(7, now)).changes,
+      versions: db
+        .prepare(
+          `DELETE FROM versions WHERE at < ? AND id NOT IN (
+             SELECT id FROM (SELECT id, row_number() OVER (PARTITION BY kind, key ORDER BY id DESC) AS place FROM versions)
+             WHERE place <= 50)`,
+        )
+        .run(before(90, now)).changes,
     };
   });
 }
