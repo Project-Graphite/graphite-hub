@@ -61,7 +61,7 @@ export function createModel({ members, projects, releases }: Directory) {
     projects.filter((project) => project.owner === member.handle);
 
   return {
-    members,
+    members: members.filter((member) => member.listed),
     projects,
     releases,
     rootProjects,

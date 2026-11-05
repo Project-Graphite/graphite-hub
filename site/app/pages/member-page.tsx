@@ -1,151 +1,115 @@
-import { accentStyle, Avatar } from '../components/kit/basics';
+import { Link } from 'react-router';
+import { accentStyle, Avatar, Panel } from '../components/kit/basics';
+import { blockTitle, Blocks, useRenderedBlocks, type PageProfile } from '../components/kit/blocks';
 import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
 import { Page } from '../components/Shell';
 import type { Hub } from '../context';
-import { Fragment } from 'react';
-import EpicCard from '../components/EpicCard';
-import ProjectCard from '../components/ProjectCard';
-import Section from '../components/Section';
-import TagList from '../components/TagList';
-import { useHub } from '../hub';
+import { useHub, useRoot } from '../hub';
 import { createModel } from '../model';
 import type { Member } from '../types';
 
 export const MEMBER_TOPICS = ['deploys', 'releases', 'projects', 'uptime', 'profiles'];
 
-export function loadMember({ reads, directory }: Hub, member: Member) {
+export function loadMember({ reads, directory, profiles, viewer }: Hub, member: Member) {
   const owned = new Set(
     createModel(directory)
       .projectsOwnedBy(member)
       .map((project) => project.slug),
   );
+  const { bio, blocks } = profiles.read(member.handle);
   return {
     page: 'member' as const,
     handle: member.handle,
+    profile: { bio, blocks, shortLinks: profiles.shortLinks(member.handle) },
     running: reads.running(directory).filter((running) => owned.has(running.slug)),
+    today: new Date().toISOString().slice(0, 10),
+    editable: Boolean(
+      viewer && (viewer.owner || viewer.login.toLowerCase() === member.github.toLowerCase()),
+    ),
   };
 }
 
-export function MemberPage({ data: loaderData }: { data: ReturnType<typeof loadMember> }) {
-  const {
-    childProjects,
-    contributionForMember,
-    epicsForMember,
-    memberByHandle,
-    projectBySlug,
-    projectsForMember,
-    releasesOwnedBy,
-  } = useHub();
-  const member = memberByHandle(loaderData.handle)!;
+export function editPath(member: Member) {
+  return `${member.path}/edit`;
+}
 
-  const memberProjects = projectsForMember(member);
-  const memberEpics = epicsForMember(member);
+export function MemberHero({ member }: { member: Member }) {
+  return (
+    <section className="page-hero member-hero">
+      {member.coverUrl && <img className="member-cover" src={member.coverUrl} alt="" />}
+      <p className="mono-sm m-0 text-faint">{member.path}</p>
+      <div className="mt-3 flex items-center gap-5">
+        <Avatar member={member} size="lg" />
+        <div>
+          <h1 className="page-title max-w-[18ch]">{member.name}</h1>
+          {member.headline && <p className="mt-2 mb-0 text-muted">{member.headline}</p>}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-  const releases = releasesOwnedBy(member);
+export function MemberView({
+  member,
+  profile,
+  today,
+}: {
+  member: Member;
+  profile: PageProfile;
+  today: string;
+}) {
+  const rendered = useRenderedBlocks(member, profile, today);
+  return (
+    <div style={accentStyle(member.accent)}>
+      <MemberHero member={member} />
+      <Blocks rendered={rendered} />
+    </div>
+  );
+}
+
+export function MemberPage({ data }: { data: ReturnType<typeof loadMember> }) {
+  const hub = useHub();
+  const settings = useRoot()!.settings;
+  const member = hub.memberByHandle(data.handle)!;
+  const releases = hub.releasesOwnedBy(member);
+  const rendered = useRenderedBlocks(member, data.profile, data.today);
 
   return (
     <Page
       rail={
         <>
+          {data.editable && (
+            <Link to={editPath(member)} className="btn primary justify-center">
+              edit this page
+            </Link>
+          )}
+          {rendered.length > 2 && (
+            <Panel title="on this page">
+              <ol className="mono-sm grid gap-1.5">
+                {rendered.map(({ block }) => (
+                  <li key={block.id}>
+                    <a href={`#${block.id}`} className="text-muted hover:text-ink">
+                      {blockTitle(block)}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </Panel>
+          )}
           {releases.length > 0 && (
             <ChangelogPanel
-              releases={releases.slice(0, 4)}
-              projectOf={(release) => projectBySlug(release.project)}
+              releases={releases.slice(0, settings['rail.changelog.count'] + 2)}
+              projectOf={(release) => hub.projectBySlug(release.project)}
             />
           )}
-          {loaderData.running.length > 0 && <RunningPanel running={loaderData.running} />}
+          {data.running.length > 0 && <RunningPanel running={data.running} />}
         </>
       }
     >
-      <section className="page-hero" style={accentStyle(member.accent)}>
-        <p className="mono-sm m-0 text-faint">{member.path}</p>
-
-        <div className="mt-3 flex items-center gap-5">
-          <Avatar member={member} size="lg" />
-          <div>
-            <h1 className="page-title max-w-[18ch]">{member.name}</h1>
-            {member.headline && <p className="mt-2 mb-0 text-muted">{member.headline}</p>}
-          </div>
-        </div>
-
-        {member.bio && <p className="mt-6 mb-0 max-w-[56ch] text-muted">{member.bio}</p>}
-
-        {member.links.length > 0 && (
-          <div className="mono-sm mt-6 flex flex-wrap gap-x-4.5 gap-y-2">
-            {member.links.map((link) => (
-              <a key={link.url} href={link.url} className="rule-link">
-                {link.label} ↗
-              </a>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <Section label="on github">
-        <dl className="mono-sm grid grid-cols-[auto_minmax(0,1fr)] gap-x-8 gap-y-3">
-          <dt className="text-faint">public repositories</dt>
-          <dd className="m-0">{member.publicRepos ?? '—'}</dd>
-
-          <dt className="text-faint">followers</dt>
-          <dd className="m-0">{member.followers ?? '—'}</dd>
-
-          <dt className="text-faint">since</dt>
-          <dd className="m-0">{member.joined ?? '—'}</dd>
-
-          <dt className="text-faint">profile</dt>
-          <dd className="m-0">
-            <a href={`https://github.com/${member.github}`} className="text-ink hover:underline">
-              github.com/{member.github} ↗
-            </a>
-          </dd>
-        </dl>
-      </Section>
-
-      {member.stack.length > 0 && (
-        <Section label="stack">
-          <dl className="mono-sm grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-8 gap-y-3">
-            {member.stack.map((group) => (
-              <Fragment key={group.group}>
-                <dt className="text-faint">{group.group}</dt>
-                <dd className="m-0">
-                  <TagList tags={group.items} />
-                </dd>
-              </Fragment>
-            ))}
-          </dl>
-        </Section>
-      )}
-
-      <Section label="projects">
-        {memberProjects.length === 0 ? (
-          <p className="mono-sm m-0 text-faint">No projects credited to this member yet.</p>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {memberProjects.map((project) => (
-              <ProjectCard
-                key={project.path}
-                project={project}
-                context={contributionForMember(project, member)?.summary}
-              />
-            ))}
-          </div>
-        )}
-      </Section>
-
-      {memberEpics.length > 0 && (
-        <Section label="epics">
-          <div className="grid gap-5">
-            {memberEpics.map((epic) => (
-              <EpicCard
-                key={epic.path}
-                epic={epic}
-                projects={childProjects(epic.slug)}
-                context={contributionForMember(epic, member)?.summary}
-              />
-            ))}
-          </div>
-        </Section>
-      )}
+      <div style={accentStyle(member.accent)}>
+        <MemberHero member={member} />
+        <Blocks rendered={rendered} />
+      </div>
     </Page>
   );
 }
