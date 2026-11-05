@@ -47,6 +47,19 @@ export type Block =
   | { id: string; type: 'quote'; text: string; source: string }
   | { id: string; type: 'embed'; url: string; title: string };
 
+export const UPLOAD_WIDTHS = {
+  avatar: [256, 96],
+  cover: [1600, 800],
+  gallery: [1600, 800],
+  screenshot: [1600, 800],
+} as const;
+
+export type UploadKind = keyof typeof UPLOAD_WIDTHS;
+
+export function uploadUrl(id: string, kind: UploadKind, size: 'large' | 'small' = 'large') {
+  return `/uploads/${id}/${UPLOAD_WIDTHS[kind][size === 'large' ? 0 : 1]}.webp`;
+}
+
 export interface ShortLink {
   name: string;
   url: string;

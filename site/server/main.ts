@@ -18,7 +18,9 @@ import { alertOwner } from './mail.ts';
 import { createMetrics } from './metrics.ts';
 import { connectRedis, slidingLimit } from './redis.ts';
 import { createSessions } from './sessions.ts';
+import { createProfiles } from './profiles.ts';
 import { createReads } from './reads.ts';
+import { createUploads } from './uploads.ts';
 import { createSettings } from './settings.ts';
 import { createSnapshot } from './snapshot.ts';
 import { createSync } from './sync.ts';
@@ -29,6 +31,7 @@ const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
 const db = openDatabase(path.join(config.dataDir, 'hub.db'));
+const uploadsDirectory = path.join(config.dataDir, 'uploads');
 const { command: redis, subscriber } = connectRedis(config.redisUrl);
 const bus = createBus(db, redis, subscriber);
 await bus.ready;
@@ -68,6 +71,10 @@ const app = createApp(
     reads: createReads(db),
     admin: createAdmin(db, bus, settings, sessions),
     share: createShare(),
+    profiles: createProfiles(db, bus),
+    uploads: createUploads(db, uploadsDirectory, (owner) =>
+      slidingLimit(redis, `uploads:${owner}`, 20, HOUR),
+    ),
     messages: createMessages(
       db,
       bus,
@@ -81,6 +88,7 @@ const app = createApp(
     metrics: createMetrics(),
   },
   loadBuild,
+  uploadsDirectory,
   assets,
 );
 const server = app.listen(config.port, () => log.info({ port: config.port }, 'listening'));
