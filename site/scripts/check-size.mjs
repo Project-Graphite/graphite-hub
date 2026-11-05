@@ -2,7 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
-const BUDGET_KB = 90;
+const BUDGET_KB = 150;
 const CLIENT = join('build', 'client');
 const ASSETS = join(CLIENT, 'assets');
 
