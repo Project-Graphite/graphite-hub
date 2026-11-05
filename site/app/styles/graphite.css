@@ -482,6 +482,8 @@ canvas.backdrop {
   position: absolute;
   bottom: 1rem;
   z-index: 2;
+  width: max-content;
+  max-width: 36ch;
   pointer-events: none;
   background: var(--color-paper);
   border: 1px solid var(--color-line);
