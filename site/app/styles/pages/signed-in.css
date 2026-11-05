@@ -24,30 +24,8 @@
 .kit .band {
   padding-block: 2.25rem 2.75rem;
 }
-.jumps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 1rem;
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-}
-.jumps a {
-  padding: 0.18rem 0.7rem;
-  border: 1px solid var(--color-line-soft);
-  border-radius: 999px;
-  color: var(--color-muted);
-  transition:
-    color 0.2s,
-    border-color 0.2s;
-}
-.jumps a:hover {
-  color: var(--color-ink);
-  border-color: var(--color-muted);
-}
-
 .settings,
-.roster,
+.seats,
 .errors,
 .pieces {
   margin-top: 1.5rem;
@@ -144,11 +122,6 @@
 .setting-state[data-state='error'] i {
   background: var(--color-danger);
 }
-@keyframes state-pulse {
-  50% {
-    opacity: 0.3;
-  }
-}
 .setting-tools {
   display: flex;
   gap: 0.8rem;
@@ -237,33 +210,6 @@
 }
 .versions button:disabled {
   opacity: 0.45;
-}
-
-.field {
-  width: 100%;
-  min-width: 0;
-  font: inherit;
-  color: var(--color-ink);
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--color-line);
-  border-radius: 0;
-  padding: 0.3rem 0;
-  resize: none;
-  field-sizing: content;
-}
-.field:hover {
-  border-bottom-color: var(--color-muted);
-}
-:is(.setting, .inspector) .field:focus {
-  border-color: var(--color-ink);
-}
-.field::placeholder {
-  color: var(--color-faint);
-}
-textarea.field {
-  min-height: 2.4rem;
-  line-height: 1.5;
 }
 
 .range {
@@ -435,50 +381,6 @@ textarea.field {
   cursor: grabbing;
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-.chips button,
-.segmented button {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--color-faint);
-  border: 1px solid var(--color-line-soft);
-  border-radius: 999px;
-  padding: 0.2rem 0.75rem;
-  cursor: pointer;
-  transition:
-    color 0.2s,
-    border-color 0.2s,
-    background 0.2s,
-    transform 0.2s;
-}
-.chips button:hover,
-.segmented button:hover {
-  color: var(--color-ink);
-  border-color: var(--color-line);
-}
-.chips button:active,
-.segmented button:active {
-  transform: scale(0.96);
-}
-.chips button[aria-pressed='true'],
-.segmented button[aria-pressed='true'] {
-  color: var(--color-paper);
-  background: var(--color-ink);
-  border-color: var(--color-ink);
-}
-.chips.add button {
-  border-style: dashed;
-}
-.segmented {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-}
-
 .swatches {
   display: flex;
   flex-wrap: wrap;
@@ -546,46 +448,6 @@ textarea.field {
     0 0 0 3.5px var(--swatch);
 }
 
-.chip-button {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--color-muted);
-  border: 1px solid var(--color-line);
-  border-radius: 999px;
-  padding: 0.2rem 0.75rem;
-  cursor: pointer;
-  justify-self: start;
-  white-space: nowrap;
-  transition:
-    color 0.2s,
-    border-color 0.2s,
-    background 0.2s,
-    transform 0.2s;
-}
-.chip-button:hover:not(:disabled) {
-  color: var(--color-ink);
-  border-color: var(--color-muted);
-}
-.chip-button:active:not(:disabled) {
-  transform: scale(0.96);
-}
-.chip-button[aria-pressed='true'] {
-  color: var(--color-paper);
-  background: var(--color-ink);
-  border-color: var(--color-ink);
-}
-.chip-button:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-.chip-button.add {
-  border-style: dashed;
-}
-.chip-button[data-armed] {
-  color: var(--color-danger);
-  border-color: var(--color-danger);
-  animation: state-pulse 1.2s ease-in-out infinite;
-}
 .remove {
   flex: none;
   width: 1.4rem;
@@ -699,12 +561,12 @@ textarea.field {
   padding: 0.1rem 0.6rem;
 }
 
-.roster {
+.seats {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
   gap: 0.75rem;
 }
-.member {
+.seat {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -715,22 +577,22 @@ textarea.field {
   background: var(--color-surface);
   transition: border-color 0.2s;
 }
-.member:hover {
+.seat:hover {
   border-color: var(--color-line);
 }
-.member .who {
+.seat .who {
   display: grid;
   min-width: 0;
   line-height: 1.3;
 }
-.member strong {
+.seat strong {
   font-weight: 600;
   font-size: 0.95rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.member .who > span {
+.seat .who > span {
   font-family: var(--font-mono);
   font-size: 0.74rem;
   color: var(--color-faint);
@@ -738,7 +600,7 @@ textarea.field {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.member i {
+.seat i {
   font-style: normal;
   margin-left: 0.5rem;
   padding: 0 0.35rem;
@@ -747,7 +609,7 @@ textarea.field {
   font-size: 0.66rem;
   color: var(--color-wip);
 }
-.member .links {
+.seat .links {
   display: flex;
   gap: 0.9rem;
   font-family: var(--font-mono);
@@ -755,8 +617,8 @@ textarea.field {
   opacity: 0.6;
   transition: opacity 0.2s;
 }
-.member:hover .links,
-.member:focus-within .links {
+.seat:hover .links,
+.seat:focus-within .links {
   opacity: 1;
 }
 

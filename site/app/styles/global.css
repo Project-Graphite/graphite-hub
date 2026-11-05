@@ -86,7 +86,7 @@ body {
   transition: border-color 0.2s ease;
 }
 
-:is(input, textarea, select):not([type='radio'], [type='checkbox']):focus {
+:is(input, textarea, select):not([type='radio'], [type='checkbox'], .field):focus {
   outline: none;
   border-color: var(--color-muted);
 }

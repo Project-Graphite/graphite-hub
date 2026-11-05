@@ -540,9 +540,9 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
         ))}
         <div id="members">
           <Band title="members">
-            <div className="roster">
+            <div className="seats">
               {root.directory.members.map((member) => (
-                <article key={member.handle} className="member">
+                <article key={member.handle} className="seat">
                   <Avatar member={member} size="md" />
                   <span className="who">
                     <strong>{member.name}</strong>

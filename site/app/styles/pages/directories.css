@@ -4,14 +4,6 @@
 .band.dir + .band.dir {
   padding-top: 3rem;
 }
-.dir .none {
-  grid-column: 1 / -1;
-  padding: 2.5rem 0;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  color: var(--color-faint);
-}
 
 .dir-chips {
   gap: 0.3rem;
@@ -124,34 +116,11 @@
   color: var(--color-muted);
   font-size: 0.92rem;
 }
-.entry .tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-.entry .tags button {
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  padding: 0.1rem 0.6rem;
-  border: 1px solid var(--color-line);
-  border-radius: 999px;
-  color: var(--color-faint);
-  cursor: pointer;
-  transition:
-    color 0.2s,
-    border-color 0.2s,
-    background 0.2s;
-}
-.entry .tags button:hover {
-  color: var(--color-ink);
-  border-color: var(--color-muted);
-}
 .entry .tags button[aria-pressed='true'] {
-  color: var(--color-paper);
   background: var(--accent, var(--color-ink));
   border-color: var(--accent, var(--color-ink));
 }
-.entry .pulse {
+.entry .cadence {
   display: flex;
   align-items: center;
   gap: 0.9rem;
@@ -824,25 +793,7 @@ mark {
   color: var(--color-ink);
 }
 .palette .jumps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
   padding: 0.85rem 1rem 1rem;
-}
-.palette .jumps a {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  padding: 0.3rem 0.8rem;
-  border: 1px solid var(--color-line-soft);
-  border-radius: 999px;
-  color: var(--color-muted);
-  transition:
-    color 0.2s,
-    border-color 0.2s;
-}
-.palette .jumps a:hover {
-  color: var(--color-ink);
-  border-color: var(--color-muted);
 }
 
 @media (prefers-reduced-motion: no-preference) {

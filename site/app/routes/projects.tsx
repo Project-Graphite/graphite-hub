@@ -69,7 +69,7 @@ function Entry({
           <Status status={project.status} />
         </div>
         <p className="summary">{project.summary}</p>
-        <div className="tags">
+        <div className="chips tags">
           {project.tags.map((item) => (
             <button
               key={item}
@@ -81,7 +81,7 @@ function Entry({
             </button>
           ))}
         </div>
-        <div className="pulse">
+        <div className="cadence">
           <Pulse releases={releases} today={today} />
           <span className="latest">
             {latest ? (

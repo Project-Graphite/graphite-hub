@@ -42,7 +42,7 @@ export default function MemberChangelog({ loaderData }: Route.ComponentProps) {
           }
         >
           {owned.length > 0 && (
-            <nav className="kin" aria-label="Project changelogs">
+            <nav className="jumps" aria-label="Project changelogs">
               {owned.map((project) => (
                 <Link key={project.path} to={changelogPath(project)}>
                   {project.name} →

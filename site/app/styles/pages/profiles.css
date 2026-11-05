@@ -48,28 +48,6 @@
 .profile .page-head .facts a {
   color: var(--color-ink);
 }
-.kin {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1.25rem;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-}
-.kin a {
-  padding: 0.3rem 0.75rem;
-  border: 1px solid var(--color-line);
-  border-radius: 999px;
-  color: var(--color-muted);
-  transition:
-    color 0.2s,
-    border-color 0.2s;
-}
-.kin a:hover {
-  color: var(--color-ink);
-  border-color: var(--color-muted);
-}
-
 .history {
   position: relative;
   margin-inline: -0.25rem;

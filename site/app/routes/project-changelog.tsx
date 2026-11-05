@@ -79,7 +79,7 @@ export default function ProjectChangelog({ loaderData }: Route.ComponentProps) {
           <p className="lede">{project.summary}</p>
           <TagList tags={project.tags} className="mt-4.5" />
           {(epic || children.length > 0) && (
-            <nav className="kin" aria-label="Related changelogs">
+            <nav className="jumps" aria-label="Related changelogs">
               {epic && (
                 <Link to={changelogPath(epic)} className="up">
                   ← {epic.name}
