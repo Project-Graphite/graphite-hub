@@ -47,12 +47,11 @@ export interface Services {
 }
 
 const MOVED: Record<string, string> = {
-  '/amr': '/members/amrmscll/',
-  '/members/amr': '/members/amrmscll/',
-  '/amr/windhawk-mods': '/epics/windhawk-mods/',
-  '/projects/windhawk-mods': '/epics/windhawk-mods/',
-  '/projects/windhawk-mods/stack-switch': '/epics/windhawk-mods/stack-switch/',
-  '/projects/windhawk-mods/tasktune': '/epics/windhawk-mods/tasktune/',
+  '/amr': '/members/amrmscll',
+  '/members/amr': '/members/amrmscll',
+  '/amr/windhawk-mods': '/windhawk-mods',
+  '/projects/windhawk-mods/stack-switch': '/windhawk-mods/stack-switch',
+  '/projects/windhawk-mods/tasktune': '/windhawk-mods/tasktune',
 };
 
 export function createApp(
@@ -181,8 +180,9 @@ export function createApp(
   });
 
   app.use((request, response, next) => {
-    const target = MOVED[request.path.replace(/(.)\/$/, '$1')];
-    if (target) {
+    const path = request.path.replace(/(.)\/$/, '$1');
+    const target = MOVED[path];
+    if (target && !services.profiles.handleForAlias(path.split('/')[1])) {
       response.redirect(301, target);
     } else {
       next();

@@ -1,5 +1,4 @@
 import { Link } from 'react-router';
-import type { Route } from './+types/project';
 import AuthorLink from '../components/AuthorLink';
 import { accentStyle, Avatar, Cover, Panel } from '../components/kit/basics';
 import { ReleaseTimeline } from '../components/kit/live';
@@ -10,16 +9,16 @@ import Section from '../components/Section';
 import { Page } from '../components/Shell';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
-import { hubContext } from '../context';
+import type { Hub } from '../context';
 import { day, shortTag } from '../format';
-import { found, modelFrom, useHub, useRoot } from '../hub';
+import { useHub, useRoot } from '../hub';
+import type { Project } from '../types';
 
-export const handle = { topics: ['deploys', 'releases', 'projects', 'uptime'] };
+export const PROJECT_TOPICS = ['deploys', 'releases', 'projects', 'uptime'];
 
-export function loader({ context, params }: Route.LoaderArgs) {
-  const project = found(modelFrom(context).projectByRoute(params.parentSlug, params.slug));
-  const { reads, directory } = context.get(hubContext);
+export function loadProject({ reads, directory }: Hub, project: Project) {
   return {
+    page: 'project' as const,
     parent: project.parent ?? undefined,
     slug: project.slug,
     running: reads.running(directory).filter((running) => running.slug === project.slug),
@@ -28,7 +27,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
   };
 }
 
-export default function Project({ loaderData }: Route.ComponentProps) {
+export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof loadProject> }) {
   const hub = useHub();
   const settings = useRoot()!.settings;
   const { childProjects, memberByHandle, memberByGithub, projectByRoute, projectBySlug } = hub;
@@ -68,7 +67,7 @@ export default function Project({ loaderData }: Route.ComponentProps) {
     >
       <section className="page-hero">
         <p className="mono-sm mb-3 text-faint">
-          /{project.path.split('/')[1]}/
+          /
           {parent && (
             <>
               <Link to={parent.path} className="hover:text-ink hover:underline">

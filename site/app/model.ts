@@ -7,8 +7,14 @@ export const STATUS_LABEL: Record<ProjectStatus, string> = {
   'source-only': 'source only',
 };
 
-export function changelogPath(entry: { path: string }) {
-  return `/changelog${entry.path}`;
+export function changelogPath(entry: Project | Member) {
+  if ('handle' in entry) {
+    return `/changelog/members/${entry.handle}`;
+  }
+  if (entry.parent) {
+    return `/changelog/epics/${entry.parent}/${entry.slug}`;
+  }
+  return `/changelog/${entry.kind === 'epic' ? 'epics' : 'projects'}/${entry.slug}`;
 }
 
 export function compareUrl(project: Project, release: Release) {
@@ -62,6 +68,18 @@ export function createModel({ members, projects, releases }: Directory) {
     epics,
     memberByHandle,
     memberByGithub,
+    isCredited,
+    resolve: (path: string): { project?: Project; member?: Member } => {
+      const project = projects.find((entry) => entry.path === path);
+      const member = project ? undefined : members.find((entry) => entry.path === path);
+      if (project || member) {
+        return { project, member };
+      }
+      const [alias, slug, extra] = path.split('/').filter(Boolean);
+      const scoped = members.find((entry) => entry.alias !== null && entry.alias === alias);
+      const owned = slug && !extra ? projectByRoute(undefined, slug) : undefined;
+      return scoped && owned && isCredited(owned, scoped) ? { project: owned } : {};
+    },
     projectBySlug,
     projectByRoute,
     childProjects,

@@ -11,6 +11,7 @@ const directory = {
       handle: 'amrmscll',
       github: 'AmrMsCLL',
       name: 'Amr',
+      alias: null,
       accent: '#6f8fd1',
       headline: 'Engineer',
       path: '/members/amrmscll',
@@ -25,7 +26,7 @@ const directory = {
       summary: 'A personal workspace.',
       owner: 'amrmscll',
       url: 'https://strata.project-graphite.com',
-      path: '/projects/strata',
+      path: '/strata',
     },
   ],
   releases: [],
@@ -36,7 +37,7 @@ describe('share cards', () => {
   const card = (path: string) => shareCard(model, path, 'Headline', ['#111111']);
 
   it('maps a project to its name, summary and owner accent, and a member to theirs', () => {
-    assert.deepEqual(card('/projects/strata'), {
+    assert.deepEqual(card('/strata'), {
       label: 'strata.project-graphite.com',
       title: 'Strata',
       subtitle: 'A personal workspace.',
@@ -48,11 +49,8 @@ describe('share cards', () => {
   });
 
   it('puts a content hash in the image address so a change gets a new address', () => {
-    const strata = card('/projects/strata')!;
-    assert.equal(
-      sharePath('/projects/strata', strata),
-      `/share/projects/strata.png?v=${shareHash(strata)}`,
-    );
+    const strata = card('/strata')!;
+    assert.equal(sharePath('/strata', strata), `/share/strata.png?v=${shareHash(strata)}`);
     assert.notEqual(shareHash(strata), shareHash({ ...strata, title: 'Strata 2' }));
     assert.match(sharePath('/', card('/')!), /^\/share\/home\.png\?v=/);
   });

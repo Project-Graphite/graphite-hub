@@ -42,9 +42,12 @@ export interface StackGroup {
 
 export interface Member {
   handle: string;
+  alias: string | null;
   github: string;
   name: string;
   avatarUrl: string;
+  coverUrl: string | null;
+  listed: boolean;
   headline: string | null;
   bio: string | null;
   stack: StackGroup[];

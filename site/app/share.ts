@@ -34,29 +34,22 @@ export function shareCard(
   if (fixed) {
     return { ...fixed, subtitle: 'project-graphite.com', accent: accents[0] };
   }
-  const [section, slug, child] = path.split('/').filter(Boolean);
-  if (section === 'members' && slug) {
-    const member = model.memberByHandle(slug);
-    return (
-      member && {
-        label: 'member',
-        title: member.name,
-        subtitle: member.headline ?? `@${member.github}`,
-        accent: member.accent,
-      }
-    );
+  const { project, member } = model.resolve(path);
+  if (member) {
+    return {
+      label: 'member',
+      title: member.name,
+      subtitle: member.headline ?? `@${member.github}`,
+      accent: member.accent,
+    };
   }
-  if ((section === 'projects' || section === 'epics') && slug) {
-    const project = model.projectByRoute(child ? slug : undefined, child ?? slug);
-    const owner = project && model.memberByHandle(project.owner);
-    return (
-      project && {
-        label: project.url?.replace('https://', '') ?? `${project.slug} · source only`,
-        title: project.name,
-        subtitle: project.summary,
-        accent: owner?.accent ?? accents[0],
-      }
-    );
+  if (project) {
+    return {
+      label: project.url?.replace('https://', '') ?? `${project.slug} · source only`,
+      title: project.name,
+      subtitle: project.summary,
+      accent: model.memberByHandle(project.owner)?.accent ?? accents[0],
+    };
   }
   return undefined;
 }

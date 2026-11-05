@@ -32,7 +32,7 @@ export default function ProjectChangelog({ loaderData }: Route.ComponentProps) {
     >
       <section className="page-hero">
         <p className="mono-sm m-0 text-faint">
-          /changelog/{project.path.split('/')[1]}/
+          /changelog/{changelogPath(project).split('/')[2]}/
           {epic && (
             <>
               <Link
