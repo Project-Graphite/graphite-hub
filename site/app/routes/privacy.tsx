@@ -1,43 +1,64 @@
-import { PageHeader } from '../components/kit/page';
+import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 
 const KEPT = [
-  [
-    'Visitors',
-    'No cookies, no accounts, no advertising and no third-party scripts. Pages render for anyone without signing in.',
-  ],
-  [
-    'Addresses',
-    'Used only to limit how often a sign-in can be tried, and kept for at most ten minutes.',
-  ],
-  [
-    'Members',
-    'A signed-in session lasts seven days idle and can be ended by its owner or the site owner at any time.',
-  ],
-  [
-    'Errors',
-    'An error report keeps the route and a request id, never what was sent, for thirty days after it was last seen.',
-  ],
-  [
-    'Messages',
-    'What you write and the name you give, until a member deletes it. The address you wrote from is kept only as a keyed hash, to stop floods.',
-  ],
-  ['Uptime', 'Checks of each project, minute by minute for thirty days, then one line a day.'],
-  [
-    'Activity',
-    'Public events such as deploys and releases; deploys and releases stay, the rest for 180 days.',
-  ],
+  {
+    what: 'Visitors',
+    how: 'No cookies, no accounts, no advertising and no third-party scripts. Pages render for anyone without signing in.',
+    kept: 'nothing',
+  },
+  {
+    what: 'Addresses',
+    how: 'Used only to limit how often a sign-in can be tried.',
+    kept: '10 minutes',
+  },
+  {
+    what: 'Members',
+    how: 'A signed-in session can be ended by its owner or the site owner at any time.',
+    kept: '7 days idle',
+  },
+  {
+    what: 'Errors',
+    how: 'An error report keeps the route and a request id, never what was sent.',
+    kept: '30 days after last seen',
+  },
+  {
+    what: 'Messages',
+    how: 'What you write and the name you give. The address you wrote from is kept only as a keyed hash, to stop floods.',
+    kept: 'until a member deletes it',
+  },
+  {
+    what: 'Uptime',
+    how: 'Checks of each project, minute by minute for thirty days, then one line a day.',
+    kept: '30 days by the minute',
+  },
+  {
+    what: 'Activity',
+    how: 'Public events such as deploys and releases. Deploys and releases stay.',
+    kept: '180 days',
+  },
 ];
 
 export default function Privacy() {
   return (
     <Page>
-      <PageHeader path="/privacy" title="What this site keeps" />
-      <dl className="band grid max-w-[64ch] grid-cols-[auto_minmax(0,1fr)] gap-x-8 gap-y-4">
-        {KEPT.map(([what, how]) => (
-          <div key={what} className="contents">
-            <dt className="mono-sm text-faint">{what}</dt>
-            <dd className="text-muted">{how}</dd>
+      <PageHeader
+        path="/privacy"
+        title="What this site keeps"
+        facts={
+          <>
+            <Fact label="cookies" value="none" />
+            <Fact label="third-party scripts" value="none" />
+            <Fact value={KEPT.length} label="things kept, each with a limit" />
+          </>
+        }
+      />
+      <dl className="ledger">
+        {KEPT.map(({ what, how, kept }) => (
+          <div key={what} className="entry">
+            <dt>{what}</dt>
+            <dd>{how}</dd>
+            <dd className="kept">{kept}</dd>
           </div>
         ))}
       </dl>
