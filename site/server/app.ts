@@ -69,6 +69,7 @@ export function createApp(
   const verified = createVerifier(config.deployReportSecret);
   const app = express();
   app.disable('x-powered-by');
+  app.set('trust proxy', 'loopback, uniquelocal');
 
   app.use((request: Request, response: Response, next: NextFunction) => {
     const requestId = randomUUID();

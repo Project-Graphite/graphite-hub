@@ -7,10 +7,11 @@ import { loadProject, PROJECT_TOPICS, ProjectPage } from '../pages/project-page'
 
 export const handle = { topics: [...new Set([...PROJECT_TOPICS, ...MEMBER_TOPICS])] };
 
-export function loader({ context, request }: Route.LoaderArgs) {
+export function loader({ context, params }: Route.LoaderArgs) {
   const hub = context.get(hubContext);
-  const path = new URL(request.url).pathname.replace(/(.)\/$/, '$1');
-  const { project, member } = modelFrom(context).resolve(path);
+  const { project, member } = modelFrom(context).resolve(
+    `/${[params.name, params.first, params.second].filter(Boolean).join('/')}`,
+  );
   if (project) {
     return loadProject(hub, project);
   }
