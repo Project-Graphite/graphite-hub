@@ -368,6 +368,29 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
               </div>
             </Section>
           ))}
+          <Section label="members">
+            <div className="settings">
+              {root.directory.members.map((member) => (
+                <div key={member.handle} className="setting">
+                  <div className="setting-head">
+                    <span className="setting-label">{member.name}</span>
+                    <span className="mono-sm text-faint">
+                      {member.path}
+                      {member.listed ? '' : ' · unlisted'}
+                    </span>
+                    <span className="mono-sm ml-auto flex gap-4">
+                      <Link to={member.path} className="rule-link">
+                        view
+                      </Link>
+                      <Link to={`${member.path}/edit`} className="rule-link">
+                        edit
+                      </Link>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
           <Section label={`messages · ${loaderData.waiting} waiting`}>
             <Link to="/messages" className="rule-link mono-sm">
               moderate on /messages
