@@ -25,7 +25,17 @@ export function weekOf(rows: { day: string; ok: number }[], today: string): Day[
 }
 
 export function createReads(db: Database) {
+  const upNow = () =>
+    db
+      .prepare(
+        'SELECT project FROM uptime u WHERE ok = 1 AND minute = (SELECT max(minute) FROM uptime WHERE project = u.project)',
+      )
+      .all()
+      .map((row) => row.project as string);
+
   return {
+    upNow,
+
     consoleLines(limit: number): ConsoleLine[] {
       return db
         .prepare(
@@ -139,12 +149,7 @@ export function createReads(db: Database) {
     },
 
     counts(directory: Directory, running: Running[], now = Date.now()): Counts {
-      const latest = db
-        .prepare(
-          'SELECT project, ok FROM uptime u WHERE minute = (SELECT max(minute) FROM uptime WHERE project = u.project)',
-        )
-        .all();
-      const up = new Set(latest.filter((row) => row.ok === 1).map((row) => row.project as string));
+      const up = new Set(upNow());
       return {
         members: directory.members.length,
         projects: directory.projects.length,
