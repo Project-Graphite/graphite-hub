@@ -16,6 +16,7 @@ COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY --from=build /app/server ./server
+COPY --from=build /app/app ./app
 COPY --from=build /app/scripts/rules.mjs ./scripts/
 USER node
 EXPOSE 3000
