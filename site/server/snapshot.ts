@@ -1,0 +1,113 @@
+import type { Directory, Member, MemberLink, Project, Release, StackGroup } from '../app/types.ts';
+import { compareVersions } from '../scripts/rules.mjs';
+import type { Bus } from './bus.ts';
+import { json, type Database } from './db.ts';
+import { storedEntries, type RegistryEntry } from './registry.ts';
+
+const TOPICS = new Set(['members', 'profiles', 'projects', 'releases']);
+
+type Block = { type: 'stack'; groups: StackGroup[] } | { type: 'links'; links: MemberLink[] };
+
+export function projectFromEntry(entry: RegistryEntry): Project {
+  return {
+    slug: entry.slug,
+    parent: entry.parent ?? null,
+    kind: entry.kind,
+    name: entry.name,
+    summary: entry.summary,
+    tags: entry.tags ?? [],
+    repo: entry.repo,
+    repoUrl: `https://github.com/${entry.repo}`,
+    owner: entry.owner,
+    authors: entry.authors,
+    status: entry.status,
+    pinned: entry.pinned ?? false,
+    showcase: entry.showcase ?? null,
+    url: entry.deploy.kind === 'none' ? null : `https://${entry.deploy.host}`,
+    path: entry.parent
+      ? `/epics/${entry.parent}/${entry.slug}`
+      : `/${entry.kind === 'epic' ? 'epics' : 'projects'}/${entry.slug}`,
+  };
+}
+
+function build(db: Database): Directory {
+  const members = db
+    .prepare(
+      `SELECT m.handle, m.login, m.name, m.avatar_url, m.public_repos, m.followers, m.github_since,
+              p.headline, p.bio, p.blocks
+         FROM members m LEFT JOIN profiles p USING (handle)
+        ORDER BY m.name COLLATE NOCASE`,
+    )
+    .all()
+    .map((row): Member => {
+      const blocks = json<Block[]>(row.blocks ?? '[]');
+      return {
+        handle: row.handle as string,
+        github: row.login as string,
+        name: row.name as string,
+        avatarUrl: row.avatar_url as string,
+        headline: row.headline as string | null,
+        bio: row.bio as string | null,
+        stack: blocks.flatMap((block) => (block.type === 'stack' ? block.groups : [])),
+        links: blocks.flatMap((block) => (block.type === 'links' ? block.links : [])),
+        publicRepos: row.public_repos as number | null,
+        followers: row.followers as number | null,
+        joined: row.github_since as string | null,
+        path: `/members/${row.handle as string}`,
+      };
+    });
+
+  const projects = storedEntries(db)
+    .filter((entry) => entry.listed !== false)
+    .map(projectFromEntry);
+  const listed = new Set(projects.map((project) => project.slug));
+
+  const releases = db
+    .prepare('SELECT * FROM releases')
+    .all()
+    .filter((row) => listed.has(row.project as string))
+    .map((row): Release => ({
+      id: row.id as string,
+      project: row.project as string,
+      version: row.version as string,
+      tag: row.tag as string | null,
+      previous: row.previous as string | null,
+      date: row.date as string,
+      title: row.title as string | null,
+      summary: row.summary as string | null,
+      groups: json(row.groups),
+    }))
+    .sort(
+      (a, b) =>
+        b.date.localeCompare(a.date) ||
+        compareVersions(b.version, a.version) ||
+        a.project.localeCompare(b.project),
+    );
+
+  return { members, projects, releases };
+}
+
+export function createSnapshot(db: Database, bus: Bus) {
+  let current: Directory | undefined;
+  let healthy = false;
+  bus.listen(({ event }) => {
+    if (TOPICS.has(event.topic)) {
+      current = undefined;
+    }
+  });
+  return {
+    get() {
+      if (!current) {
+        healthy = false;
+        current = build(db);
+        healthy = true;
+      }
+      return current;
+    },
+    get healthy() {
+      return healthy;
+    },
+  };
+}
+
+export type Snapshot = ReturnType<typeof createSnapshot>;
