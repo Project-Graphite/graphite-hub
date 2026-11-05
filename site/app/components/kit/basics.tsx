@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Link } from 'react-router';
+import { useFolded } from '../../folds';
 import { useMagnetic } from '../../motion/motion';
 
 export const accentStyle = (accent: string | undefined) =>
@@ -98,17 +99,40 @@ export function Panel({
   link?: { to: string; label: string };
   children: ReactNode;
 }) {
+  const [folded, toggle] = useFolded(title);
   return (
-    <aside className="panel">
+    <aside className="panel" data-folded={folded || undefined}>
       <div className="panel-head">
-        <h2>{title}</h2>
+        <h2>
+          <Fold open={!folded} toggle={toggle}>
+            {title}
+          </Fold>
+        </h2>
         {link && (
           <Link to={link.to} className="rule-link mono-sm">
             {link.label}
           </Link>
         )}
       </div>
-      {children}
+      <div className="panel-body" hidden={folded}>
+        {children}
+      </div>
     </aside>
+  );
+}
+
+export function Fold({
+  open,
+  toggle,
+  children,
+}: {
+  open: boolean;
+  toggle: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button type="button" className="fold" aria-expanded={open} onClick={toggle}>
+      {children}
+    </button>
   );
 }

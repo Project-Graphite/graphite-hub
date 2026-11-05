@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router';
 import { useRoot } from '../../hub';
 import { search } from '../../search';
 
+const OPEN = 'graphite:search';
+
+export const openSearch = () => dispatchEvent(new Event(OPEN));
+
 export function Palette() {
   const root = useRoot();
   const navigate = useNavigate();
@@ -12,6 +16,11 @@ export function Palette() {
   const hits = root ? search(root.directory, query, 12) : [];
 
   useEffect(() => {
+    const show = () => {
+      if (!dialog.current?.open) {
+        dialog.current?.showModal();
+      }
+    };
     const open = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (
@@ -21,11 +30,15 @@ export function Palette() {
         !target.closest('input, textarea, select, [contenteditable]')
       ) {
         event.preventDefault();
-        dialog.current?.showModal();
+        show();
       }
     };
     addEventListener('keydown', open);
-    return () => removeEventListener('keydown', open);
+    addEventListener(OPEN, show);
+    return () => {
+      removeEventListener('keydown', open);
+      removeEventListener(OPEN, show);
+    };
   }, []);
 
   const go = (to: string) => {

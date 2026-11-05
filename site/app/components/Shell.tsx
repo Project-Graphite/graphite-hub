@@ -1,11 +1,12 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { useRoot } from '../hub';
+import { Backdrop } from '../motion/canvases';
 import { MotionContext } from '../motion/motion';
 import { defaults, visible, type NAV } from '../settings';
-import { accentStyle } from './kit/basics';
+import AccountMenu from './AccountMenu';
 import { Editable, useEditing } from './kit/Editable';
-import { Palette } from './kit/Palette';
+import { openSearch, Palette } from './kit/Palette';
 
 const NAV_TARGET: Record<(typeof NAV)[number], { to: string; label: string }> = {
   members: { to: '/members', label: 'members' },
@@ -23,12 +24,10 @@ export default function Shell({ children }: { children: ReactNode }) {
   const root = useRoot();
   const settings = root?.settings ?? defaults();
   const editing = useEditing();
-  const viewerAccent = root?.directory.members.find(
-    (member) => member.github.toLowerCase() === root.viewer?.login.toLowerCase(),
-  )?.accent;
 
   return (
     <MotionContext value={settings['site.motion']}>
+      <Backdrop />
       <a href="#content" className="skip-link">
         skip to content
       </a>
@@ -66,29 +65,11 @@ export default function Shell({ children }: { children: ReactNode }) {
                 </NavLink>
               );
             })}
-            {root?.viewer ? (
-              <form method="post" action="/auth/sign-out" className="flex items-center gap-2.5">
-                <input type="hidden" name="csrf" value={root.csrf ?? ''} />
-                <span className="avatar xs" style={accentStyle(viewerAccent)}>
-                  <img
-                    src={root.viewer.avatarUrl}
-                    alt={`Signed in as ${root.viewer.login}`}
-                    width={20}
-                    height={20}
-                  />
-                </span>
-                <button
-                  type="submit"
-                  className="cursor-pointer border-0 bg-transparent p-0 font-mono"
-                >
-                  sign out
-                </button>
-              </form>
-            ) : (
-              root?.signIn && (
-                <a href={`/auth/sign-in?return=${encodeURIComponent(pathname)}`}>sign in</a>
-              )
-            )}
+            <button type="button" className="frame-search" onClick={openSearch}>
+              search
+              <span className="kbd">/</span>
+            </button>
+            <AccountMenu />
           </nav>
         </div>
       </header>
@@ -118,9 +99,63 @@ export default function Shell({ children }: { children: ReactNode }) {
   );
 }
 
+const RAIL_GAP = 24;
+
+function useTwoWayRail(box: RefObject<HTMLDivElement | null>, hasRail: boolean) {
+  useEffect(() => {
+    const layout = box.current;
+    const content = layout?.querySelector<HTMLElement>(':scope > .frame-main');
+    const rail = layout?.querySelector<HTMLElement>(':scope > .frame-rail');
+    if (!layout || !content || !rail || !hasRail) {
+      return;
+    }
+    let last = scrollY;
+    let down = false;
+    let offset = 0;
+    const place = () => {
+      if (getComputedStyle(rail).position === 'static') {
+        rail.style.transform = '';
+        return;
+      }
+      const y = scrollY;
+      if (y !== last) {
+        down = y > last;
+      }
+      last = y;
+      const top = rail.getBoundingClientRect().top - offset;
+      const height = rail.offsetHeight;
+      const room = innerHeight - RAIL_GAP * 2;
+      let visual = top + offset;
+      if (height <= room) {
+        visual = RAIL_GAP;
+      } else if (down) {
+        visual = Math.max(visual, innerHeight - RAIL_GAP - height);
+      } else {
+        visual = Math.min(visual, RAIL_GAP);
+      }
+      offset = Math.min(Math.max(visual - top, 0), Math.max(content.offsetHeight - height, 0));
+      rail.style.transform = offset ? `translateY(${offset}px)` : '';
+    };
+    const observer = new ResizeObserver(place);
+    observer.observe(rail);
+    observer.observe(content);
+    addEventListener('scroll', place, { passive: true });
+    addEventListener('resize', place);
+    place();
+    return () => {
+      observer.disconnect();
+      removeEventListener('scroll', place);
+      removeEventListener('resize', place);
+      rail.style.transform = '';
+    };
+  }, [box, hasRail]);
+}
+
 export function Page({ rail, children }: { rail?: ReactNode; children: ReactNode }) {
+  const box = useRef<HTMLDivElement>(null);
+  useTwoWayRail(box, Boolean(rail));
   return (
-    <div className={`frame-layout ${rail ? '' : 'solo'}`}>
+    <div ref={box} className={`frame-layout ${rail ? '' : 'solo'}`}>
       <div className="frame-main">{children}</div>
       {rail && <div className="frame-rail">{rail}</div>}
     </div>

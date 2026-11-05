@@ -10,11 +10,121 @@ interface Particle {
   ty: number;
 }
 
+type Point = { x: number; y: number } | null;
+
+const frames = new Set<() => void>();
+let handle = 0;
+let watching = false;
+
+function tick() {
+  handle = 0;
+  for (const draw of frames) {
+    draw();
+  }
+  schedule();
+}
+
+function schedule() {
+  if (!handle && frames.size > 0 && !document.hidden) {
+    handle = requestAnimationFrame(tick);
+  }
+}
+
+export function onFrame(draw: () => void) {
+  if (!watching) {
+    watching = true;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        cancelAnimationFrame(handle);
+        handle = 0;
+      } else {
+        schedule();
+      }
+    });
+  }
+  frames.add(draw);
+  schedule();
+  return () => {
+    frames.delete(draw);
+    if (frames.size === 0) {
+      cancelAnimationFrame(handle);
+      handle = 0;
+    }
+  };
+}
+
 function scale() {
   return Math.min(devicePixelRatio || 1, 2);
 }
 
-export function Field() {
+function seed(count: number, width: number, height: number, speed: number): Particle[] {
+  return Array.from({ length: count }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    vx: (Math.random() - 0.5) * speed,
+    vy: (Math.random() - 0.5) * speed,
+    tx: 0,
+    ty: 0,
+  }));
+}
+
+function drawConstellation(
+  context: CanvasRenderingContext2D,
+  points: Particle[],
+  reach: number,
+  dpr: number,
+  lineAlpha: number,
+  dotAlpha: number,
+  glowOf: (point: Particle) => number = () => 1,
+  yOf: (point: Particle) => number = (point) => point.y,
+) {
+  context.lineWidth = dpr;
+  for (let i = 0; i < points.length; i += 1) {
+    const a = points[i];
+    const ay = yOf(a);
+    for (let j = i + 1; j < points.length; j += 1) {
+      const b = points[j];
+      const by = yOf(b);
+      const distance = Math.hypot(a.x - b.x, ay - by);
+      if (distance < reach) {
+        const glow = (glowOf(a) + glowOf(b)) / 2;
+        context.strokeStyle = `rgba(232,232,234,${((1 - distance / reach) * lineAlpha * glow).toFixed(3)})`;
+        context.beginPath();
+        context.moveTo(a.x, ay);
+        context.lineTo(b.x, by);
+        context.stroke();
+      }
+    }
+  }
+  for (const point of points) {
+    context.fillStyle = `rgba(232,232,234,${(dotAlpha * glowOf(point)).toFixed(3)})`;
+    context.beginPath();
+    context.arc(point.x, yOf(point), 1.3 * dpr, 0, Math.PI * 2);
+    context.fill();
+  }
+}
+
+function trackPointer(
+  target: HTMLElement | Window,
+  element: HTMLCanvasElement,
+  dpr: number,
+  set: (point: Point) => void,
+) {
+  const move = (event: Event) => {
+    const { clientX, clientY } = event as PointerEvent;
+    const box = element.getBoundingClientRect();
+    set({ x: (clientX - box.left) * dpr, y: (clientY - box.top) * dpr });
+  };
+  const leave = () => set(null);
+  target.addEventListener('pointermove', move);
+  target.addEventListener('pointerleave', leave);
+  return () => {
+    target.removeEventListener('pointermove', move);
+    target.removeEventListener('pointerleave', leave);
+  };
+}
+
+export function Field({ density = 7000, reach = 120 }: { density?: number; reach?: number }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const allowed = useMotion('field');
 
@@ -28,24 +138,21 @@ export function Field() {
     const dpr = scale();
     let width = 0;
     let height = 0;
-    let frame = 0;
-    let pointer: { x: number; y: number } | null = null;
+    let pointer: Point = null;
+    let points: Particle[] = [];
     const resize = () => {
       width = element.width = element.clientWidth * dpr;
       height = element.height = element.clientHeight * dpr;
+      points = seed(
+        Math.max(16, Math.round((element.clientWidth * element.clientHeight) / density)),
+        width,
+        height,
+        0.12 * dpr,
+      );
     };
     resize();
-    const points: Particle[] = Array.from({ length: 70 }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.12 * dpr,
-      vy: (Math.random() - 0.5) * 0.12 * dpr,
-      tx: 0,
-      ty: 0,
-    }));
     const draw = () => {
       context.clearRect(0, 0, width, height);
-      const reach = 120 * dpr;
       for (const point of points) {
         if (pointer) {
           const dx = pointer.x - point.x;
@@ -61,47 +168,92 @@ export function Field() {
         point.vx *= 0.995;
         point.vy *= 0.995;
       }
-      for (let i = 0; i < points.length; i += 1) {
-        for (let j = i + 1; j < points.length; j += 1) {
-          const distance = Math.hypot(points[i].x - points[j].x, points[i].y - points[j].y);
-          if (distance < reach) {
-            context.strokeStyle = `rgba(232,232,234,${(1 - distance / reach) * 0.14})`;
-            context.lineWidth = dpr;
-            context.beginPath();
-            context.moveTo(points[i].x, points[i].y);
-            context.lineTo(points[j].x, points[j].y);
-            context.stroke();
+      drawConstellation(context, points, reach * dpr, dpr, 0.14, 0.38);
+    };
+    const untrack = trackPointer(host, element, dpr, (point) => {
+      pointer = point;
+    });
+    addEventListener('resize', resize);
+    const stop = onFrame(draw);
+    return () => {
+      stop();
+      untrack();
+      removeEventListener('resize', resize);
+    };
+  }, [allowed, density, reach]);
+
+  return <canvas ref={canvas} className="field" aria-hidden="true" />;
+}
+
+export function Backdrop() {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const allowed = useMotion('backdrop');
+
+  useEffect(() => {
+    const element = canvas.current;
+    if (!element || !allowed) {
+      return;
+    }
+    const context = element.getContext('2d')!;
+    const dpr = scale();
+    let width = 0;
+    let height = 0;
+    let pointer: Point = null;
+    let points: Particle[] = [];
+    const resize = () => {
+      width = element.width = innerWidth * dpr;
+      height = element.height = innerHeight * dpr;
+      points = seed(
+        Math.min(140, Math.max(24, Math.round((innerWidth * innerHeight) / 13000))),
+        width,
+        height,
+        0.07 * dpr,
+      );
+    };
+    resize();
+    const draw = () => {
+      context.clearRect(0, 0, width, height);
+      const shift = scrollY * 0.15 * dpr;
+      const yOf = (point: Particle) => (((point.y - shift) % height) + height) % height;
+      const head = document.querySelector('.page-head, .hero')?.getBoundingClientRect();
+      const top = (head?.top ?? 0) * dpr;
+      const bottom = (head?.bottom ?? 0) * dpr;
+      const glowOf = (point: Particle) => {
+        const y = yOf(point);
+        const away = y < top ? top - y : y > bottom ? y - bottom : 0;
+        return Math.max(0.15, 1 - away / (480 * dpr));
+      };
+      for (const point of points) {
+        if (pointer) {
+          const dx = pointer.x - point.x;
+          const dy = pointer.y - yOf(point);
+          const distance = Math.hypot(dx, dy) || 1;
+          if (distance < 240 * dpr) {
+            const pull = (1 - distance / (240 * dpr)) * 0.0025 * dpr;
+            point.vx += (dx / distance) * pull;
+            point.vy += (dy / distance) * pull;
           }
         }
+        point.x = (point.x + point.vx + width) % width;
+        point.y = (point.y + point.vy + height) % height;
+        point.vx *= 0.992;
+        point.vy *= 0.992;
       }
-      context.fillStyle = 'rgba(232,232,234,.38)';
-      for (const point of points) {
-        context.beginPath();
-        context.arc(point.x, point.y, 1.3 * dpr, 0, Math.PI * 2);
-        context.fill();
-      }
-      frame = requestAnimationFrame(draw);
+      drawConstellation(context, points, 110 * dpr, dpr, 0.11, 0.32, glowOf, yOf);
     };
-    const move = (event: PointerEvent) => {
-      const box = element.getBoundingClientRect();
-      pointer = { x: (event.clientX - box.left) * dpr, y: (event.clientY - box.top) * dpr };
-    };
-    const leave = () => {
-      pointer = null;
-    };
-    host.addEventListener('pointermove', move);
-    host.addEventListener('pointerleave', leave);
+    const untrack = trackPointer(window, element, dpr, (point) => {
+      pointer = point;
+    });
     addEventListener('resize', resize);
-    draw();
+    const stop = onFrame(draw);
     return () => {
-      cancelAnimationFrame(frame);
-      host.removeEventListener('pointermove', move);
-      host.removeEventListener('pointerleave', leave);
+      stop();
+      untrack();
       removeEventListener('resize', resize);
     };
   }, [allowed]);
 
-  return <canvas ref={canvas} className="field" aria-hidden="true" />;
+  return <canvas ref={canvas} className="backdrop" aria-hidden="true" />;
 }
 
 export function Mark() {
@@ -164,8 +316,7 @@ export function Mark() {
         }
       }
     }
-    let frame = 0;
-    let pointer: { x: number; y: number } | null = null;
+    let pointer: Point = null;
     const draw = () => {
       context.clearRect(0, 0, size, size);
       context.fillStyle = '#e8e8ea';
@@ -190,24 +341,18 @@ export function Mark() {
         }
         context.fillRect(point.x, point.y, 1.6 * dpr, 1.6 * dpr);
       }
-      if (allowed) {
-        frame = requestAnimationFrame(draw);
-      }
     };
-    const move = (event: PointerEvent) => {
-      const box = element.getBoundingClientRect();
-      pointer = { x: (event.clientX - box.left) * dpr, y: (event.clientY - box.top) * dpr };
-    };
-    const leave = () => {
-      pointer = null;
-    };
-    element.addEventListener('pointermove', move);
-    element.addEventListener('pointerleave', leave);
-    draw();
+    if (!allowed) {
+      draw();
+      return;
+    }
+    const untrack = trackPointer(element, element, dpr, (point) => {
+      pointer = point;
+    });
+    const stop = onFrame(draw);
     return () => {
-      cancelAnimationFrame(frame);
-      element.removeEventListener('pointermove', move);
-      element.removeEventListener('pointerleave', leave);
+      stop();
+      untrack();
     };
   }, [allowed]);
 

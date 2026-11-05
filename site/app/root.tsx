@@ -17,17 +17,13 @@ import { createModel } from './model';
 import { shareCard, sharePath } from './share';
 import './styles/global.css';
 
+import.meta.glob('./styles/pages/*.css', { eager: true });
+
 export const handle = { topics: ['members', 'profiles', 'projects', 'releases', 'settings'] };
 
-export function loader({ context, request }: Route.LoaderArgs) {
+export function loader({ context }: Route.LoaderArgs) {
   const { directory, settings, viewer, csrf } = context.get(hubContext);
-  return {
-    directory,
-    settings,
-    viewer,
-    csrf,
-    signIn: new URL(request.url).searchParams.has('graphite'),
-  };
+  return { directory, settings, viewer, csrf };
 }
 
 export function meta({ loaderData, location }: Route.MetaArgs) {
