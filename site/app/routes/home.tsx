@@ -60,7 +60,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     .reverse();
 
   const shownSections = visible(settings['home.sections']);
-  const timeline = (width?: number) => (
+  const days = settings['home.timeline.days'];
+  const recent = hub.releases.filter(
+    (release) => Date.parse(release.date) >= Date.parse(today) - days * 86_400_000,
+  ).length;
+  const timeline = (
     <ReleaseTimeline
       releases={hub.releases}
       accentOf={(release) =>
@@ -68,8 +72,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       }
       nameOf={(release) => hub.projectBySlug(release.project)?.name ?? release.project}
       today={today}
-      days={settings['home.timeline.days']}
-      width={width}
+      days={days}
     />
   );
 
@@ -88,9 +91,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               {settings['home.hero.primary']}
             </Button>
             <Button to="https://github.com/project-graphite">github ↗</Button>
-            <span className="hint">
-              <span className="kbd">/</span> to search
-            </span>
           </div>
           <Counters counts={counts} shown={visible(settings['home.counters'])} />
         </div>
@@ -101,11 +101,18 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     ),
     ticker: (
       <div className="pulse">
-        <Ticker lines={ticker} />
-        {shownSections.includes('timeline') && timeline(440)}
+        <div className="row">
+          <Ticker lines={ticker} />
+          {shownSections.includes('timeline') && (
+            <span className="window-count">
+              <b>{recent}</b> releases · {days} days
+            </span>
+          )}
+        </div>
+        {shownSections.includes('timeline') && timeline}
       </div>
     ),
-    timeline: !shownSections.includes('ticker') && timeline(),
+    timeline: !shownSections.includes('ticker') && timeline,
     featured: featured.length > 0 && (
       <Band
         title={<Editable setting="home.featured.title" />}

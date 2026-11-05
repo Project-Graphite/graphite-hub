@@ -77,9 +77,6 @@ export default function Kit({ loaderData }: Route.ComponentProps) {
               primary
             </Button>
             <Button to="https://github.com/project-graphite">outline ↗</Button>
-            <span className="hint">
-              <span className="kbd">/</span> to search
-            </span>
           </div>
           <Counters
             counts={{
@@ -97,14 +94,18 @@ export default function Kit({ loaderData }: Route.ComponentProps) {
         </div>
       </section>
       <div className="pulse">
-        <Ticker lines={LINES} />
+        <div className="row">
+          <Ticker lines={LINES} />
+          <span className="window-count">
+            <b>{hub.releases.length}</b> releases · 60 days
+          </span>
+        </div>
         <ReleaseTimeline
           releases={hub.releases}
           accentOf={(release) => ownerOf(release.project)?.accent ?? 'var(--color-muted)'}
           nameOf={(release) => hub.projectBySlug(release.project)?.name ?? release.project}
           today={new Date(now).toISOString().slice(0, 10)}
           days={60}
-          width={440}
         />
       </div>
       <Band title="Windows" more={{ to: '/projects', label: 'more' }}>
