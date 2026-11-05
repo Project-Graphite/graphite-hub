@@ -1,0 +1,111 @@
+import assert from 'node:assert/strict';
+import type { IncomingMessage } from 'node:http';
+import { describe, it } from 'node:test';
+import { clientAddress, cloudflareRanges } from './address.ts';
+import { cookies, safeReturn, sameOrigin } from './auth.ts';
+import { createVerifier, sign } from './internal.ts';
+import { createSealer } from './sessions.ts';
+
+function request(headers: Record<string, string>, remoteAddress = '172.18.0.5') {
+  return { headers, socket: { remoteAddress } } as unknown as IncomingMessage;
+}
+
+describe('session sealing', () => {
+  const sealer = createSealer('secret-one');
+
+  it('round-trips the GitHub token', () => {
+    assert.equal(sealer.open(sealer.seal('gho_token')), 'gho_token');
+  });
+
+  it('refuses a tampered token and one sealed with another secret', () => {
+    const sealed = sealer.seal('gho_token');
+    const [iv, body] = sealed.split('.');
+    const flipped = Buffer.from(body, 'base64url');
+    flipped[0] ^= 1;
+    assert.throws(() => sealer.open(`${iv}.${flipped.toString('base64url')}`));
+    assert.throws(() => createSealer('secret-two').open(sealed));
+  });
+});
+
+describe('sign-in helpers', () => {
+  it('returns only to a path on this site', () => {
+    assert.equal(safeReturn('/members/amrmscll'), '/members/amrmscll');
+    assert.equal(safeReturn('//evil.example'), '/');
+    assert.equal(safeReturn('/\\evil.example'), '/');
+    assert.equal(safeReturn('https://evil.example'), '/');
+    assert.equal(safeReturn(undefined), '/');
+  });
+
+  it('reads cookies and checks the origin of state-changing requests', () => {
+    assert.deepEqual(cookies(request({ cookie: 'hub_session=abc%3D; other=1' })), {
+      hub_session: 'abc=',
+      other: '1',
+    });
+    assert.ok(sameOrigin(request({ origin: 'http://localhost:3000' })));
+    assert.ok(!sameOrigin(request({ origin: 'https://evil.example' })));
+    assert.ok(!sameOrigin(request({})));
+  });
+});
+
+describe('clientAddress', () => {
+  const ranges = cloudflareRanges('173.245.48.0/20\n2400:cb00::/32');
+
+  it('trusts CF-Connecting-IP only when the peer is Cloudflare', () => {
+    assert.equal(
+      clientAddress(
+        request({ 'x-forwarded-for': '173.245.48.10', 'cf-connecting-ip': '198.51.100.4' }),
+        ranges,
+      ),
+      '198.51.100.4',
+    );
+    assert.equal(
+      clientAddress(
+        request({ 'x-forwarded-for': '2400:cb00::1', 'cf-connecting-ip': '198.51.100.4' }),
+        ranges,
+      ),
+      '198.51.100.4',
+    );
+    assert.equal(
+      clientAddress(
+        request({ 'x-forwarded-for': '203.0.113.9', 'cf-connecting-ip': '198.51.100.4' }),
+        ranges,
+      ),
+      '203.0.113.9',
+    );
+  });
+
+  it('uses the socket address for direct internal calls', () => {
+    assert.equal(
+      clientAddress(request({ 'cf-connecting-ip': '198.51.100.4' }, '::ffff:172.18.0.9'), ranges),
+      '172.18.0.9',
+    );
+  });
+});
+
+describe('internal request verification', () => {
+  const now = 1_762_300_000_000;
+  const stamp = String(now / 1000);
+  const body = Buffer.from('{"project":"strata"}');
+  const signed = (headers: Record<string, string> = {}) =>
+    request({
+      'x-graphite-timestamp': stamp,
+      'x-graphite-signature': sign('shared', stamp, body),
+      ...headers,
+    });
+
+  it('accepts a fresh signed request once', () => {
+    const verified = createVerifier('shared', () => now);
+    assert.ok(verified(signed(), body));
+    assert.ok(!verified(signed(), body));
+  });
+
+  it('refuses a wrong secret, an old stamp, an altered body and anything that came through the edge', () => {
+    assert.ok(!createVerifier('other', () => now)(signed(), body));
+    assert.ok(!createVerifier('shared', () => now + 301_000)(signed(), body));
+    assert.ok(!createVerifier('shared', () => now)(signed(), Buffer.from('{}')));
+    assert.ok(
+      !createVerifier('shared', () => now)(signed({ 'x-forwarded-for': '173.245.48.10' }), body),
+    );
+    assert.ok(!createVerifier(undefined, () => now)(signed(), body));
+  });
+});
