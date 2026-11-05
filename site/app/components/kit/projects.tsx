@@ -42,7 +42,7 @@ export function Window({ project, owner }: Props) {
   return (
     <article ref={pointer} className="window spot tilt" style={accentStyle(accent)}>
       <WindowBar project={project} />
-      <Cover name={project.name} accent={accent} image={project.coverUrl} />
+      <Cover name={project.name} seed={project.slug} accent={accent} image={project.coverUrl} />
       <div className="body">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h3>

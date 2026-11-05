@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useFolded } from '../../folds';
 import { useMagnetic } from '../../motion/motion';
+import { Art } from './art';
 
 export const accentStyle = (accent: string | undefined) =>
   ({ '--accent': accent }) as CSSProperties;
@@ -22,16 +23,18 @@ export function Avatar({ member, size }: AvatarProps) {
 
 export function Cover({
   name,
+  seed = name,
   accent,
   image,
 }: {
   name: string;
+  seed?: string;
   accent: string;
   image?: string | null;
 }) {
   return (
     <div className="cover" style={accentStyle(accent)}>
-      {image ? <img src={image} alt="" loading="lazy" /> : <span>{name.slice(0, 2)}</span>}
+      {image ? <img src={image} alt="" loading="lazy" /> : <Art seed={seed} />}
     </div>
   );
 }
