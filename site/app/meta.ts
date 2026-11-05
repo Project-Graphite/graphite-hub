@@ -67,6 +67,11 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
     '/projects': PROJECTS,
     '/changelog': CHANGELOG,
     '/status': STATUS,
+    '/admin': {
+      title: `Admin — ${SITE}`,
+      description: 'Site settings and errors.',
+      canonical: `${ORIGIN}/admin/`,
+    },
   };
   if (fixed[path]) {
     return fixed[path];

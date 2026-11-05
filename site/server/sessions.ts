@@ -103,6 +103,21 @@ export function createSessions(redis: Redis, secret: string) {
       await redis.del(loginKey(login), ...ids.map(sessionKey));
       return ids.length;
     },
+    async revokeEveryone() {
+      let removed = 0;
+      for (const pattern of ['session:*', 'sessions:*']) {
+        let cursor = '0';
+        do {
+          const [next, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 200);
+          cursor = next;
+          if (keys.length > 0) {
+            removed += pattern === 'session:*' ? keys.length : 0;
+            await redis.del(...keys);
+          }
+        } while (cursor !== '0');
+      }
+      return removed;
+    },
   };
 }
 

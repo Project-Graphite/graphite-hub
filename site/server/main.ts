@@ -2,6 +2,7 @@ import path from 'node:path';
 import type { RequestHandler } from 'express';
 import type { ServerBuild } from 'react-router';
 import { refreshCloudflareRanges } from './address.ts';
+import { createAdmin } from './admin.ts';
 import { createApp } from './app.ts';
 import { createAuth } from './auth.ts';
 import { createBus } from './bus.ts';
@@ -63,6 +64,7 @@ const app = createApp(
     snapshot,
     settings,
     reads: createReads(db),
+    admin: createAdmin(db, bus, settings, sessions),
     auth,
     live,
     sync,
