@@ -1,21 +1,38 @@
 import type { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router';
+import { Link, NavLink, useLocation } from 'react-router';
 import { useRoot } from '../hub';
+import { MotionContext } from '../motion/motion';
+import { defaults, visible, type NAV } from '../settings';
+import { accentStyle } from './kit/basics';
+
+const NAV_TARGET: Record<(typeof NAV)[number], { to: string; label: string }> = {
+  members: { to: '/members', label: 'members' },
+  epics: { to: '/epics', label: 'epics' },
+  projects: { to: '/projects', label: 'projects' },
+  blog: { to: '/blog', label: 'blog' },
+  changelog: { to: '/changelog', label: 'changelog' },
+  status: { to: '/status', label: 'status' },
+  github: { to: 'https://github.com/project-graphite', label: 'github ↗' },
+};
 
 export default function Shell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const root = useRoot();
+  const settings = root?.settings ?? defaults();
+  const viewerAccent = root?.directory.members.find(
+    (member) => member.github.toLowerCase() === root.viewer?.login.toLowerCase(),
+  )?.accent;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <MotionContext value={settings['site.motion']}>
       <a href="#content" className="skip-link">
         skip to content
       </a>
-      <header className="sticky top-0 z-10 border-b border-line-soft bg-paper/88 backdrop-blur-sm">
-        <div className="shell flex flex-wrap items-center justify-between gap-4 py-4.5">
+      <header className="frame-header">
+        <div className="shell">
           <Link
             to="/"
-            className="flex items-center gap-2.5 text-[1.02rem] font-[620] tracking-[-0.022em] text-ink no-underline"
+            className="flex items-center gap-2.5 text-[1.02rem] font-[620] tracking-[-0.022em] text-ink"
           >
             <svg
               aria-hidden="true"
@@ -30,81 +47,66 @@ export default function Shell({ children }: { children: ReactNode }) {
               <path d="M5.62 25 L0 40 M24.38 25 L30 40" />
               <path d="M15 0 L8.25 18 H21.75 Z" fill="currentColor" />
             </svg>
-            Project Graphite
+            {settings['site.name']}
           </Link>
-          <nav aria-label="Primary" className="mono-sm flex flex-wrap gap-x-5 gap-y-2">
-            <Link
-              to="/members"
-              className="text-muted no-underline transition-colors duration-200 hover:text-ink"
-            >
-              members
-            </Link>
-            <Link
-              to="/epics"
-              className="text-muted no-underline transition-colors duration-200 hover:text-ink"
-            >
-              epics
-            </Link>
-            <Link
-              to="/projects"
-              className="text-muted no-underline transition-colors duration-200 hover:text-ink"
-            >
-              projects
-            </Link>
-            <Link
-              to="/changelog"
-              className="text-muted no-underline transition-colors duration-200 hover:text-ink"
-            >
-              changelog
-            </Link>
-            <a
-              href="https://github.com/project-graphite"
-              className="text-muted no-underline transition-colors duration-200 hover:text-ink"
-            >
-              github ↗
-            </a>
+          <nav aria-label="Primary" className="frame-nav">
+            {visible(settings['site.nav']).map((id) => {
+              const { to, label } = NAV_TARGET[id as keyof typeof NAV_TARGET];
+              return to.startsWith('http') ? (
+                <a key={id} href={to}>
+                  {label}
+                </a>
+              ) : (
+                <NavLink key={id} to={to}>
+                  {label}
+                </NavLink>
+              );
+            })}
             {root?.viewer ? (
               <form method="post" action="/auth/sign-out" className="flex items-center gap-2.5">
                 <input type="hidden" name="csrf" value={root.csrf ?? ''} />
-                <img
-                  src={root.viewer.avatarUrl}
-                  alt={`Signed in as ${root.viewer.login}`}
-                  width={22}
-                  height={22}
-                  className="size-5.5 rounded-full ring-2 ring-line"
-                />
+                <span className="avatar xs" style={accentStyle(viewerAccent)}>
+                  <img
+                    src={root.viewer.avatarUrl}
+                    alt={`Signed in as ${root.viewer.login}`}
+                    width={20}
+                    height={20}
+                  />
+                </span>
                 <button
                   type="submit"
-                  className="cursor-pointer border-0 bg-transparent p-0 font-mono text-muted transition-colors duration-200 hover:text-ink"
+                  className="cursor-pointer border-0 bg-transparent p-0 font-mono"
                 >
                   sign out
                 </button>
               </form>
             ) : (
               root?.signIn && (
-                <a
-                  href={`/auth/sign-in?return=${encodeURIComponent(pathname)}`}
-                  className="text-muted no-underline transition-colors duration-200 hover:text-ink"
-                >
-                  sign in
-                </a>
+                <a href={`/auth/sign-in?return=${encodeURIComponent(pathname)}`}>sign in</a>
               )
             )}
           </nav>
         </div>
       </header>
 
-      <main id="content" className="shell flex-1 pb-12">
+      <main id="content" className="shell pb-12">
         <div key={pathname} className="page-transition">
           {children}
         </div>
       </main>
 
-      <footer className="shell mono-sm mt-24 border-t border-line-soft pt-7 pb-14 text-faint text-center">
-        <p className="m-0">
-          Project Graphite · Made for Learning · Made for Fun · Made for Everyone
-        </p>
+      <footer className="frame-footer">
+        <div className="shell">{settings['site.footer']}</div>
       </footer>
+    </MotionContext>
+  );
+}
+
+export function Page({ rail, children }: { rail?: ReactNode; children: ReactNode }) {
+  return (
+    <div className={`frame-layout ${rail ? '' : 'solo'}`}>
+      <div className="frame-main">{children}</div>
+      {rail && <div className="frame-rail">{rail}</div>}
     </div>
   );
 }

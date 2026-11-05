@@ -88,6 +88,32 @@ export interface Directory {
   releases: Release[];
 }
 
+export interface ConsoleLine {
+  id: string;
+  kind: string;
+  at: string;
+  summary: string;
+  detail: Record<string, unknown>;
+}
+
+export type Day = 'up' | 'down' | 'none';
+
+export interface Running {
+  slug: string;
+  name: string;
+  path: string;
+  deploy: { tag: string; at: string } | null;
+  week: Day[];
+}
+
+export interface Counts {
+  members: number;
+  projects: number;
+  live: number;
+  releases: number;
+  deploys: number;
+}
+
 export interface Viewer {
   login: string;
   avatarUrl: string;

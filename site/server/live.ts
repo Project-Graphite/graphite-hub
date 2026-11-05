@@ -37,9 +37,13 @@ export function newer(id: string, than: string | undefined) {
 }
 
 export function payload(event: HubEvent, member: boolean) {
-  return member
-    ? { topic: event.topic, key: event.key, kind: event.kind, event }
-    : { topic: event.topic, key: event.key, kind: event.kind, console: toPublicEvent(event) };
+  const shared = {
+    topic: event.topic,
+    key: event.key,
+    kind: event.kind,
+    console: toPublicEvent(event),
+  };
+  return member ? { ...shared, event } : shared;
 }
 
 export function createClient(

@@ -18,5 +18,6 @@ export default [
   route('changelog/projects/:slug', 'routes/project-changelog.tsx'),
   route('sitemap.xml', 'routes/sitemap.ts'),
   route('llms.txt', 'routes/llms.ts'),
+  route('kit', 'routes/kit.tsx'),
   route('*', 'routes/not-found.tsx'),
 ] satisfies RouteConfig;
