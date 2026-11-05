@@ -1,11 +1,10 @@
 import type { ReactNode } from 'react';
 import type { Route } from './+types/home';
 import { Band, Button } from '../components/kit/basics';
-import { Counters, ReleaseTimeline, Ticker } from '../components/kit/live';
+import { Console, Counters, ReleaseTimeline, Ticker } from '../components/kit/live';
 import { Orbit, People } from '../components/kit/members';
 import {
   ChangelogPanel,
-  ConsolePanel,
   MembersPanel,
   MessagesPanel,
   RunningPanel,
@@ -31,7 +30,7 @@ export function loader({ context }: Route.LoaderArgs) {
       Math.max(settings['rail.console.lines'], settings['home.ticker.count']),
     ),
     today: new Date().toISOString().slice(0, 10),
-    messages: visible(settings['home.rail']).includes('messages') ? messages.wall(3) : [],
+    messages: visible(settings['home.rail']).includes('messages') ? messages.wall(5) : [],
   };
 }
 
@@ -59,6 +58,20 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     .slice(-settings['home.ticker.count'])
     .reverse();
 
+  const shownSections = visible(settings['home.sections']);
+  const timeline = (width?: number) => (
+    <ReleaseTimeline
+      releases={hub.releases}
+      accentOf={(release) =>
+        ownerOf(hub.projectBySlug(release.project)?.owner ?? '')?.accent ?? 'var(--color-muted)'
+      }
+      nameOf={(release) => hub.projectBySlug(release.project)?.name ?? release.project}
+      today={today}
+      days={settings['home.timeline.days']}
+      width={width}
+    />
+  );
+
   const sections: Record<string, ReactNode> = {
     hero: (
       <section className="hero">
@@ -80,22 +93,16 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </div>
         <div className="mark">
           <Mark />
-          <em>move through it</em>
         </div>
       </section>
     ),
-    ticker: <Ticker lines={ticker} />,
-    timeline: (
-      <ReleaseTimeline
-        releases={hub.releases}
-        accentOf={(release) =>
-          ownerOf(hub.projectBySlug(release.project)?.owner ?? '')?.accent ?? 'var(--color-muted)'
-        }
-        nameOf={(release) => hub.projectBySlug(release.project)?.name ?? release.project}
-        today={today}
-        days={settings['home.timeline.days']}
-      />
+    ticker: (
+      <div className="pulse">
+        <Ticker lines={ticker} />
+        {shownSections.includes('timeline') && timeline(440)}
+      </div>
     ),
+    timeline: !shownSections.includes('ticker') && timeline(),
     featured: featured.length > 0 && (
       <Band
         title={settings['home.featured.title']}
@@ -136,9 +143,10 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     members: <MembersPanel members={hub.members} projectsOf={projectsOf} />,
     running: <RunningPanel running={running} />,
     console: (
-      <ConsolePanel
-        lines={lines.slice(-settings['rail.console.lines'])}
+      <Console
+        initial={lines.slice(-settings['rail.console.lines'])}
         limit={settings['rail.console.lines']}
+        link={{ to: '/status', label: 'status' }}
       />
     ),
     changelog: (
@@ -157,7 +165,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         visible(settings['home.rail']).map((id) => <div key={id}>{panels[id]}</div>)
       }
     >
-      {visible(settings['home.sections']).map((id) => (
+      {shownSections.map((id) => (
         <div key={id}>{sections[id]}</div>
       ))}
     </Page>

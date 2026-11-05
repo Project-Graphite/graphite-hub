@@ -7,7 +7,11 @@ interface Base<Kind extends string, T> {
   default: T;
 }
 
-export type TextSetting = Base<'text', string> & { max: number; multiline: boolean };
+export type TextSetting = Base<'text', string> & {
+  max: number;
+  multiline: boolean;
+  optional: boolean;
+};
 export type NumberSetting = Base<'number', number> & { min: number; max: number };
 export type OrderItem = { id: string; on: boolean };
 export type OrderSetting = Base<'order', OrderItem[]> & { options: readonly string[] };
@@ -21,6 +25,7 @@ const text = (
   value: string,
   max = 120,
   multiline = false,
+  optional = false,
 ): TextSetting => ({
   kind: 'text',
   area,
@@ -28,6 +33,7 @@ const text = (
   default: value,
   max,
   multiline,
+  optional,
 });
 const number = (
   area: Area,
@@ -83,7 +89,7 @@ export const HOME_SECTIONS = [
   'writing',
   'more',
 ] as const;
-export const RAIL_PANELS = ['members', 'running', 'console', 'changelog', 'messages'] as const;
+export const RAIL_PANELS = ['members', 'messages', 'console', 'changelog', 'running'] as const;
 export const COUNTERS = ['members', 'projects', 'live', 'releases', 'deploys'] as const;
 export const NAV = [
   'members',
@@ -152,33 +158,21 @@ export const SETTINGS = {
   'home.ticker.count': number('home', 'Activity line length', 8, 1, 20),
   'home.timeline.days': number('home', 'Release window, days', 60, 14, 365),
   'home.featured.title': text('home', 'Featured heading', 'Featured projects', 60),
-  'home.featured.description': text(
-    'home',
-    'Featured description',
-    'Each one runs at its own subdomain. Hover a window for the latest post about it.',
-    200,
-    true,
-  ),
+  'home.featured.description': text('home', 'Featured description', '', 200, true, true),
   'home.featured.count': number('home', 'Featured projects', 3, 1, 6),
   'home.members.title': text('home', 'Members heading', 'Meet the members', 60),
-  'home.members.description': text(
-    'home',
-    'Members description',
-    'Each member has a colour that marks their work across the site. Hover the orbit to stop it.',
-    200,
-    true,
-  ),
+  'home.members.description': text('home', 'Members description', '', 200, true, true),
   'home.writing.title': text('home', 'Writing heading', 'Latest writing', 60),
   'home.writing.count': number('home', 'Posts on the filmstrip', 7, 3, 12),
   'home.more.title': text('home', 'More projects heading', 'More projects', 60),
   'home.more.count': number('home', 'More projects', 6, 0, 12),
-  'home.rail': order('rail', 'Home rail panels', RAIL_PANELS, ['messages']),
+  'home.rail': order('rail', 'Home rail panels', RAIL_PANELS, ['running']),
   'rail.changelog.count': number('rail', 'Changelog entries in the rail', 2, 1, 8),
   'rail.console.lines': number('rail', 'Console lines', 12, 4, 30),
   'messages.intro': text(
     'site',
     'Messages introduction',
-    'Leave a message for the members. Public messages appear on the wall once a member has read them; private ones are only for us.',
+    'Leave a message for the members. Public messages go straight on the wall; private ones are only for us.',
     300,
     true,
   ),
@@ -197,9 +191,11 @@ export function problem(key: SettingKey, value: unknown): string | null {
   const setting: Setting = SETTINGS[key];
   switch (setting.kind) {
     case 'text':
-      return typeof value === 'string' && value.trim().length > 0 && value.length <= setting.max
+      return typeof value === 'string' &&
+        (setting.optional || value.trim().length > 0) &&
+        value.length <= setting.max
         ? null
-        : `${setting.label} must be 1 to ${setting.max} characters.`;
+        : `${setting.label} must be ${setting.optional ? 'at most' : '1 to'} ${setting.max} characters.`;
     case 'number':
       return Number.isInteger(value) &&
         (value as number) >= setting.min &&

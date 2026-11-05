@@ -50,6 +50,15 @@ body {
   outline-offset: 3px;
 }
 
+:is(input, textarea, select):not([type='radio'], [type='checkbox']) {
+  transition: border-color 0.2s ease;
+}
+
+:is(input, textarea, select):not([type='radio'], [type='checkbox']):focus {
+  outline: none;
+  border-color: var(--color-muted);
+}
+
 .skip-link {
   position: fixed;
   top: 0.75rem;

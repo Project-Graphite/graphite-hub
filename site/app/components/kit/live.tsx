@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { clock, day, describe, KIND_LABEL } from '../../format';
+import { Link } from 'react-router';
+import { clock, day, describe } from '../../format';
 import { useLiveMessages } from '../../live';
 import { useCountUp, useCycle } from '../../motion/motion';
 import type { COUNTERS } from '../../settings';
@@ -38,24 +39,30 @@ export function Counters({ counts, shown }: { counts: Counts; shown: string[] })
   );
 }
 
+function Kind({ kind }: { kind: string }) {
+  return (
+    <span className="kind" data-kind={kind}>
+      {kind === 'uptime' ? 'up' : kind}
+    </span>
+  );
+}
+
 export function Ticker({ lines }: { lines: ConsoleLine[] }) {
   const index = useCycle(lines.length, 3500);
   const line = lines[index];
   return (
     <div className="ticker">
-      <span>
-        <Status status="live" />
-      </span>
+      <Status status="live" />
       {line ? (
         <span className="cycle">
           <span key={line.id}>
-            <strong>{KIND_LABEL[line.kind] ?? line.kind}</strong> {line.summary}
+            <Kind kind={line.kind} />
+            {line.summary}
           </span>
         </span>
       ) : (
         <span className="cycle">nothing has happened yet</span>
       )}
-      <span className="text-faint">updates as it happens</span>
     </div>
   );
 }
@@ -66,21 +73,29 @@ interface TimelineProps {
   nameOf: (release: Release) => string;
   today: string;
   days: number;
+  width?: number;
 }
 
-export function ReleaseTimeline({ releases, accentOf, nameOf, today, days }: TimelineProps) {
+export function ReleaseTimeline({
+  releases,
+  accentOf,
+  nameOf,
+  today,
+  days,
+  width = 1000,
+}: TimelineProps) {
   const [tip, setTip] = useState<{ release: Release; left: number; top: number } | null>(null);
   const end = Date.parse(today);
   const start = end - days * 86_400_000;
-  const x = (iso: string) => 20 + ((Date.parse(iso) - start) / (end - start)) * 960;
-  const ticks = useMemo(
-    () =>
-      Array.from(
-        { length: Math.floor(days / 7) + 1 },
-        (_, week) => new Date(start + week * 7 * 86_400_000),
-      ),
-    [start, days],
-  );
+  const right = width - 20;
+  const x = (iso: string) => 20 + ((Date.parse(iso) - start) / (end - start)) * (right - 20);
+  const ticks = useMemo(() => {
+    const weeks = Math.ceil(days / 7 / ((width - 40) / 70));
+    return Array.from(
+      { length: Math.floor(days / 7 / weeks) + 1 },
+      (_, tick) => new Date(start + tick * weeks * 7 * 86_400_000),
+    );
+  }, [start, days, width]);
   const shown = releases.filter((release) => Date.parse(release.date) >= start);
   const size = (release: Release) =>
     4 + Math.sqrt(release.groups.reduce((sum, group) => sum + group.changes.length, 0)) * 2.2;
@@ -88,12 +103,12 @@ export function ReleaseTimeline({ releases, accentOf, nameOf, today, days }: Tim
   return (
     <div className="timeline">
       <svg
-        viewBox="0 0 1000 110"
+        viewBox={`0 0 ${width} 110`}
         role="img"
         aria-label={`Releases over the last ${days} days`}
         onPointerLeave={() => setTip(null)}
       >
-        <line x1="20" y1="70" x2="980" y2="70" stroke="var(--color-line)" />
+        <line x1="20" y1="70" x2={right} y2="70" stroke="var(--color-line)" />
         {ticks.map((tick) => (
           <g key={tick.toISOString()}>
             <line
@@ -115,9 +130,16 @@ export function ReleaseTimeline({ releases, accentOf, nameOf, today, days }: Tim
             </text>
           </g>
         ))}
-        <line x1="980" y1="20" x2="980" y2="70" stroke="var(--color-live)" strokeDasharray="3 3" />
+        <line
+          x1={right}
+          y1="20"
+          x2={right}
+          y2="70"
+          stroke="var(--color-live)"
+          strokeDasharray="3 3"
+        />
         <text
-          x="980"
+          x={right}
           y="14"
           textAnchor="end"
           fontFamily="var(--font-mono)"
@@ -168,10 +190,12 @@ export function Console({
   initial,
   limit,
   tall = false,
+  link,
 }: {
   initial: ConsoleLine[];
   limit: number;
   tall?: boolean;
+  link?: { to: string; label: string };
 }) {
   const [arrived, setArrived] = useState<ConsoleLine[]>([]);
   const [filter, setFilter] = useState('all');
@@ -205,10 +229,10 @@ export function Console({
   }, [lines]);
 
   return (
-    <div className="console">
+    <aside className="console">
       <div className="top">
         <Status status="live" />
-        <span>public events only</span>
+        <span>console</span>
         <span className="rate" aria-hidden="true">
           {hours.map((count, hour) => (
             <i
@@ -218,6 +242,11 @@ export function Console({
             />
           ))}
         </span>
+        {link && (
+          <Link to={link.to} className="rule-link">
+            {link.label}
+          </Link>
+        )}
       </div>
       <div className="filters">
         {FILTERS.map((kind) => (
@@ -244,19 +273,12 @@ export function Console({
               onClick={() => setOpen(open === line.id ? null : line.id)}
             >
               <span className="t">{clock(line.at)}</span>
-              <span className="k">{line.kind === 'uptime' ? 'up' : line.kind}</span>
+              <Kind kind={line.kind} />
               <span className="m">{line.summary}</span>
               <span className="x">{describe(line.detail) || line.at}</span>
             </button>
           ))}
       </div>
-      <div className="foot">
-        <span>
-          <span className="cursor" />
-          following
-        </span>
-        <span>never shows hosts, paths, env or drafts</span>
-      </div>
-    </div>
+    </aside>
   );
 }

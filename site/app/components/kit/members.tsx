@@ -20,10 +20,7 @@ function MemberRow({ member, projects }: { member: Member; projects: number }) {
         ))}
       </span>
       <span className="more">
-        <p>
-          {member.bio ??
-            `No bio yet. The profile is filled from GitHub until ${member.name.split(' ')[0]} edits it.`}
-        </p>
+        {member.bio && <p>{member.bio}</p>}
         <span className="facts">
           <span>
             <b>{projects}</b> {projects === 1 ? 'project' : 'projects'}

@@ -23,19 +23,25 @@ function useCardPointer<T extends HTMLElement>() {
   );
 }
 
+export function WindowBar({ project }: { project: Project }) {
+  return (
+    <div className="bar">
+      <i />
+      <i />
+      <i />
+      <a href={project.url ?? project.repoUrl}>
+        {project.url ? new URL(project.url).host : `${project.slug} · source only`}
+      </a>
+    </div>
+  );
+}
+
 export function Window({ project, owner }: Props) {
   const pointer = useCardPointer<HTMLElement>();
   return (
     <article ref={pointer} className="window spot tilt" style={accentStyle(owner?.accent)}>
-      <div className="bar">
-        <i />
-        <i />
-        <i />
-        <span>
-          {project.url ? project.url.replace('https://', '') : `${project.slug} · source only`}
-        </span>
-      </div>
-      <Cover name={project.name} accent={owner?.accent ?? ''} label="cover · set by the owner" />
+      <WindowBar project={project} />
+      <Cover name={project.name} accent={owner?.accent ?? ''} />
       <div className="body">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h3>
@@ -51,12 +57,6 @@ export function Window({ project, owner }: Props) {
           </span>
         )}
         <TagList tags={project.tags.slice(0, 3)} />
-        <div className="drawer">
-          <div className="slot">
-            <strong>Nothing pinned yet</strong>
-            The owner pins posts, a screenshot or a note here from their projects section.
-          </div>
-        </div>
       </div>
     </article>
   );
