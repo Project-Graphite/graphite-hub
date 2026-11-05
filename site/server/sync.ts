@@ -6,6 +6,7 @@ import { dispatchPlatformSync, storedEntries, syncRegistry } from './registry.ts
 import { syncMembers, syncStats } from './readers.ts';
 import type { Sessions } from './sessions.ts';
 import { recordUptimeSummary } from './uptime.ts';
+import type { Writeback } from './writeback.ts';
 
 interface Push {
   ref: string;
@@ -23,7 +24,7 @@ export function changedFiles(push: Push) {
   );
 }
 
-export function createSync(db: Database, bus: Bus, sessions: Sessions) {
+export function createSync(db: Database, bus: Bus, sessions: Sessions, writeback: Writeback) {
   async function members() {
     for (const login of await syncMembers(db, bus)) {
       await sessions.revoke(login);
@@ -33,6 +34,7 @@ export function createSync(db: Database, bus: Bus, sessions: Sessions) {
   async function registry() {
     const entries = await syncRegistry(db, bus);
     await importChangelog(db, bus, entries);
+    await writeback.settle(entries);
     return entries;
   }
 

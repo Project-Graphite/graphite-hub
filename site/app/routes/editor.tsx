@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { data, Link, redirect, useFetcher } from 'react-router';
+import { data, Link, redirect, useFetcher, useSearchParams } from 'react-router';
 import type { Route } from './+types/editor';
 import { Panel } from '../components/kit/basics';
 import { creditedProjects } from '../components/kit/blocks';
@@ -9,12 +9,13 @@ import { hubContext, type Hub } from '../context';
 import { useHub, useRoot } from '../hub';
 import { createModel } from '../model';
 import { MemberView } from '../pages/member-page';
+import { STATUSES, type Presentation, type RegistryFields } from '../presentation';
 import {
   BLOCK_LABEL,
   BLOCK_TYPES,
   isUploadKind,
+  isRefused,
   newBlock,
-  Refused,
   UPLOAD_LIMIT,
   uploadUrl,
   type Block,
@@ -66,6 +67,11 @@ export function loader({ context, params }: Route.LoaderArgs) {
   }
   return {
     handle: member.handle,
+    projects: hub.writeback.ownedBy(member.handle).map((project) => ({
+      ...project,
+      presentation: hub.presentations.read(project.slug),
+      registry: hub.writeback.current(project.slug)!,
+    })),
     profile: hub.profiles.read(member.handle),
     shortLinks: hub.profiles.shortLinks(member.handle, true),
     history: hub.profiles.history(member.handle),
@@ -110,6 +116,19 @@ export async function action({ context, params, request }: Route.ActionArgs) {
         }
         return { upload: await uploads.store(handle, kind, file), kind };
       }
+      case 'presentation':
+      case 'registry': {
+        const slug = String(form.get('slug') ?? '');
+        if (!hub.writeback.ownedBy(handle).some((project) => project.slug === slug)) {
+          return data({ error: `${slug} is not ${member.name}'s project.` }, { status: 400 });
+        }
+        const value = JSON.parse(String(form.get('value')));
+        if (form.get('intent') === 'presentation') {
+          await hub.presentations.save(slug, value, by);
+          break;
+        }
+        return await hub.writeback.write(slug, value, by);
+      }
       case 'link':
         await profiles.setShortLink(
           handle,
@@ -126,7 +145,7 @@ export async function action({ context, params, request }: Route.ActionArgs) {
         break;
     }
   } catch (error) {
-    if (error instanceof Refused) {
+    if (isRefused(error)) {
       return data({ error: error.message }, { status: 400 });
     }
     throw error;
@@ -783,9 +802,288 @@ function HistoryTab({
   );
 }
 
+type EditedProject = Route.ComponentProps['loaderData']['projects'][number];
+
+function ProjectEditor({
+  project,
+  csrf,
+  accents,
+}: {
+  project: EditedProject;
+  csrf: string;
+  accents: string[];
+}) {
+  const server = project.presentation;
+  const serverKey = JSON.stringify(server);
+  const [draft, setDraft] = useState<Presentation>(server);
+  const [base, setBase] = useState(serverKey);
+  const [dirty, setDirty] = useState(false);
+  const [registry, setRegistry] = useState<RegistryFields>(project.registry);
+  if (serverKey !== base) {
+    setBase(serverKey);
+    if (!dirty) {
+      setDraft(server);
+    }
+  }
+  const save = useFetcher<Result>();
+  const send = useFetcher<Result & { outcome?: string; pullRequest?: string | null }>();
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const change = (next: Presentation, delay = 700) => {
+    setDraft(next);
+    setDirty(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      setDirty(false);
+      void save.submit(
+        { csrf, intent: 'presentation', slug: project.slug, value: JSON.stringify(next) },
+        { method: 'post' },
+      );
+    }, delay);
+  };
+  const state = dirty || save.state !== 'idle' ? 'saving' : save.data?.error ? 'error' : 'saved';
+
+  return (
+    <div className="grid gap-5">
+      <span className="setting-state" data-state={state}>
+        {state === 'error' ? save.data?.error : state}
+      </span>
+      <Field label="cover">
+        <div className="editor-row">
+          {draft.coverUpload && (
+            <img className="thumb" src={uploadUrl(draft.coverUpload, 'cover', 'small')} alt="" />
+          )}
+          <UploadButton
+            kind="cover"
+            label="upload"
+            csrf={csrf}
+            uploaded={(coverUpload) => change({ ...draft, coverUpload }, 0)}
+          />
+          {draft.coverUpload && (
+            <button
+              type="button"
+              className="chip-button"
+              onClick={() => change({ ...draft, coverUpload: null }, 0)}
+            >
+              remove
+            </button>
+          )}
+        </div>
+      </Field>
+      <Field label="accent">
+        <div className="swatches">
+          <button
+            type="button"
+            className="chip-button"
+            aria-pressed={draft.accent === null}
+            onClick={() => change({ ...draft, accent: null }, 0)}
+          >
+            owner&apos;s
+          </button>
+          {accents.map((colour) => (
+            <button
+              key={colour}
+              type="button"
+              className="swatch pick"
+              aria-label={colour}
+              aria-pressed={draft.accent === colour}
+              style={{ '--swatch': colour } as CSSProperties}
+              onClick={() => change({ ...draft, accent: colour }, 0)}
+            />
+          ))}
+        </div>
+      </Field>
+      <Field label="layout">
+        <Segmented
+          label="Layout"
+          options={[
+            ['window', 'window'],
+            ['card', 'card'],
+          ]}
+          value={draft.layout}
+          choose={(layout) => change({ ...draft, layout }, 0)}
+        />
+      </Field>
+      <Field label="summary on the site">
+        <textarea
+          className="field"
+          value={draft.summary ?? ''}
+          placeholder={project.registry.summary}
+          maxLength={240}
+          onChange={(event) => change({ ...draft, summary: event.target.value || null })}
+        />
+      </Field>
+      <Field label="feature">
+        <textarea
+          className="field"
+          value={draft.feature.note}
+          maxLength={600}
+          placeholder="a note"
+          onChange={(event) =>
+            change({ ...draft, feature: { ...draft.feature, note: event.target.value } })
+          }
+        />
+        <div className="editor-row">
+          {draft.feature.screenshot && (
+            <img
+              className="thumb"
+              src={uploadUrl(draft.feature.screenshot, 'screenshot', 'small')}
+              alt=""
+            />
+          )}
+          <UploadButton
+            kind="screenshot"
+            label="screenshot"
+            csrf={csrf}
+            uploaded={(screenshot) =>
+              change({ ...draft, feature: { ...draft.feature, screenshot } }, 0)
+            }
+          />
+          {draft.feature.screenshot && (
+            <button
+              type="button"
+              className="chip-button"
+              onClick={() =>
+                change({ ...draft, feature: { ...draft.feature, screenshot: null } }, 0)
+              }
+            >
+              remove
+            </button>
+          )}
+        </div>
+      </Field>
+
+      <div className="registry">
+        <span className="mono-sm text-faint">registry · .graphite.yml</span>
+        <Field label="name">
+          <input
+            className="field"
+            value={registry.name}
+            maxLength={60}
+            onChange={(event) => setRegistry({ ...registry, name: event.target.value })}
+          />
+        </Field>
+        <Field label="summary">
+          <textarea
+            className="field"
+            value={registry.summary}
+            maxLength={240}
+            onChange={(event) => setRegistry({ ...registry, summary: event.target.value })}
+          />
+        </Field>
+        <Field label="tags">
+          <input
+            className="field"
+            value={registry.tags.join(', ')}
+            onChange={(event) =>
+              setRegistry({
+                ...registry,
+                tags: event.target.value
+                  .split(',')
+                  .map((tag) => tag.trim())
+                  .filter(Boolean),
+              })
+            }
+          />
+        </Field>
+        <Field label="status">
+          <Segmented
+            label="Status"
+            options={STATUSES.map((status) => [status, status] as const)}
+            value={registry.status}
+            choose={(status) => setRegistry({ ...registry, status })}
+          />
+        </Field>
+        <div className="editor-row">
+          <span className="mono-sm grow text-faint">pinned on the home page</span>
+          <Switch
+            on={registry.pinned}
+            label="Pinned"
+            toggle={() => setRegistry({ ...registry, pinned: !registry.pinned })}
+          />
+        </div>
+        <div className="editor-row">
+          <span className="mono-sm grow text-faint">listed on the site</span>
+          <Switch
+            on={registry.listed}
+            label="Listed"
+            toggle={() => setRegistry({ ...registry, listed: !registry.listed })}
+          />
+        </div>
+        <div className="editor-row">
+          <button
+            type="button"
+            className="chip-button"
+            disabled={
+              send.state !== 'idle' || JSON.stringify(registry) === JSON.stringify(project.registry)
+            }
+            onClick={() =>
+              send.submit(
+                { csrf, intent: 'registry', slug: project.slug, value: JSON.stringify(registry) },
+                { method: 'post' },
+              )
+            }
+          >
+            {send.state !== 'idle' ? 'sending…' : 'send to the repository'}
+          </button>
+          <span className="mono-sm">
+            {send.data?.error && <span className="text-danger">{send.data.error}</span>}
+            {project.pending.length > 0 &&
+              !send.data?.error &&
+              (project.pullRequest ? (
+                <a href={project.pullRequest} className="rule-link">
+                  {project.pending.join(', ')} in a pull request
+                </a>
+              ) : (
+                <span className="text-faint">{project.pending.join(', ')} pending the sync</span>
+              ))}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProjectsTab({
+  projects,
+  csrf,
+  initial,
+}: {
+  projects: EditedProject[];
+  csrf: string;
+  initial: string | null;
+}) {
+  const accents = useRoot()!.settings['site.accents'];
+  const [slug, setSlug] = useState(
+    projects.find((project) => project.slug === initial)?.slug ?? projects[0]?.slug,
+  );
+  const project = projects.find((candidate) => candidate.slug === slug);
+  if (!project) {
+    return <p className="text-sm text-muted">No projects are maintained by this member.</p>;
+  }
+  return (
+    <div className="grid gap-5">
+      <div className="chips">
+        {projects.map((candidate) => (
+          <button
+            key={candidate.slug}
+            type="button"
+            aria-pressed={candidate.slug === slug}
+            onClick={() => setSlug(candidate.slug)}
+          >
+            {candidate.name}
+          </button>
+        ))}
+      </div>
+      <ProjectEditor key={project.slug} project={project} csrf={csrf} accents={accents} />
+    </div>
+  );
+}
+
 const TABS = [
   ['page', 'page'],
   ['profile', 'profile'],
+  ['projects', 'projects'],
   ['links', 'short links'],
   ['history', 'history'],
 ] as const;
@@ -812,7 +1110,10 @@ export default function Editor({ loaderData }: Route.ComponentProps) {
   const [draft, setDraft] = useState<Draft>(server);
   const [base, setBase] = useState(serverKey);
   const [dirty, setDirty] = useState(false);
-  const [tab, setTab] = useState<(typeof TABS)[number][0]>('page');
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState<(typeof TABS)[number][0]>(
+    params.has('project') ? 'projects' : 'page',
+  );
   if (serverKey !== base) {
     setBase(serverKey);
     if (!dirty) {
@@ -893,6 +1194,13 @@ export default function Editor({ loaderData }: Route.ComponentProps) {
                 csrf={csrf}
                 member={member}
                 change={(fields, delay) => change({ ...draft, fields }, delay)}
+              />
+            )}
+            {tab === 'projects' && (
+              <ProjectsTab
+                projects={loaderData.projects}
+                csrf={csrf}
+                initial={params.get('project')}
               />
             )}
             {tab === 'links' && (

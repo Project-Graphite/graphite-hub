@@ -28,6 +28,12 @@ export interface Project {
   showcase: ProjectShowcase | null;
   url: string | null;
   path: string;
+  coverUrl: string | null;
+  accent: string | null;
+  layout: 'window' | 'card';
+  feature: { note: string; screenshotUrl: string | null };
+  pending: string[];
+  pullRequest: string | null;
 }
 
 export interface MemberLink {

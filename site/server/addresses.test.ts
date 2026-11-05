@@ -21,6 +21,12 @@ function project(slug: string, extra: Partial<Project> = {}): Project {
     showcase: null,
     url: null,
     path: extra.parent ? `/${extra.parent}/${slug}` : `/${slug}`,
+    coverUrl: null,
+    accent: null,
+    layout: 'window',
+    feature: { note: '', screenshotUrl: null },
+    pending: [],
+    pullRequest: null,
     ...extra,
   };
 }

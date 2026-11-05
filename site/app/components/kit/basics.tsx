@@ -19,10 +19,18 @@ export function Avatar({ member, size }: AvatarProps) {
   );
 }
 
-export function Cover({ name, accent }: { name: string; accent: string }) {
+export function Cover({
+  name,
+  accent,
+  image,
+}: {
+  name: string;
+  accent: string;
+  image?: string | null;
+}) {
   return (
     <div className="cover" style={accentStyle(accent)}>
-      <span>{name.slice(0, 2)}</span>
+      {image ? <img src={image} alt="" loading="lazy" /> : <span>{name.slice(0, 2)}</span>}
     </div>
   );
 }

@@ -19,7 +19,9 @@ import { slidingLimit, type Redis } from './redis.ts';
 import { clientAddress } from './address.ts';
 import type { Admin } from './admin.ts';
 import type { Messages } from './messages.ts';
+import type { Presentations } from './presentation.ts';
 import type { Profiles } from './profiles.ts';
+import type { Writeback } from './writeback.ts';
 import type { Uploads } from './uploads.ts';
 import type { Share } from './share.ts';
 import type { Reads } from './reads.ts';
@@ -38,6 +40,8 @@ export interface Services {
   messages: Messages;
   share: Share;
   profiles: Profiles;
+  presentations: Presentations;
+  writeback: Writeback;
   uploads: Uploads;
   auth: Auth;
   live: Live;
@@ -236,6 +240,8 @@ export function createApp(
             messages: services.messages,
             share: services.share,
             profiles: services.profiles,
+            presentations: services.presentations,
+            writeback: services.writeback,
             uploads: services.uploads,
             address: clientAddress(request),
             origin: new URL(config.appUrl).origin,

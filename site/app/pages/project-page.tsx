@@ -16,9 +16,13 @@ import type { Project } from '../types';
 
 export const PROJECT_TOPICS = ['deploys', 'releases', 'projects', 'uptime'];
 
-export function loadProject({ reads, directory }: Hub, project: Project) {
+export function loadProject({ reads, directory, viewer }: Hub, project: Project) {
+  const owner = directory.members.find((member) => member.handle === project.owner);
   return {
     page: 'project' as const,
+    editable: Boolean(
+      viewer && (viewer.owner || viewer.login.toLowerCase() === owner?.github.toLowerCase()),
+    ),
     parent: project.parent ?? undefined,
     slug: project.slug,
     running: reads.running(directory).filter((running) => running.slug === project.slug),
@@ -37,11 +41,20 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
   const children = childProjects(project.slug);
   const releases = hub.releasesForProject(project);
   const authors = project.authors.flatMap((login) => memberByGithub(login) ?? []);
+  const accent = project.accent ?? owner?.accent ?? '';
 
   return (
     <Page
       rail={
         <>
+          {loaderData.editable && owner && (
+            <Link
+              to={`${owner.path}/edit?project=${project.slug}`}
+              className="btn primary justify-center"
+            >
+              edit this project
+            </Link>
+          )}
           {loaderData.running.length > 0 && <RunningPanel running={loaderData.running} />}
           <ChangelogPanel
             releases={releases.slice(0, settings['rail.changelog.count'] + 1)}
@@ -78,10 +91,14 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
           )}
           {project.slug}
         </p>
-        <div className="window mt-2" style={accentStyle(owner?.accent)}>
-          <WindowBar project={project} />
-          <Cover name={project.name} accent={owner?.accent ?? ''} />
-        </div>
+        {project.layout === 'window' ? (
+          <div className="window mt-2" style={accentStyle(accent)}>
+            <WindowBar project={project} />
+            <Cover name={project.name} accent={accent} image={project.coverUrl} />
+          </div>
+        ) : (
+          project.coverUrl && <img className="member-cover mt-2" src={project.coverUrl} alt="" />
+        )}
         <div className="mt-6 flex flex-wrap items-baseline justify-between gap-4">
           <h1>{project.name}</h1>
           <Status status={project.status} />
@@ -89,6 +106,19 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
         <p className="lede">{project.summary}</p>
         <TagList tags={project.tags} className="mt-4.5" />
       </section>
+
+      {(project.feature.note || project.feature.screenshotUrl) && (
+        <Section label="feature">
+          <div className="feature" style={accentStyle(accent)}>
+            {project.feature.screenshotUrl && (
+              <img src={project.feature.screenshotUrl} alt="" loading="lazy" />
+            )}
+            {project.feature.note && (
+              <p className="whitespace-pre-line text-muted">{project.feature.note}</p>
+            )}
+          </div>
+        </Section>
+      )}
 
       {releases.length > 0 && (
         <Section label="releases">

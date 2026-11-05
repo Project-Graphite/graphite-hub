@@ -58,7 +58,13 @@ export type UploadKind = keyof typeof UPLOAD_WIDTHS;
 
 export const UPLOAD_LIMIT = 5 * 1024 * 1024;
 
-export class Refused extends Error {}
+export class Refused extends Error {
+  override name = 'Refused';
+}
+
+export function isRefused(error: unknown): error is Refused {
+  return error instanceof Error && error.name === 'Refused';
+}
 
 export function isUploadKind(kind: unknown): kind is UploadKind {
   return typeof kind === 'string' && Object.hasOwn(UPLOAD_WIDTHS, kind);

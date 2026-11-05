@@ -3,7 +3,9 @@ import { createContext } from 'react-router';
 import type { Admin } from '../server/admin.ts';
 import type { Capture } from '../server/errors.ts';
 import type { Messages } from '../server/messages.ts';
+import type { Presentations } from '../server/presentation.ts';
 import type { Profiles } from '../server/profiles.ts';
+import type { Writeback } from '../server/writeback.ts';
 import type { Uploads } from '../server/uploads.ts';
 import type { Share } from '../server/share.ts';
 import type { Reads } from '../server/reads.ts';
@@ -18,6 +20,8 @@ export interface Hub {
   messages: Messages;
   share: Share;
   profiles: Profiles;
+  presentations: Presentations;
+  writeback: Writeback;
   uploads: Uploads;
   address: string;
   origin: string;

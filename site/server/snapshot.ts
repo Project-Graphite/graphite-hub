@@ -1,4 +1,7 @@
+import type { Presentation } from '../app/presentation.ts';
 import { uploadUrl } from '../app/profile.ts';
+import { readPresentations } from './presentation.ts';
+import { readPending, type Pending } from './writeback.ts';
 import type { Directory, Member, MemberLink, Project, Release, StackGroup } from '../app/types.ts';
 import { compareVersions } from '../scripts/rules.mjs';
 import type { Bus } from './bus.ts';
@@ -27,6 +30,38 @@ export function projectFromEntry(entry: RegistryEntry): Project {
     showcase: entry.showcase ?? null,
     url: entry.deploy.kind === 'none' ? null : `https://${entry.deploy.host}`,
     path: entry.parent ? `/${entry.parent}/${entry.slug}` : `/${entry.slug}`,
+    coverUrl: null,
+    accent: null,
+    layout: 'window',
+    feature: { note: '', screenshotUrl: null },
+    pending: [],
+    pullRequest: null,
+  };
+}
+
+export function presentedProject(
+  entry: RegistryEntry,
+  presentation: Presentation | undefined,
+  pending: Pending | undefined,
+): Project {
+  const base = projectFromEntry(entry);
+  if (!presentation && !pending) {
+    return base;
+  }
+  return {
+    ...base,
+    summary: presentation?.summary ?? base.summary,
+    coverUrl: presentation?.coverUpload ? uploadUrl(presentation.coverUpload, 'cover') : null,
+    accent: presentation?.accent ?? null,
+    layout: presentation?.layout ?? 'window',
+    feature: {
+      note: presentation?.feature.note ?? '',
+      screenshotUrl: presentation?.feature.screenshot
+        ? uploadUrl(presentation.feature.screenshot, 'screenshot')
+        : null,
+    },
+    pending: Object.keys(pending?.fields ?? {}),
+    pullRequest: pending?.pullRequest ?? null,
   };
 }
 
@@ -86,9 +121,14 @@ function build(db: Database, palette: string[]): Directory {
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  const presentations = readPresentations(db);
+  const pending = readPending(db);
   const projects = storedEntries(db)
+    .map((entry) => ({ ...entry, ...pending.get(entry.slug)?.fields }))
     .filter((entry) => entry.listed !== false)
-    .map(projectFromEntry);
+    .map((entry) =>
+      presentedProject(entry, presentations.get(entry.slug), pending.get(entry.slug)),
+    );
   const listed = new Set(projects.map((project) => project.slug));
 
   const releases = db

@@ -18,7 +18,10 @@ import { alertOwner } from './mail.ts';
 import { createMetrics } from './metrics.ts';
 import { connectRedis, slidingLimit } from './redis.ts';
 import { createSessions } from './sessions.ts';
+import { github } from './github.ts';
+import { createPresentations } from './presentation.ts';
 import { createProfiles } from './profiles.ts';
+import { createWriteback } from './writeback.ts';
 import { createReads } from './reads.ts';
 import { createUploads } from './uploads.ts';
 import { createSettings } from './settings.ts';
@@ -39,7 +42,8 @@ const capture = createErrors(db, bus, alertOwner);
 const sessions = createSessions(redis, config.sessionSecret);
 const auth = createAuth(sessions, redis);
 const live = createLive(bus, auth);
-const sync = createSync(db, bus, sessions);
+const writeback = createWriteback(db, bus, github);
+const sync = createSync(db, bus, sessions, writeback);
 const settings = createSettings(db, bus);
 const snapshot = createSnapshot(db, bus, settings);
 
@@ -72,6 +76,8 @@ const app = createApp(
     admin: createAdmin(db, bus, settings, sessions),
     share: createShare(),
     profiles: createProfiles(db, bus),
+    presentations: createPresentations(db, bus),
+    writeback,
     uploads: createUploads(db, uploadsDirectory, (owner) =>
       slidingLimit(redis, `uploads:${owner}`, 20, HOUR),
     ),
