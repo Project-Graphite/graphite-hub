@@ -86,7 +86,11 @@ export function createSessions(redis: Redis, secret: string) {
       return session;
     },
     githubToken(session: Session) {
-      return sealer.open(session.token);
+      try {
+        return sealer.open(session.token);
+      } catch {
+        return undefined;
+      }
     },
     async update(id: string, session: Session) {
       await redis.set(sessionKey(id), JSON.stringify(session), 'KEEPTTL');

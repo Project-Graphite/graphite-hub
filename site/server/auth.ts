@@ -60,7 +60,8 @@ export function createAuth(sessions: Sessions, redis: Redis) {
     if (config.dev || Date.now() - session.checkedAt < RECHECK_MS) {
       return { id, session };
     }
-    const member = await membership(sessions.githubToken(session)).catch(() => session);
+    const token = sessions.githubToken(session);
+    const member = token && (await membership(token).catch(() => session));
     if (!member) {
       await sessions.destroy(id, session.login);
       setCookie(response, SESSION_COOKIE, '', 0);

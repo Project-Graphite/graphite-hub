@@ -4,7 +4,8 @@ import { describe, it } from 'node:test';
 import { clientAddress, cloudflareRanges } from './address.ts';
 import { cookies, safeReturn, sameOrigin } from './auth.ts';
 import { createVerifier, sign } from './internal.ts';
-import { createSealer } from './sessions.ts';
+import type { Redis } from './redis.ts';
+import { createSealer, createSessions, type Session } from './sessions.ts';
 
 function request(headers: Record<string, string>, remoteAddress = '172.18.0.5') {
   return { headers, socket: { remoteAddress } } as unknown as IncomingMessage;
@@ -24,6 +25,23 @@ describe('session sealing', () => {
     flipped[0] ^= 1;
     assert.throws(() => sealer.open(`${iv}.${flipped.toString('base64url')}`));
     assert.throws(() => createSealer('secret-two').open(sealed));
+  });
+});
+
+describe('a session after SESSION_SECRET changes', () => {
+  it('yields no GitHub token, so the session is ended instead of failing every request', () => {
+    const session: Session = {
+      login: 'AmrMsCLL',
+      owner: true,
+      avatarUrl: 'https://avatars.githubusercontent.com/u/1',
+      token: createSealer('old-secret').seal('gho_token'),
+      csrf: 'csrf',
+      createdAt: '2026-11-05T00:00:00.000Z',
+      checkedAt: 0,
+    };
+    const redis = {} as Redis;
+    assert.equal(createSessions(redis, 'old-secret').githubToken(session), 'gho_token');
+    assert.equal(createSessions(redis, 'new-secret').githubToken(session), undefined);
   });
 });
 
