@@ -5,6 +5,7 @@ import { refreshCloudflareRanges } from './address.ts';
 import { createAdmin } from './admin.ts';
 import { createApp } from './app.ts';
 import { createMessages } from './messages.ts';
+import { createShare } from './share.ts';
 import { createAuth } from './auth.ts';
 import { createBus } from './bus.ts';
 import { config } from './config.ts';
@@ -66,6 +67,7 @@ const app = createApp(
     settings,
     reads: createReads(db),
     admin: createAdmin(db, bus, settings, sessions),
+    share: createShare(),
     messages: createMessages(
       db,
       bus,

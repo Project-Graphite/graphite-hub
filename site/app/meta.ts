@@ -142,7 +142,10 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
   return NOT_FOUND(path);
 }
 
-export function metaTags({ title, description, canonical }: PageMeta): MetaDescriptor[] {
+export function metaTags(
+  { title, description, canonical }: PageMeta,
+  image: string | undefined,
+): MetaDescriptor[] {
   return [
     { title },
     { name: 'description', content: description },
@@ -152,6 +155,13 @@ export function metaTags({ title, description, canonical }: PageMeta): MetaDescr
     { property: 'og:url', content: canonical },
     { property: 'og:type', content: 'website' },
     { property: 'og:site_name', content: SITE },
-    { name: 'twitter:card', content: 'summary' },
+    ...(image
+      ? [
+          { property: 'og:image', content: `${ORIGIN}${image}` },
+          { property: 'og:image:width', content: '1200' },
+          { property: 'og:image:height', content: '630' },
+          { name: 'twitter:card', content: 'summary_large_image' },
+        ]
+      : [{ name: 'twitter:card', content: 'summary' }]),
   ];
 }

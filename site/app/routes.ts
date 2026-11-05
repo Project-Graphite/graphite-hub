@@ -23,6 +23,7 @@ export default [
   route('changelog/epics/:slug', 'routes/project-changelog.tsx', { id: 'epic-changelog' }),
   route('changelog/projects/:slug', 'routes/project-changelog.tsx'),
   route('sitemap.xml', 'routes/sitemap.ts'),
+  route('share/*', 'routes/share.ts'),
   route('llms.txt', 'routes/llms.ts'),
   route('kit', 'routes/kit.tsx'),
   route('*', 'routes/not-found.tsx'),
