@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useFetcher, useSearchParams } from 'react-router';
 import { useRoot } from '../../hub';
 import { defaults, SETTINGS, type SettingKey } from '../../settings';
@@ -24,6 +25,18 @@ export function Editable({
   const root = useRoot();
   const editing = useEditing();
   const fetcher = useFetcher<{ error?: string }>();
+  const [saved, setSaved] = useState(false);
+  const was = useRef(fetcher.state);
+  useEffect(() => {
+    const settled = was.current !== 'idle' && fetcher.state === 'idle';
+    was.current = fetcher.state;
+    if (!settled || fetcher.data?.error) {
+      return;
+    }
+    setSaved(true);
+    const timer = setTimeout(() => setSaved(false), 1400);
+    return () => clearTimeout(timer);
+  }, [fetcher.state, fetcher.data]);
   const value: string = (root?.settings ?? defaults())[setting];
   if (!editing) {
     return value ? <Tag className={className}>{value}</Tag> : null;
@@ -42,6 +55,7 @@ export function Editable({
       data-editable=""
       data-placeholder={label}
       data-busy={fetcher.state !== 'idle' || undefined}
+      data-saved={saved || undefined}
       data-error={fetcher.data?.error}
       title={fetcher.data?.error}
       onBlur={(event) => {

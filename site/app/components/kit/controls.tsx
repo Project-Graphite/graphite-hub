@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 export function Switch({ on, label, toggle }: { on: boolean; label: string; toggle: () => void }) {
   return (
@@ -34,6 +34,45 @@ export function Segmented<T extends string>({
         </button>
       ))}
     </div>
+  );
+}
+
+export function Confirm({
+  label,
+  sure = 'sure?',
+  act,
+  disabled = false,
+  className = 'chip-button',
+}: {
+  label: string;
+  sure?: string;
+  act: () => void;
+  disabled?: boolean;
+  className?: string;
+}) {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) {
+      return;
+    }
+    const timer = setTimeout(() => setArmed(false), 3000);
+    return () => clearTimeout(timer);
+  }, [armed]);
+  return (
+    <button
+      type="button"
+      className={className}
+      data-armed={armed || undefined}
+      disabled={disabled}
+      onClick={() => {
+        setArmed(!armed);
+        if (armed) {
+          act();
+        }
+      }}
+    >
+      {armed ? sure : label}
+    </button>
   );
 }
 
@@ -74,10 +113,15 @@ export function Sortable<T>({
           draggable={armed === index}
           tabIndex={0}
           aria-label={`${labelOf(item)}, position ${index + 1} of ${items.length}`}
-          title="drag, or Alt and an arrow key"
           data-off={dimmed?.(item) || undefined}
           data-dragging={dragging === index || undefined}
-          data-over={(over === index && dragging !== index) || undefined}
+          data-over={
+            over === index && dragging !== null && dragging !== index
+              ? dragging < index
+                ? 'after'
+                : 'before'
+              : undefined
+          }
           onDragStart={(event) => {
             event.dataTransfer.effectAllowed = 'move';
             setDragging(index);
