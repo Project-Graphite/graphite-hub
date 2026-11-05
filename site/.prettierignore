@@ -1,6 +1,4 @@
-dist
-dist-ssr
+build
+.react-router
+data
 package-lock.json
-src/data/registry.json
-src/data/github.json
-src/data/changelog.json

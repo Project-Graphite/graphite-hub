@@ -1,0 +1,45 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  pipeline:
+    name: Pipeline
+    permissions:
+      contents: read
+      packages: write
+      issues: write
+      pull-requests: write
+    uses: project-graphite/actions/.github/workflows/reusable-pipeline.yml@main
+    with:
+      changelog: false
+    secrets: inherit
+
+  budget:
+    name: Types, format and bundle size
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run size

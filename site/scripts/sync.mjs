@@ -1,6 +1,4 @@
-import { access, mkdir, writeFile } from 'node:fs/promises';
-import { stringify } from 'yaml';
-import { loadRegistry, RELEASES } from './releases.mjs';
+import { parse } from 'yaml';
 import {
   classify,
   compareVersions,
@@ -15,17 +13,18 @@ if (!token) {
   throw new Error('GH_TOKEN is required');
 }
 
+const PLATFORM = 'Project-Graphite/platform';
 const cut = process.argv.includes('--cut');
 const only = process.argv
   .find((argument) => argument.startsWith('--repo='))
   ?.slice('--repo='.length)
   .toLowerCase();
 
-async function github(path, init = {}) {
+async function github(path, init = {}, accept = 'application/vnd.github+json') {
   const response = await fetch(`https://api.github.com${path}`, {
     ...init,
     headers: {
-      Accept: 'application/vnd.github+json',
+      Accept: accept,
       Authorization: `Bearer ${token}`,
       'X-GitHub-Api-Version': '2022-11-28',
       'User-Agent': 'project-graphite-changelog-sync',
@@ -37,7 +36,7 @@ async function github(path, init = {}) {
     throw new Error(`GitHub answered ${response.status} for ${path}`);
   }
 
-  return response.json();
+  return accept === 'application/vnd.github+json' ? response.json() : response.text();
 }
 
 async function paginate(path, select = (page) => page) {
@@ -53,34 +52,49 @@ async function paginate(path, select = (page) => page) {
   }
 }
 
-async function exists(url) {
-  try {
-    await access(url);
-    return true;
-  } catch {
-    return false;
-  }
+async function listedProjects() {
+  const files = await github(`/repos/${PLATFORM}/contents/projects`);
+  const entries = await Promise.all(
+    files
+      .filter((file) => file.name.endsWith('.yml'))
+      .map(async (file) =>
+        parse(
+          await github(
+            `/repos/${PLATFORM}/contents/projects/${file.name}`,
+            {},
+            'application/vnd.github.raw+json',
+          ),
+        ),
+      ),
+  );
+  return entries
+    .filter((entry) => entry.listed !== false)
+    .map((entry) => ({
+      slug: entry.slug,
+      parent: entry.parent ?? null,
+      repo: entry.repo,
+      paths: entry.paths ?? [],
+      releases: entry.releases ?? 'auto',
+    }));
 }
 
-function releasesByProject(inRepo, tags) {
+function latestByProject(inRepo, tags) {
   const topLevel = inRepo.find((project) => !project.parent);
-  const found = new Map(inRepo.map((project) => [project, new Map()]));
+  const found = new Map(inRepo.map((project) => [project, []]));
 
   for (const tag of tags) {
     const parsed = parseTag(tag.name);
     const project = parsed?.slug
       ? inRepo.find((candidate) => candidate.slug === parsed.slug)
       : topLevel;
-    if (parsed && project && !found.get(project).has(parsed.version)) {
-      found.get(project).set(parsed.version, { tag: tag.name, sha: tag.commit.sha });
+    if (parsed && project) {
+      found.get(project).push({ version: parsed.version, tag: tag.name });
     }
   }
 
   return [...found].map(([project, versions]) => [
     project,
-    [...versions]
-      .sort(([a], [b]) => compareVersions(a, b))
-      .map(([version, { tag, sha }]) => ({ version, tag, sha })),
+    versions.sort((a, b) => compareVersions(a.version, b.version)).at(-1),
   ]);
 }
 
@@ -128,39 +142,6 @@ async function attribute(project, inRepo, commits) {
   );
 }
 
-async function draft(project, inRepo, release, previous) {
-  const [head, commits] = await Promise.all([
-    github(`/repos/${project.repo}/commits/${release.sha}`),
-    commitsBetween(project.repo, previous, release.sha),
-  ]);
-
-  const changes = (await attribute(project, inRepo, commits)).flatMap((commit) => {
-    const change = classify(commit.commit.message);
-    return change
-      ? [
-          {
-            type: change.type,
-            text: change.text,
-            commit: commit.sha.slice(0, 7),
-            ...(change.pr ? { pr: change.pr } : {}),
-            author: commit.author?.login ?? commit.commit.author.name,
-          },
-        ]
-      : [];
-  });
-
-  return {
-    project: project.slug,
-    version: release.version,
-    tag: release.tag,
-    previous,
-    date: head.commit.committer.date.slice(0, 10),
-    title: null,
-    summary: changes.length > 0 ? null : 'No user-facing changes.',
-    changes,
-  };
-}
-
 async function nextRelease(project, inRepo, latest, branch) {
   const commits = await attribute(
     project,
@@ -173,14 +154,13 @@ async function nextRelease(project, inRepo, latest, branch) {
   }
 
   const version = nextVersion(latest?.version ?? null, types);
-  return { version, tag: tagsFor(project, version)[0], sha: commits[0].sha };
+  return { tag: tagsFor(project, version)[0], sha: commits[0].sha };
 }
 
-const { projects } = await loadRegistry();
+const projects = await listedProjects();
 const repos = [...new Set(projects.map((project) => project.repo.toLowerCase()))]
   .filter((repo) => !only || repo === only)
   .sort();
-const drafted = [];
 const tagged = [];
 const failed = [];
 
@@ -192,31 +172,19 @@ for (const repo of repos) {
       github(`/repos/${repo}`),
     ]);
 
-    for (const [project, releases] of releasesByProject(inRepo, tags)) {
-      if (project.releases === 'auto' && !(project.parent && project.paths.length === 0)) {
-        const release = await nextRelease(project, inRepo, releases.at(-1), branch);
-        if (release && cut) {
-          await github(`/repos/${repo}/git/refs`, {
-            method: 'POST',
-            body: JSON.stringify({ ref: `refs/tags/${release.tag}`, sha: release.sha }),
-          });
-          releases.push(release);
-          tagged.push(`${repo}@${release.tag}`);
-        } else if (release) {
-          tagged.push(`${repo}@${release.tag} (not created without --cut)`);
-        }
+    for (const [project, latest] of latestByProject(inRepo, tags)) {
+      if (project.releases !== 'auto' || (project.parent && project.paths.length === 0)) {
+        continue;
       }
-
-      for (const [index, release] of releases.entries()) {
-        const file = new URL(`${project.slug}/${release.version}.yml`, RELEASES);
-        if (await exists(file)) {
-          continue;
-        }
-
-        const entry = await draft(project, inRepo, release, releases[index - 1]?.tag ?? null);
-        await mkdir(new URL(`${project.slug}/`, RELEASES), { recursive: true });
-        await writeFile(file, stringify(entry, { lineWidth: 100 }), 'utf8');
-        drafted.push(`${project.slug}@${release.version}`);
+      const release = await nextRelease(project, inRepo, latest, branch);
+      if (release && cut) {
+        await github(`/repos/${repo}/git/refs`, {
+          method: 'POST',
+          body: JSON.stringify({ ref: `refs/tags/${release.tag}`, sha: release.sha }),
+        });
+        tagged.push(`${repo}@${release.tag}`);
+      } else if (release) {
+        tagged.push(`${repo}@${release.tag} (not created without --cut)`);
       }
     }
   } catch (error) {
@@ -228,13 +196,8 @@ for (const repo of repos) {
 console.log(
   tagged.length > 0 ? `Tagged ${tagged.join(', ')}.` : 'No project has untagged changes.',
 );
-console.log(
-  drafted.length > 0
-    ? `Drafted ${drafted.length} releases: ${drafted.join(', ')}.`
-    : 'Every tagged version already has a release entry.',
-);
 
 if (failed.length > 0) {
-  console.error(`Could not read ${failed.join(', ')}; their releases were not drafted.`);
+  console.error(`Could not read ${failed.join(', ')}; their versions were not cut.`);
   process.exit(1);
 }

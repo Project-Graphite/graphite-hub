@@ -1,6 +1,7 @@
 node_modules/
-dist/
-dist-ssr/
+build/
+.react-router/
+site/data/
+.env
 *.tsbuildinfo
 .DS_Store
-site/src/data/changelog.json

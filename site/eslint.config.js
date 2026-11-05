@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
 export default defineConfig(
-  { ignores: ['dist', 'dist-ssr'] },
+  { ignores: ['build', '.react-router', 'data'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -16,9 +16,14 @@ export default defineConfig(
       prettier,
     ],
     languageOptions: {
-      ecmaVersion: 2022,
+      ecmaVersion: 2024,
       globals: globals.browser,
     },
+  },
+  {
+    files: ['server/**/*.ts', 'app/entry.server.tsx'],
+    languageOptions: { globals: globals.node },
+    rules: { '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }] },
   },
   {
     files: ['**/*.{js,mjs}'],
