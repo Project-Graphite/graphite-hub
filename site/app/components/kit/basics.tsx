@@ -55,8 +55,8 @@ export function Button({ to, children, primary = false, arrow = false }: ButtonP
 }
 
 interface BandProps {
-  title: string;
-  description?: string;
+  title: ReactNode;
+  description?: ReactNode;
   more?: { to: string; label: string };
   children: ReactNode;
 }
@@ -67,7 +67,7 @@ export function Band({ title, description, more, children }: BandProps) {
       <div className="band-head">
         <h2>{title}</h2>
         <div className="rule" />
-        {description && <p>{description}</p>}
+        {description}
       </div>
       {children}
       {more && (

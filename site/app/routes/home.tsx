@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Route } from './+types/home';
 import { Band, Button } from '../components/kit/basics';
+import { Editable } from '../components/kit/Editable';
 import { Console, Counters, ReleaseTimeline, Ticker } from '../components/kit/live';
 import { Orbit, People } from '../components/kit/members';
 import {
@@ -77,9 +78,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       <section className="hero">
         <Field />
         <div>
-          <p className="mono-sm mb-4 text-faint">{settings['home.hero.eyebrow']}</p>
-          <h1>{settings['home.hero.headline']}</h1>
-          <p className="lede">{settings['home.hero.paragraph']}</p>
+          <Editable as="p" className="mono-sm mb-4 text-faint" setting="home.hero.eyebrow" />
+          <h1>
+            <Editable setting="home.hero.headline" />
+          </h1>
+          <Editable as="p" className="lede" setting="home.hero.paragraph" />
           <div className="actions">
             <Button to="/projects" primary arrow>
               {settings['home.hero.primary']}
@@ -105,8 +108,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     timeline: !shownSections.includes('ticker') && timeline(),
     featured: featured.length > 0 && (
       <Band
-        title={settings['home.featured.title']}
-        description={settings['home.featured.description']}
+        title={<Editable setting="home.featured.title" />}
+        description={<Editable as="p" setting="home.featured.description" />}
         more={{ to: '/projects', label: 'explore all projects' }}
       >
         <div className="band-grid">
@@ -118,8 +121,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     ),
     members: (
       <Band
-        title={settings['home.members.title']}
-        description={settings['home.members.description']}
+        title={<Editable setting="home.members.title" />}
+        description={<Editable as="p" setting="home.members.description" />}
       >
         <div className="split">
           <People members={hub.members} projectsOf={projectsOf} />
@@ -129,7 +132,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     ),
     writing: null,
     more: more.length > 0 && (
-      <Band title={settings['home.more.title']}>
+      <Band title={<Editable setting="home.more.title" />}>
         <div className="band-grid">
           {more.map((project) => (
             <AccentCard key={project.slug} project={project} owner={ownerOf(project.owner)} />

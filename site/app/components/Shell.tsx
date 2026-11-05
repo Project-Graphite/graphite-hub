@@ -4,6 +4,7 @@ import { useRoot } from '../hub';
 import { MotionContext } from '../motion/motion';
 import { defaults, visible, type NAV } from '../settings';
 import { accentStyle } from './kit/basics';
+import { Editable, useEditing } from './kit/Editable';
 import { Palette } from './kit/Palette';
 
 const NAV_TARGET: Record<(typeof NAV)[number], { to: string; label: string }> = {
@@ -21,6 +22,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const root = useRoot();
   const settings = root?.settings ?? defaults();
+  const editing = useEditing();
   const viewerAccent = root?.directory.members.find(
     (member) => member.github.toLowerCase() === root.viewer?.login.toLowerCase(),
   )?.accent;
@@ -99,13 +101,19 @@ export default function Shell({ children }: { children: ReactNode }) {
 
       <footer className="frame-footer">
         <div className="shell flex flex-wrap justify-between gap-4">
-          <span>{settings['site.footer']}</span>
+          <Editable setting="site.footer" />
           <Link to="/privacy" className="hover:text-ink">
             privacy
           </Link>
         </div>
       </footer>
       <Palette />
+      {editing && (
+        <div className="edit-bar mono-sm">
+          <span>editing the page</span>
+          <Link to={pathname}>done</Link>
+        </div>
+      )}
     </MotionContext>
   );
 }
