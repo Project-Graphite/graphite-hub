@@ -36,6 +36,7 @@ export function editPath(member: Member) {
 
 export function MemberHero({ member, actions }: { member: Member; actions?: ReactNode }) {
   const hub = useHub();
+  const live = hub.projectsOwnedBy(member).filter((project) => project.status === 'live').length;
   return (
     <PageHeader
       banner={member.coverUrl && <img className="member-cover" src={member.coverUrl} alt="" />}
@@ -50,6 +51,7 @@ export function MemberHero({ member, actions }: { member: Member; actions?: Reac
             value={hub.projectsForMember(member).length + hub.epicsForMember(member).length}
             label="projects"
           />
+          {live > 0 && <Fact value={live} label="live" />}
           <Fact value={hub.releasesOwnedBy(member).length} label="releases" />
           {member.joined && <Fact label="on GitHub since" value={member.joined} />}
         </>
@@ -69,7 +71,7 @@ export function MemberView({
 }) {
   const rendered = useRenderedBlocks(member, profile, today);
   return (
-    <div style={accentStyle(member.accent)}>
+    <div className="profile member" style={accentStyle(member.accent)}>
       <MemberHero member={member} />
       <Blocks rendered={rendered} />
     </div>
@@ -110,7 +112,7 @@ export function MemberPage({ data }: { data: ReturnType<typeof loadMember> }) {
         </>
       }
     >
-      <div style={accentStyle(member.accent)}>
+      <div className="profile member" style={accentStyle(member.accent)}>
         <MemberHero
           member={member}
           actions={

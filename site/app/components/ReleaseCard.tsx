@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { useHub } from '../hub';
-import { changelogPath, compareUrl } from '../model';
+import { changelogPath, compareUrl, releaseTitle } from '../model';
 import type { ChangeType, Release } from '../types';
 
 const DOT: Record<ChangeType, string> = {
@@ -22,6 +22,7 @@ export default function ReleaseCard({ release, showProject }: Props) {
   const project = projectBySlug(release.project)!;
   const epic = project.parent ? projectBySlug(project.parent) : undefined;
   const owner = memberByHandle(project.owner);
+  const title = releaseTitle(release, project.name);
 
   return (
     <article
@@ -55,7 +56,7 @@ export default function ReleaseCard({ release, showProject }: Props) {
             <a href={`#${release.id}`} className="text-ink no-underline hover:underline">
               v{release.version}
             </a>
-            {release.title && <span className="font-normal text-muted"> — {release.title}</span>}
+            {title && <span className="font-normal text-muted"> — {title}</span>}
           </h3>
         </div>
         <time dateTime={release.date} className="mono-sm text-faint">

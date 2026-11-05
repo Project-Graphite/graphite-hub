@@ -6,8 +6,10 @@ import type { Member, Project } from '../../types';
 import ProjectTile from '../ProjectTile';
 import Section from '../Section';
 import TagList from '../TagList';
-import { ReleaseTimeline } from './live';
+import { useCountUp } from '../../motion/motion';
+import { Button } from './basics';
 import { Window } from './projects';
+import { ReleaseHistory } from './releases';
 
 export interface PageProfile {
   bio: string | null;
@@ -55,14 +57,25 @@ function timelineBody({ hub, member, today, days }: Context) {
   const releases = hub.releasesOwnedBy(member);
   return (
     releases.length > 0 && (
-      <ReleaseTimeline
+      <ReleaseHistory
         releases={releases}
         accentOf={() => member.accent}
-        nameOf={(release) => hub.projectBySlug(release.project)?.name ?? release.project}
+        projectOf={(release) => hub.projectBySlug(release.project)}
         today={today}
         days={days}
+        showProject
       />
     )
+  );
+}
+
+function Stat({ value, label }: { value: number; label: string }) {
+  const shown = useCountUp(value);
+  return (
+    <span className="stat">
+      <b>{shown}</b>
+      <span>{label}</span>
+    </span>
   );
 }
 
@@ -92,31 +105,30 @@ function body(block: Block, context: Context): ReactNode {
       );
     case 'github':
       return (
-        <dl className="mono-sm grid grid-cols-[auto_minmax(0,1fr)] gap-x-8 gap-y-3">
-          <dt className="text-faint">public repositories</dt>
-          <dd className="m-0">{member.publicRepos ?? '—'}</dd>
-          <dt className="text-faint">followers</dt>
-          <dd className="m-0">{member.followers ?? '—'}</dd>
-          <dt className="text-faint">since</dt>
-          <dd className="m-0">{member.joined ?? '—'}</dd>
-          <dt className="text-faint">profile</dt>
-          <dd className="m-0">
-            <a href={`https://github.com/${member.github}`} className="text-ink hover:underline">
-              github.com/{member.github} ↗
-            </a>
-          </dd>
-        </dl>
+        <div className="stats">
+          {member.publicRepos !== null && (
+            <Stat value={member.publicRepos} label="public repositories" />
+          )}
+          {member.followers !== null && <Stat value={member.followers} label="followers" />}
+          {member.joined && (
+            <span className="stat">
+              <b>{member.joined}</b>
+              <span>on GitHub since</span>
+            </span>
+          )}
+          <Button to={`https://github.com/${member.github}`}>github.com/{member.github} ↗</Button>
+        </div>
       );
     case 'timeline':
       return timelineBody(context);
     case 'links':
       return (
         block.links.length > 0 && (
-          <div className="mono-sm flex flex-wrap gap-x-4.5 gap-y-2">
+          <div className="flex flex-wrap gap-2">
             {block.links.map((link) => (
-              <a key={link.url} href={link.url} className="rule-link">
+              <Button key={link.url} to={link.url}>
                 {link.label} ↗
-              </a>
+              </Button>
             ))}
           </div>
         )
