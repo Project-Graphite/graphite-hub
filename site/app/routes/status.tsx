@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import type { Route } from './+types/status';
 import { Console } from '../components/kit/live';
-import { PageHero } from '../components/kit/page';
+import { Fact, PageHeader } from '../components/kit/page';
 import Section from '../components/Section';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
@@ -24,14 +24,23 @@ export function loader({ context }: Route.LoaderArgs) {
 export default function StatusPage({ loaderData }: Route.ComponentProps) {
   const { running, uptime, lines } = loaderData;
   const limit = useRoot()!.settings['rail.console.lines'] * 3;
+  const lastDeploy = running
+    .flatMap((project) => project.deploy?.at ?? [])
+    .sort()
+    .at(-1);
   return (
     <Page>
-      <PageHero crumb="/status" title="Status">
-        <p className="lede">
-          Every live project, checked from the hub every thirty seconds, and the public console of
-          what just happened.
-        </p>
-      </PageHero>
+      <PageHeader
+        path="/status"
+        title="Status"
+        facts={
+          <>
+            <Fact value={running.length} label="running" />
+            <Fact label="checked" value="every 30 s" />
+            {lastDeploy && <Fact label="last deploy" value={day(lastDeploy)} />}
+          </>
+        }
+      />
       <Section label={`uptime · last ${DAYS} days`}>
         <div className="grid gap-5">
           {running.map((project) => {

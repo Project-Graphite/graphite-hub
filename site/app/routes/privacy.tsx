@@ -1,4 +1,4 @@
-import { PageHero } from '../components/kit/page';
+import { PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 
 const KEPT = [
@@ -32,12 +32,7 @@ const KEPT = [
 export default function Privacy() {
   return (
     <Page>
-      <PageHero crumb="/privacy" title="What this site keeps">
-        <p className="lede">
-          Project Graphite is a portfolio. It keeps as little as it needs, for as short a time as it
-          can.
-        </p>
-      </PageHero>
+      <PageHeader path="/privacy" title="What this site keeps" />
       <dl className="band grid max-w-[64ch] grid-cols-[auto_minmax(0,1fr)] gap-x-8 gap-y-4">
         {KEPT.map(([what, how]) => (
           <div key={what} className="contents">

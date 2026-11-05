@@ -3,7 +3,7 @@ import { data, Link, useFetcher } from 'react-router';
 import type { Route } from './+types/admin';
 import { Button, Panel } from '../components/kit/basics';
 import { Segmented, Sortable, Switch } from '../components/kit/controls';
-import { PageHero } from '../components/kit/page';
+import { Fact, PageHeader } from '../components/kit/page';
 import Section from '../components/Section';
 import { Page } from '../components/Shell';
 import { hubContext, type Hub } from '../context';
@@ -350,13 +350,25 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
     <Page>
       <div className="admin-layout">
         <div className="min-w-0">
-          <PageHero crumb="/admin" title="Admin">
-            <div className="actions">
+          <PageHeader
+            path="/admin"
+            title="Admin"
+            actions={
               <Button to="/?edit" primary arrow>
                 edit the home page
               </Button>
-            </div>
-          </PageHero>
+            }
+            facts={
+              <>
+                <Fact value={loaderData.waiting} label="waiting" />
+                <Fact
+                  value={loaderData.errors.filter((error) => !error.resolvedAt).length}
+                  label="open errors"
+                />
+                <Fact value={root.directory.members.length} label="members" />
+              </>
+            }
+          />
           {(Object.keys(AREAS) as Area[]).map((area) => (
             <Section key={area} label={AREAS[area]}>
               <div className="settings">

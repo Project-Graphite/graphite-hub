@@ -1,10 +1,10 @@
 import type { Route } from './+types/projects';
-import { loadRail, PageHero, RAIL_TOPICS, StandardRail } from '../components/kit/page';
+import { Fact, loadRail, PageHeader, RAIL_TOPICS, StandardRail } from '../components/kit/page';
 import { AccentCard } from '../components/kit/projects';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
+import { day } from '../format';
 import { useHub } from '../hub';
-import { PROJECTS } from '../meta';
 
 export const handle = { topics: RAIL_TOPICS };
 
@@ -14,11 +14,24 @@ export function loader({ context }: Route.LoaderArgs) {
 
 export default function Projects({ loaderData }: Route.ComponentProps) {
   const hub = useHub();
+  const slugs = new Set(hub.rootProjects.map((project) => project.slug));
+  const latest = hub.releases.find((release) => slugs.has(release.project));
   return (
     <Page rail={<StandardRail {...loaderData} />}>
-      <PageHero crumb="/projects" title="Projects">
-        <p className="lede">{PROJECTS.description}</p>
-      </PageHero>
+      <PageHeader
+        path="/projects"
+        title="Projects"
+        facts={
+          <>
+            <Fact value={hub.rootProjects.length} label="projects" />
+            <Fact
+              value={hub.rootProjects.filter((project) => project.status === 'live').length}
+              label="live"
+            />
+            {latest && <Fact label="last release" value={day(latest.date)} />}
+          </>
+        }
+      />
       <section className="band">
         {hub.rootProjects.length === 0 ? (
           <p className="mono-sm text-faint">Nothing registered yet.</p>

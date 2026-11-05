@@ -1,6 +1,6 @@
 import { data, useFetcher } from 'react-router';
 import type { Route } from './+types/messages';
-import { PageHero } from '../components/kit/page';
+import { Fact, PageHeader } from '../components/kit/page';
 import Section from '../components/Section';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
@@ -92,9 +92,18 @@ export default function Messages({ loaderData }: Route.ComponentProps) {
 
   return (
     <Page>
-      <PageHero crumb="/messages" title="Messages">
+      <PageHeader
+        path="/messages"
+        title="Messages"
+        facts={
+          <>
+            <Fact value={loaderData.wall.length} label="on the wall" />
+            {loaderData.queue && <Fact value={loaderData.queue.length} label="waiting" />}
+          </>
+        }
+      >
         <p className="lede">{root.settings['messages.intro']}</p>
-      </PageHero>
+      </PageHeader>
 
       <Section label="leave a message">
         {sent ? (

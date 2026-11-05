@@ -1,7 +1,8 @@
 import { Link } from 'react-router';
 import AuthorLink from '../components/AuthorLink';
-import { accentStyle, Avatar, Cover, Panel } from '../components/kit/basics';
+import { accentStyle, Avatar, Button, Cover, Panel } from '../components/kit/basics';
 import { ReleaseTimeline } from '../components/kit/live';
+import { Fact, PageHeader } from '../components/kit/page';
 import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
 import { WindowBar } from '../components/kit/projects';
 import ProjectTile from '../components/ProjectTile';
@@ -47,14 +48,6 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
     <Page
       rail={
         <>
-          {loaderData.editable && owner && (
-            <Link
-              to={`${owner.path}/edit?project=${project.slug}`}
-              className="btn primary justify-center"
-            >
-              edit this project
-            </Link>
-          )}
           {loaderData.running.length > 0 && <RunningPanel running={loaderData.running} />}
           <ChangelogPanel
             releases={releases.slice(0, settings['rail.changelog.count'] + 1)}
@@ -78,34 +71,55 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
         </>
       }
     >
-      <section className="page-hero">
-        <p className="mono-sm mb-3 text-faint">
-          /
-          {parent && (
-            <>
-              <Link to={parent.path} className="hover:text-ink hover:underline">
-                {parent.slug}
-              </Link>
-              /
-            </>
-          )}
-          {project.slug}
-        </p>
-        {project.layout === 'window' ? (
-          <div className="window mt-2" style={accentStyle(accent)}>
-            <WindowBar project={project} />
-            <Cover name={project.name} accent={accent} image={project.coverUrl} />
-          </div>
-        ) : (
-          project.coverUrl && <img className="member-cover mt-2" src={project.coverUrl} alt="" />
-        )}
-        <div className="mt-6 flex flex-wrap items-baseline justify-between gap-4">
-          <h1>{project.name}</h1>
-          <Status status={project.status} />
-        </div>
+      <PageHeader
+        banner={
+          project.layout === 'window' ? (
+            <div className="window" style={accentStyle(accent)}>
+              <WindowBar project={project} />
+              <Cover name={project.name} accent={accent} image={project.coverUrl} />
+            </div>
+          ) : (
+            project.coverUrl && <img className="member-cover" src={project.coverUrl} alt="" />
+          )
+        }
+        path={
+          <>
+            /
+            {parent && (
+              <>
+                <Link to={parent.path} className="hover:text-ink hover:underline">
+                  {parent.slug}
+                </Link>
+                /
+              </>
+            )}
+            {project.slug}
+          </>
+        }
+        title={project.name}
+        aside={<Status status={project.status} />}
+        actions={
+          <>
+            {loaderData.editable && owner && (
+              <Button to={`${owner.path}/edit?project=${project.slug}`} primary>
+                edit
+              </Button>
+            )}
+            {project.url && <Button to={project.url}>visit ↗</Button>}
+            <Button to={project.repoUrl}>source ↗</Button>
+          </>
+        }
+        facts={
+          <>
+            {releases[0] && <Fact label="latest" value={`v${releases[0].version}`} />}
+            <Fact value={releases.length} label="releases" />
+            {releases[0] && <Fact label="released" value={day(releases[0].date)} />}
+          </>
+        }
+      >
         <p className="lede">{project.summary}</p>
         <TagList tags={project.tags} className="mt-4.5" />
-      </section>
+      </PageHeader>
 
       {(project.feature.note || project.feature.screenshotUrl) && (
         <Section label="feature">

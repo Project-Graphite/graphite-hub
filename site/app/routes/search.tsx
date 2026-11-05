@@ -1,6 +1,6 @@
 import { Form, Link } from 'react-router';
 import type { Route } from './+types/search';
-import { PageHero } from '../components/kit/page';
+import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
 import { search } from '../search';
@@ -14,22 +14,27 @@ export default function Search({ loaderData }: Route.ComponentProps) {
   const { query, hits } = loaderData;
   return (
     <Page>
-      <PageHero crumb="/search" title="Search">
-        <Form method="get" className="mt-5 flex max-w-[52ch] gap-2">
-          <input
-            name="q"
-            defaultValue={query}
-            placeholder="members, projects, releases"
-            className="flex-1 rounded-md border border-line bg-paper px-3 py-2 text-ink"
-          />
-          <button type="submit" className="btn">
-            search
-          </button>
-        </Form>
-        <p className="mono-sm mt-3 text-faint">
-          Press <span className="kbd">/</span> on any page to search without leaving it.
-        </p>
-      </PageHero>
+      <PageHeader
+        path="/search"
+        title="Search"
+        actions={
+          <Form method="get" className="flex gap-2">
+            <input
+              name="q"
+              defaultValue={query}
+              aria-label="Search"
+              placeholder="members, projects, releases"
+              className="w-[22ch] max-w-full rounded-md border border-line bg-paper px-3 py-2 text-ink"
+            />
+            <button type="submit" className="btn">
+              search
+            </button>
+          </Form>
+        }
+        facts={
+          query && <Fact value={hits.length} label={hits.length === 1 ? 'result' : 'results'} />
+        }
+      />
       {query && (
         <ul className="band grid gap-4">
           {hits.length === 0 && <li className="text-muted">Nothing matches “{query}”.</li>}

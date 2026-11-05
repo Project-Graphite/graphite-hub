@@ -1,10 +1,9 @@
 import type { Route } from './+types/members';
 import { Orbit, People } from '../components/kit/members';
-import { loadRail, PageHero, RAIL_TOPICS, StandardRail } from '../components/kit/page';
+import { Fact, loadRail, PageHeader, RAIL_TOPICS, StandardRail } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
 import { useHub } from '../hub';
-import { MEMBERS } from '../meta';
 
 export const handle = { topics: RAIL_TOPICS };
 
@@ -18,9 +17,17 @@ export default function Members({ loaderData }: Route.ComponentProps) {
     hub.projectsForMember(member).length + hub.epicsForMember(member).length;
   return (
     <Page rail={<StandardRail {...loaderData} />}>
-      <PageHero crumb="/members" title="Members">
-        <p className="lede">{MEMBERS.description}</p>
-      </PageHero>
+      <PageHeader
+        path="/members"
+        title="Members"
+        facts={
+          <>
+            <Fact value={hub.members.length} label="members" />
+            <Fact value={hub.projects.length} label="projects" />
+            <Fact value={hub.releases.length} label="releases" />
+          </>
+        }
+      />
       <section className="band">
         <div className="split">
           <People members={hub.members} projectsOf={projectsOf} />
