@@ -4,6 +4,7 @@ import type { Route } from './+types/members';
 import { accentStyle, Avatar, Band } from '../components/kit/basics';
 import { Fact, loadRail, PageHeader, RAIL_TOPICS, StandardRail } from '../components/kit/page';
 import { Page } from '../components/Shell';
+import TagList from '../components/TagList';
 import { hubContext } from '../context';
 import { useHub } from '../hub';
 import { useSpotlight, useTilt } from '../motion/motion';
@@ -72,13 +73,7 @@ function Card({
             </span>
           )}
         </div>
-        {stack.length > 0 && (
-          <div className="stack">
-            {stack.map((item) => (
-              <i key={item}>{item}</i>
-            ))}
-          </div>
-        )}
+        {stack.length > 0 && <TagList tags={stack} />}
         <div className="links">
           {member.links.map((link) => (
             <a key={link.url} href={link.url} className="rule-link">

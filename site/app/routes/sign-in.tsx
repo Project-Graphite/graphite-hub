@@ -30,8 +30,8 @@ export default function SignIn() {
               <p className="whom">
                 {member && <Avatar member={member} size="sm" />}
                 <span>{member?.name ?? viewer.login}</span>
-                <span className="role">@{viewer.login}</span>
-                {viewer.owner && <span className="role">owner</span>}
+                <span className="tag">@{viewer.login}</span>
+                {viewer.owner && <span className="tag">owner</span>}
               </p>
               <div className="actions">
                 <Button to={back} primary arrow>

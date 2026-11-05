@@ -69,7 +69,7 @@ function Entry({
           <Status status={project.status} />
         </div>
         <p className="summary">{project.summary}</p>
-        <div className="chips tags">
+        <div className="chips">
           {project.tags.map((item) => (
             <button
               key={item}

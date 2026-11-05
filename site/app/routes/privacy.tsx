@@ -58,7 +58,7 @@ export default function Privacy() {
           <div key={what} className="entry">
             <dt>{what}</dt>
             <dd>{how}</dd>
-            <dd className="kept">{kept}</dd>
+            <dd className="tag kept">{kept}</dd>
           </div>
         ))}
       </dl>
