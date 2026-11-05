@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { day, shortTag } from '../../format';
 import { changelogPath } from '../../model';
-import type { ConsoleLine, Member, Project, Release, Running } from '../../types';
+import type { ConsoleLine, Member, Message, Project, Release, Running } from '../../types';
 import Status from '../Status';
 import { Avatar, Panel } from './basics';
 import { Console } from './live';
@@ -98,6 +98,22 @@ export function ChangelogPanel({
             </li>
           );
         })}
+      </ol>
+    </Panel>
+  );
+}
+
+export function MessagesPanel({ messages }: { messages: Message[] }) {
+  return (
+    <Panel title="latest messages" link={{ to: '/messages', label: 'the wall' }}>
+      <ol className="grid gap-3">
+        {messages.length === 0 && <li className="mono-sm text-faint">Nothing on the wall yet.</li>}
+        {messages.map((message) => (
+          <li key={message.id} className="grid gap-0.5">
+            <span className="mono-sm text-faint">{message.name ?? 'someone'}</span>
+            <span className="line-clamp-3 text-sm text-muted">{message.body}</span>
+          </li>
+        ))}
       </ol>
     </Panel>
   );

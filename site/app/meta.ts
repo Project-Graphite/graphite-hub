@@ -67,6 +67,11 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
     '/projects': PROJECTS,
     '/changelog': CHANGELOG,
     '/status': STATUS,
+    '/messages': {
+      title: `Messages — ${SITE}`,
+      description: 'Leave a message for the members of Project Graphite.',
+      canonical: `${ORIGIN}/messages/`,
+    },
     '/search': {
       title: `Search — ${SITE}`,
       description: 'Search members, projects and releases.',

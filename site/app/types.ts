@@ -127,6 +127,16 @@ export interface Counts {
   deploys: number;
 }
 
+export interface Message {
+  id: number;
+  name: string | null;
+  body: string;
+  public: boolean;
+  publishedBy: string | null;
+  publishedAt: string | null;
+  at: string;
+}
+
 export interface Viewer {
   login: string;
   avatarUrl: string;

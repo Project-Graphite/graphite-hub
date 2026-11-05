@@ -31,6 +31,7 @@ export function loader({ context, request }: Route.LoaderArgs) {
   const key = new URL(request.url).searchParams.get('history');
   return {
     errors: hub.admin.errors(),
+    waiting: hub.messages.queue().length,
     history: key && isSettingKey(key) ? { key, versions: hub.admin.history(key) } : null,
   };
 }
@@ -321,6 +322,11 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
             ))}
         </Section>
       ))}
+      <Section label={`messages · ${loaderData.waiting} waiting`}>
+        <Link to="/messages" className="rule-link mono-sm">
+          moderate on /messages
+        </Link>
+      </Section>
       <Section
         label={`errors · ${loaderData.errors.filter((error) => !error.resolvedAt).length} open`}
       >

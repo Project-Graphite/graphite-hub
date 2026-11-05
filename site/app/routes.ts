@@ -13,6 +13,7 @@ export default [
   route('status', 'routes/status.tsx'),
   route('admin', 'routes/admin.tsx'),
   route('search', 'routes/search.tsx'),
+  route('messages', 'routes/messages.tsx'),
   route('privacy', 'routes/privacy.tsx'),
   route('sign-in', 'routes/sign-in.tsx'),
   route('changelog/members/:handle', 'routes/member-changelog.tsx'),

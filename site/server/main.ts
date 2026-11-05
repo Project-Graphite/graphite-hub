@@ -4,6 +4,7 @@ import type { ServerBuild } from 'react-router';
 import { refreshCloudflareRanges } from './address.ts';
 import { createAdmin } from './admin.ts';
 import { createApp } from './app.ts';
+import { createMessages } from './messages.ts';
 import { createAuth } from './auth.ts';
 import { createBus } from './bus.ts';
 import { config } from './config.ts';
@@ -14,7 +15,7 @@ import { createLive } from './live.ts';
 import { log } from './log.ts';
 import { alertOwner } from './mail.ts';
 import { createMetrics } from './metrics.ts';
-import { connectRedis } from './redis.ts';
+import { connectRedis, slidingLimit } from './redis.ts';
 import { createSessions } from './sessions.ts';
 import { createReads } from './reads.ts';
 import { createSettings } from './settings.ts';
@@ -65,6 +66,12 @@ const app = createApp(
     settings,
     reads: createReads(db),
     admin: createAdmin(db, bus, settings, sessions),
+    messages: createMessages(
+      db,
+      bus,
+      (address) => slidingLimit(redis, `messages:${address}`, 3, 3_600_000),
+      config.sessionSecret,
+    ),
     auth,
     live,
     sync,

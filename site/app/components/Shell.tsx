@@ -12,6 +12,7 @@ const NAV_TARGET: Record<(typeof NAV)[number], { to: string; label: string }> = 
   projects: { to: '/projects', label: 'projects' },
   blog: { to: '/blog', label: 'blog' },
   changelog: { to: '/changelog', label: 'changelog' },
+  messages: { to: '/messages', label: 'messages' },
   status: { to: '/status', label: 'status' },
   github: { to: 'https://github.com/project-graphite', label: 'github ↗' },
 };

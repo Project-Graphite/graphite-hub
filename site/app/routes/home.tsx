@@ -3,7 +3,13 @@ import type { Route } from './+types/home';
 import { Band, Button } from '../components/kit/basics';
 import { Counters, ReleaseTimeline, Ticker } from '../components/kit/live';
 import { Orbit, People } from '../components/kit/members';
-import { ChangelogPanel, ConsolePanel, MembersPanel, RunningPanel } from '../components/kit/panels';
+import {
+  ChangelogPanel,
+  ConsolePanel,
+  MembersPanel,
+  MessagesPanel,
+  RunningPanel,
+} from '../components/kit/panels';
 import { AccentCard, Window } from '../components/kit/projects';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
@@ -11,10 +17,12 @@ import { useHub, useRoot } from '../hub';
 import { Field, Mark } from '../motion/canvases';
 import { visible } from '../settings';
 
-export const handle = { topics: ['deploys', 'releases', 'projects', 'members', 'stats', 'uptime'] };
+export const handle = {
+  topics: ['deploys', 'releases', 'projects', 'members', 'stats', 'uptime', 'messages'],
+};
 
 export function loader({ context }: Route.LoaderArgs) {
-  const { directory, reads, settings } = context.get(hubContext);
+  const { directory, reads, settings, messages } = context.get(hubContext);
   const running = reads.running(directory);
   return {
     running,
@@ -23,11 +31,12 @@ export function loader({ context }: Route.LoaderArgs) {
       Math.max(settings['rail.console.lines'], settings['home.ticker.count']),
     ),
     today: new Date().toISOString().slice(0, 10),
+    messages: visible(settings['home.rail']).includes('messages') ? messages.wall(3) : [],
   };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const { running, counts, lines, today } = loaderData;
+  const { running, counts, lines, today, messages } = loaderData;
   const settings = useRoot()!.settings;
   const hub = useHub();
   const ownerOf = (owner: string) => hub.memberByHandle(owner);
@@ -138,6 +147,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         projectOf={(release) => hub.projectBySlug(release.project)}
       />
     ),
+    messages: <MessagesPanel messages={messages} />,
   };
 
   return (

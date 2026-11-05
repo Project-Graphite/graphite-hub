@@ -18,6 +18,10 @@ const KEPT = [
     'Errors',
     'An error report keeps the route and a request id, never what was sent, for thirty days after it was last seen.',
   ],
+  [
+    'Messages',
+    'What you write and the name you give, until a member deletes it. The address you wrote from is kept only as a keyed hash, to stop floods.',
+  ],
   ['Uptime', 'Checks of each project, minute by minute for thirty days, then one line a day.'],
   [
     'Activity',

@@ -83,7 +83,7 @@ export const HOME_SECTIONS = [
   'writing',
   'more',
 ] as const;
-export const RAIL_PANELS = ['members', 'running', 'console', 'changelog'] as const;
+export const RAIL_PANELS = ['members', 'running', 'console', 'changelog', 'messages'] as const;
 export const COUNTERS = ['members', 'projects', 'live', 'releases', 'deploys'] as const;
 export const NAV = [
   'members',
@@ -91,6 +91,7 @@ export const NAV = [
   'projects',
   'blog',
   'changelog',
+  'messages',
   'status',
   'github',
 ] as const;
@@ -171,9 +172,16 @@ export const SETTINGS = {
   'home.writing.count': number('home', 'Posts on the filmstrip', 7, 3, 12),
   'home.more.title': text('home', 'More projects heading', 'More projects', 60),
   'home.more.count': number('home', 'More projects', 6, 0, 12),
-  'home.rail': order('rail', 'Home rail panels', RAIL_PANELS),
+  'home.rail': order('rail', 'Home rail panels', RAIL_PANELS, ['messages']),
   'rail.changelog.count': number('rail', 'Changelog entries in the rail', 2, 1, 8),
   'rail.console.lines': number('rail', 'Console lines', 12, 4, 30),
+  'messages.intro': text(
+    'site',
+    'Messages introduction',
+    'Leave a message for the members. Public messages appear on the wall once a member has read them; private ones are only for us.',
+    300,
+    true,
+  ),
 } satisfies Record<string, Setting>;
 
 export type SettingKey = keyof typeof SETTINGS;

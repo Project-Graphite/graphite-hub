@@ -16,7 +16,9 @@ import type { Live } from './live.ts';
 import { log } from './log.ts';
 import type { createMetrics } from './metrics.ts';
 import { slidingLimit, type Redis } from './redis.ts';
+import { clientAddress } from './address.ts';
 import type { Admin } from './admin.ts';
+import type { Messages } from './messages.ts';
 import type { Reads } from './reads.ts';
 import type { Settings } from './settings.ts';
 import type { Snapshot } from './snapshot.ts';
@@ -30,6 +32,7 @@ export interface Services {
   settings: Settings;
   reads: Reads;
   admin: Admin;
+  messages: Messages;
   auth: Auth;
   live: Live;
   sync: Sync;
@@ -212,6 +215,8 @@ export function createApp(
             settings: settings.get(),
             reads,
             admin,
+            messages: services.messages,
+            address: clientAddress(request),
             origin: new URL(config.appUrl).origin,
             viewer: signedIn
               ? {
