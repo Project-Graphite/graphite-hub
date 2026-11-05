@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { useFolded } from '../../folds';
 import { clock, day, describe } from '../../format';
@@ -131,9 +131,8 @@ export function ReleaseTimeline({ releases, accentOf, nameOf, today, days }: Tim
             <span>{day(tick.toISOString())}</span>
           </span>
         ))}
-        <span className="today">
-          <span>today</span>
-        </span>
+        <span className="today" />
+
         {byDay.map(([date, group]) => (
           <button
             key={date}
@@ -180,6 +179,7 @@ export function ReleaseTimeline({ releases, accentOf, nameOf, today, days }: Tim
 }
 
 const FILTERS = ['all', 'deploy', 'release', 'post', 'sync', 'uptime'];
+const FILTER_LABEL: Record<string, string> = { uptime: 'up' };
 
 export function Console({
   initial,
@@ -196,6 +196,7 @@ export function Console({
   const [filter, setFilter] = useState('all');
   const [open, setOpen] = useState<string | null>(null);
   const [folded, toggle] = useFolded('console');
+  const box = useRef<HTMLDivElement>(null);
 
   useLiveMessages((message) => {
     const line = message.console;
@@ -223,6 +224,12 @@ export function Console({
         }).length,
     );
   }, [lines]);
+  useEffect(() => {
+    const element = box.current;
+    if (element) {
+      element.scrollTop = element.scrollHeight;
+    }
+  }, [lines, filter, folded]);
 
   return (
     <aside className="console" data-folded={folded || undefined}>
@@ -253,11 +260,11 @@ export function Console({
             aria-pressed={filter === kind}
             onClick={() => setFilter(kind)}
           >
-            {kind}
+            {FILTER_LABEL[kind] ?? kind}
           </button>
         ))}
       </div>
-      <div className={`lines ${tall ? 'tall' : ''}`} hidden={folded}>
+      <div ref={box} className={`lines ${tall ? 'tall' : ''}`} hidden={folded}>
         {lines
           .filter((line) => filter === 'all' || line.kind === filter)
           .map((line) => (

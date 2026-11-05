@@ -170,8 +170,7 @@
 .board .console .lines,
 .board .console .lines.tall {
   flex: 1;
-  height: auto;
-  min-height: 24rem;
+  max-height: none;
 }
 .board .console .top {
   padding-inline: 1.25rem 1rem;
@@ -192,7 +191,7 @@
   }
   .board .console .lines,
   .board .console .lines.tall {
-    min-height: 18rem;
+    max-height: 24rem;
   }
   .board .fleet .row:last-child {
     border-bottom: 0;
