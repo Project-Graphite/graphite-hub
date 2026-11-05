@@ -124,6 +124,19 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
     return NOT_FOUND(path);
   }
 
+  if (path.endsWith('/edit')) {
+    const base = path.slice(0, -'/edit'.length);
+    const handle = base.match(/^\/members\/([^/]+)$/)?.[1];
+    const member = handle ? model.memberByHandle(handle) : model.resolve(base).member;
+    if (member) {
+      return {
+        title: `Editing ${member.name} — ${SITE}`,
+        description: `The editor for ${member.name}'s page.`,
+        canonical: canonicalFor(member.path),
+      };
+    }
+  }
+
   const handle = path.match(/^\/members\/([^/]+)$/)?.[1];
   const { project, member } = handle
     ? { project: undefined, member: model.memberByHandle(handle) }

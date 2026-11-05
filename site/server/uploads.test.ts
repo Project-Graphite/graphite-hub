@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
 import sharp from 'sharp';
-import { createUploads, UploadRefused } from './uploads.ts';
+import { Refused } from '../app/profile.ts';
+import { createUploads } from './uploads.ts';
 import { memoryDatabase } from './testing.ts';
 
 const directory = mkdtempSync(path.join(tmpdir(), 'hub-uploads-'));
@@ -46,7 +47,7 @@ describe('uploads', () => {
     const open = createUploads(memoryDatabase(), directory, async () => true);
     await assert.rejects(
       open.store('amrmscll', 'cover', new Blob(['<svg/>'], { type: 'image/png' })),
-      UploadRefused,
+      Refused,
     );
     await assert.rejects(
       open.store('amrmscll', 'cover', new Blob([new Uint8Array(5 * 1024 * 1024 + 1)])),

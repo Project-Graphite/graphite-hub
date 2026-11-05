@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Block } from '../app/profile.ts';
-import { createProfiles, ProfileRefused } from './profiles.ts';
+import { Refused, type Block } from '../app/profile.ts';
+import { createProfiles } from './profiles.ts';
 import { memoryDatabase, recordingBus } from './testing.ts';
 
 function setup() {
@@ -64,7 +64,7 @@ describe('profiles', () => {
   it('refuses a bad block, a foreign upload and an unknown embed host', async () => {
     const { profiles } = setup();
     const refused = (blocks: unknown) =>
-      assert.rejects(profiles.save('amrmscll', { blocks: blocks as Block[] }, 'x'), ProfileRefused);
+      assert.rejects(profiles.save('amrmscll', { blocks: blocks as Block[] }, 'x'), Refused);
     await refused([
       { id: 'a', type: 'links', links: [{ label: 'x', url: 'javascript:alert(1)' }] },
     ]);
@@ -131,7 +131,7 @@ describe('profiles', () => {
         { name: 'x', url: 'http://plain.example', listed: true },
         'x',
       ),
-      ProfileRefused,
+      Refused,
     );
     await profiles.removeShortLink('amrmscll', 'cv', 'x');
     assert.equal(profiles.shortLink('amrmscll', 'cv'), undefined);

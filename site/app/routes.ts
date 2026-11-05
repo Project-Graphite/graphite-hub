@@ -26,6 +26,8 @@ export default [
   route('share/*', 'routes/share.ts'),
   route('llms.txt', 'routes/llms.ts'),
   route('kit', 'routes/kit.tsx'),
+  route('members/:handle/edit', 'routes/editor.tsx', { id: 'member-editor' }),
+  route(':alias/edit', 'routes/editor.tsx'),
   route(':alias/go/:link', 'routes/go.ts'),
   route(':name', 'routes/resolved.tsx', { id: 'resolved-one' }),
   route(':first/:second', 'routes/resolved.tsx', { id: 'resolved-two' }),

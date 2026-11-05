@@ -2,17 +2,10 @@ import { randomBytes } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import { UPLOAD_WIDTHS, type UploadKind } from '../app/profile.ts';
+import { Refused, UPLOAD_LIMIT, UPLOAD_WIDTHS, type UploadKind } from '../app/profile.ts';
 import type { Database } from './db.ts';
 
-export const UPLOAD_LIMIT = 5 * 1024 * 1024;
 const FORMATS = new Set(['jpeg', 'png', 'webp', 'gif']);
-
-export class UploadRefused extends Error {}
-
-export function isUploadKind(kind: unknown): kind is UploadKind {
-  return typeof kind === 'string' && Object.hasOwn(UPLOAD_WIDTHS, kind);
-}
 
 export function createUploads(
   db: Database,
@@ -22,17 +15,17 @@ export function createUploads(
   return {
     async store(owner: string, kind: UploadKind, file: Blob) {
       if (file.size === 0 || file.size > UPLOAD_LIMIT) {
-        throw new UploadRefused('Images are up to 5 MB.');
+        throw new Refused('Images are up to 5 MB.');
       }
       const input = Buffer.from(await file.arrayBuffer());
       const metadata = await sharp(input)
         .metadata()
         .catch(() => undefined);
       if (!metadata?.format || !FORMATS.has(metadata.format)) {
-        throw new UploadRefused('Upload a JPEG, PNG, WebP or GIF image.');
+        throw new Refused('Upload a JPEG, PNG, WebP or GIF image.');
       }
       if (!(await allow(owner))) {
-        throw new UploadRefused('That is 20 uploads this hour; try again later.');
+        throw new Refused('That is 20 uploads this hour; try again later.');
       }
       const id = randomBytes(12).toString('hex');
       const folder = path.join(directory, id);

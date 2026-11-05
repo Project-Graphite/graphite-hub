@@ -3,6 +3,7 @@ import {
   blocksProblem,
   defaultBlocks,
   fieldsProblem,
+  Refused,
   shortLinkProblem,
   type Block,
   type Profile,
@@ -11,8 +12,6 @@ import {
 } from '../app/profile.ts';
 import type { Bus } from './bus.ts';
 import { json, transaction, type Database } from './db.ts';
-
-export class ProfileRefused extends Error {}
 
 export interface ProfileVersion {
   id: number;
@@ -131,7 +130,7 @@ export function createProfiles(db: Database, bus: Bus) {
       fieldsProblem(change.fields ?? {}, uploads) ??
       (change.blocks ? blocksProblem(change.blocks, uploads) : null);
     if (problem) {
-      throw new ProfileRefused(problem);
+      throw new Refused(problem);
     }
     const at = new Date().toISOString();
     transaction(db, () => write(next, by, at, true));
@@ -164,7 +163,7 @@ export function createProfiles(db: Database, bus: Bus) {
         )
         .all(handle);
       if (!previous) {
-        throw new ProfileRefused('There is nothing to undo.');
+        throw new Refused('There is nothing to undo.');
       }
       return this.revertTo(handle, json<Profile>(previous.blob), by);
     },
@@ -174,7 +173,7 @@ export function createProfiles(db: Database, bus: Bus) {
         .prepare("SELECT blob FROM versions WHERE kind = 'profile' AND key = ? AND id = ?")
         .get(handle, version);
       if (!row) {
-        throw new ProfileRefused(`Version ${version} is not one of ${handle}'s.`);
+        throw new Refused(`Version ${version} is not one of ${handle}'s.`);
       }
       return this.revertTo(handle, json<Profile>(row.blob), by);
     },
@@ -234,7 +233,7 @@ export function createProfiles(db: Database, bus: Bus) {
           ? 'A member has at most 30 short links.'
           : null);
       if (problem) {
-        throw new ProfileRefused(problem);
+        throw new Refused(problem);
       }
       const at = new Date().toISOString();
       db.prepare(
