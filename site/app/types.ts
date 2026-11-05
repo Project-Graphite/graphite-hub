@@ -106,6 +106,19 @@ export interface Running {
   week: Day[];
 }
 
+export interface Deploy {
+  tag: string;
+  at: string;
+  ok: boolean;
+  healthStatus: number | null;
+  durationMs: number;
+}
+
+export interface ProjectUptime {
+  days: Day[];
+  p95Ms: number | null;
+}
+
 export interface Counts {
   members: number;
   projects: number;

@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import type { Project } from '../types';
+import { accentStyle } from './kit/basics';
 import ProjectTile from './ProjectTile';
 import Status from './Status';
 import TagList from './TagList';
@@ -8,11 +9,15 @@ interface Props {
   epic: Project;
   projects: Project[];
   context?: string;
+  accent?: string;
 }
 
-export default function EpicCard({ epic, projects, context }: Props) {
+export default function EpicCard({ epic, projects, context, accent }: Props) {
   return (
-    <article className="rounded-xl border border-line bg-surface p-6 sm:p-8">
+    <article
+      className="rounded-xl border border-line border-t-2 border-t-(--accent,var(--color-line)) bg-surface p-6 sm:p-8"
+      style={accentStyle(accent)}
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="mono-sm m-0 mb-2 text-faint">

@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 
 export default function NotFound() {
   return (
-    <section className="pt-22 pb-5">
+    <section className="page-hero">
       <h1 className="page-title">Nothing here.</h1>
       <p className="mt-5.5 mb-6 max-w-[52ch] text-muted">
         That page does not exist. It may have been removed, or you may have mistyped the address.

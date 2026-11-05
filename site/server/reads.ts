@@ -1,6 +1,15 @@
-import type { ConsoleLine, Counts, Day, Directory, Running } from '../app/types.ts';
+import type {
+  ConsoleLine,
+  Counts,
+  Day,
+  Deploy,
+  Directory,
+  ProjectUptime,
+  Running,
+} from '../app/types.ts';
 import { toPublicEvent } from './console/public.ts';
 import { json, type Database } from './db.ts';
+import { percentile } from './uptime.ts';
 
 const DAY_MS = 86_400_000;
 
@@ -68,6 +77,65 @@ export function createReads(db: Database) {
             today,
           ),
         }));
+    },
+
+    deploys(project: string, limit: number): Deploy[] {
+      return db
+        .prepare(
+          'SELECT tag, finished_at, ok, health_status, started_at FROM deploys WHERE project = ? ORDER BY finished_at DESC LIMIT ?',
+        )
+        .all(project, limit)
+        .map((row) => ({
+          tag: row.tag as string,
+          at: row.finished_at as string,
+          ok: row.ok === 1,
+          healthStatus: row.health_status as number | null,
+          durationMs: Date.parse(row.finished_at as string) - Date.parse(row.started_at as string),
+        }));
+    },
+
+    uptime(days: number, now = Date.now()): Record<string, ProjectUptime> {
+      const since = new Date(now - (days - 1) * DAY_MS).toISOString().slice(0, 10);
+      const result: Record<string, ProjectUptime> = {};
+      const recent = db
+        .prepare(
+          'SELECT project, substr(minute, 1, 10) AS day, min(ok) AS ok FROM uptime WHERE minute >= ? GROUP BY project, day',
+        )
+        .all(since)
+        .map((row) => ({
+          project: row.project as string,
+          day: row.day as string,
+          ok: row.ok as number,
+        }));
+      const older = db
+        .prepare('SELECT project, day, minutes, up FROM uptime_days WHERE day >= ?')
+        .all(since)
+        .map((row) => ({
+          project: row.project as string,
+          day: row.day as string,
+          ok: row.minutes === row.up ? 1 : 0,
+        }));
+      const ms = db
+        .prepare('SELECT project, ms FROM uptime WHERE minute >= ? AND ms IS NOT NULL')
+        .all(since);
+      for (const project of new Set([...recent, ...older].map((row) => row.project))) {
+        const rows = [...recent, ...older].filter((row) => row.project === project);
+        const today = new Date(now).toISOString().slice(0, 10);
+        result[project] = {
+          days: Array.from({ length: days }, (_, index) => {
+            const day = new Date(Date.parse(today) - (days - 1 - index) * DAY_MS)
+              .toISOString()
+              .slice(0, 10);
+            const found = rows.filter((row) => row.day === day);
+            return found.length === 0 ? 'none' : found.some((row) => row.ok === 0) ? 'down' : 'up';
+          }),
+          p95Ms: percentile(
+            ms.filter((row) => row.project === project).map((row) => row.ms as number),
+            0.95,
+          ),
+        };
+      }
+      return result;
     },
 
     counts(directory: Directory, running: Running[], now = Date.now()): Counts {

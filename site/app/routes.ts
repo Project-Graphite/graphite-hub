@@ -10,6 +10,7 @@ export default [
   route('projects', 'routes/projects.tsx'),
   route('projects/:slug', 'routes/project.tsx'),
   route('changelog', 'routes/changelog.tsx'),
+  route('status', 'routes/status.tsx'),
   route('changelog/members/:handle', 'routes/member-changelog.tsx'),
   route('changelog/epics/:parentSlug/:slug', 'routes/project-changelog.tsx', {
     id: 'epic-project-changelog',

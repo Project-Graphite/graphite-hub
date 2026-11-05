@@ -1,3 +1,6 @@
+import Browse from '../components/Browse';
+import { Panel } from '../components/kit/basics';
+import { Page } from '../components/Shell';
 import Timeline from '../components/Timeline';
 import { CHANGELOG } from '../meta';
 import { useHub } from '../hub';
@@ -5,8 +8,14 @@ import { useHub } from '../hub';
 export default function Changelog() {
   const { releases } = useHub();
   return (
-    <>
-      <section className="pt-22 pb-5">
+    <Page
+      rail={
+        <Panel title="browse">
+          <Browse />
+        </Panel>
+      }
+    >
+      <section className="page-hero">
         <p className="mono-sm m-0 mb-3 text-faint">/changelog</p>
         <h1 className="page-title max-w-[20ch]">Changelog</h1>
         <div className="hero-rule mt-5.5 max-w-[52ch]" />
@@ -14,6 +23,6 @@ export default function Changelog() {
       </section>
 
       <Timeline releases={releases} showProject />
-    </>
+    </Page>
   );
 }

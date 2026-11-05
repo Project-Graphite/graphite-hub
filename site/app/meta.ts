@@ -46,6 +46,12 @@ export const CHANGELOG: PageMeta = {
   canonical: `${ORIGIN}/changelog/`,
 };
 
+export const STATUS: PageMeta = {
+  title: `Status — ${SITE}`,
+  description: 'Every live project, its uptime over the last thirty days, and what just happened.',
+  canonical: `${ORIGIN}/status/`,
+};
+
 const NOT_FOUND = (path: string): PageMeta => ({
   title: `Not found — ${SITE}`,
   description: 'That page does not exist.',
@@ -60,6 +66,7 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
     '/epics': EPICS,
     '/projects': PROJECTS,
     '/changelog': CHANGELOG,
+    '/status': STATUS,
   };
   if (fixed[path]) {
     return fixed[path];

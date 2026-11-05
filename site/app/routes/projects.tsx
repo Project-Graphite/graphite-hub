@@ -1,29 +1,39 @@
-import ProjectCard from '../components/ProjectCard';
-import Section from '../components/Section';
-import { PROJECTS } from '../meta';
+import type { Route } from './+types/projects';
+import { loadRail, PageHero, RAIL_TOPICS, StandardRail } from '../components/kit/page';
+import { AccentCard } from '../components/kit/projects';
+import { Page } from '../components/Shell';
+import { hubContext } from '../context';
 import { useHub } from '../hub';
+import { PROJECTS } from '../meta';
 
-export default function Projects() {
-  const { rootProjects } = useHub();
+export const handle = { topics: RAIL_TOPICS };
+
+export function loader({ context }: Route.LoaderArgs) {
+  return loadRail(context.get(hubContext));
+}
+
+export default function Projects({ loaderData }: Route.ComponentProps) {
+  const hub = useHub();
   return (
-    <>
-      <section className="pt-22 pb-5">
-        <p className="mono-sm m-0 mb-3 text-faint">/projects</p>
-        <h1 className="page-title max-w-[20ch]">Projects</h1>
-        <p className="mt-5.5 mb-0 max-w-[52ch] text-muted">{PROJECTS.description}</p>
-      </section>
-
-      <Section label="standalone projects">
-        {rootProjects.length === 0 ? (
-          <p className="mono-sm m-0 text-faint">Nothing registered yet.</p>
+    <Page rail={<StandardRail {...loaderData} />}>
+      <PageHero crumb="/projects" title="Projects">
+        <p className="lede">{PROJECTS.description}</p>
+      </PageHero>
+      <section className="band">
+        {hub.rootProjects.length === 0 ? (
+          <p className="mono-sm text-faint">Nothing registered yet.</p>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {rootProjects.map((project) => (
-              <ProjectCard key={project.path} project={project} />
+          <div className="band-grid two">
+            {hub.rootProjects.map((project) => (
+              <AccentCard
+                key={project.slug}
+                project={project}
+                owner={hub.memberByHandle(project.owner)}
+              />
             ))}
           </div>
         )}
-      </Section>
-    </>
+      </section>
+    </Page>
   );
 }
