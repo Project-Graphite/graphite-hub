@@ -3,6 +3,7 @@ import { Panel } from '../components/kit/basics';
 import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import Timeline from '../components/Timeline';
+import { day } from '../format';
 import { useHub } from '../hub';
 
 export default function Changelog() {
@@ -22,7 +23,7 @@ export default function Changelog() {
           <>
             <Fact value={releases.length} label="releases" />
             <Fact value={projects.length} label="projects" />
-            {releases[0] && <Fact label="latest" value={releases[0].date} />}
+            {releases[0] && <Fact label="latest" value={day(releases[0].date)} />}
           </>
         }
       />

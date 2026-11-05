@@ -64,7 +64,7 @@
   flex-direction: column;
   min-width: 0;
   border: 1px solid var(--color-line-soft);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   overflow: hidden;
   transition: border-color 0.2s;
@@ -116,7 +116,7 @@
   color: var(--color-muted);
   font-size: 0.92rem;
 }
-.entry .tags button[aria-pressed='true'] {
+.entry .chips button[aria-pressed='true'] {
   background: var(--accent, var(--color-ink));
   border-color: var(--accent, var(--color-ink));
 }
@@ -197,7 +197,7 @@
 .epic {
   position: relative;
   border: 1px solid var(--color-line-soft);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   padding: 1.5rem 1.75rem 1.5rem;
   transition: border-color 0.2s;
@@ -210,7 +210,7 @@
   position: absolute;
   inset: -1px -1px auto;
   height: 2px;
-  border-radius: 0.75rem 0.75rem 0 0;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
   background: linear-gradient(90deg, var(--accent, var(--color-line)) 0%, transparent 70%);
 }
 .epic header .title {
@@ -266,57 +266,6 @@
   padding-top: 0;
   margin-top: 0.25rem;
 }
-.node {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 0;
-  padding: 1rem 1.1rem;
-  border: 1px solid var(--color-line-soft);
-  border-left: 2px solid var(--accent, var(--color-line));
-  border-radius: 0.5rem;
-  background: var(--color-paper);
-  color: var(--color-ink);
-  transition:
-    border-color 0.2s,
-    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.node:hover {
-  border-color: var(--color-line);
-  border-left-color: var(--accent, var(--color-line));
-  transform: translateY(-2px);
-}
-.node .head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-.node .head strong {
-  font-weight: 600;
-}
-.node:hover .head strong {
-  text-decoration: underline;
-}
-.node .summary {
-  flex: 1;
-  font-size: 0.85rem;
-  color: var(--color-muted);
-}
-.node .foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.4rem 1rem;
-  margin-top: 0.25rem;
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  color: var(--color-faint);
-}
-.node .foot .pulse-bars {
-  margin-left: auto;
-}
 .epic .foot {
   display: flex;
   flex-wrap: wrap;
@@ -349,7 +298,7 @@
   flex-direction: column;
   min-width: 0;
   border: 1px solid var(--color-line-soft);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   overflow: hidden;
   transition: border-color 0.2s;
@@ -439,20 +388,6 @@
   font-weight: 600;
   color: var(--color-ink);
   font-variant-numeric: tabular-nums;
-}
-.member .stack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-.member .stack i {
-  font-style: normal;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  padding: 0.05rem 0.55rem;
-  border: 1px solid var(--color-line);
-  border-radius: 999px;
-  color: var(--color-faint);
 }
 .member .links {
   display: flex;
@@ -568,7 +503,7 @@
   align-items: center;
   width: min(30rem, 100%);
   border: 1px solid var(--color-line);
-  border-radius: 0.6rem;
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   transition: border-color 0.2s;
 }
@@ -623,7 +558,7 @@ mark {
   gap: 0.9rem;
   padding: 0.7rem 0.9rem;
   border: 1px solid transparent;
-  border-radius: 0.6rem;
+  border-radius: var(--radius-item);
   color: var(--color-ink);
   transition:
     border-color 0.15s,
@@ -639,7 +574,7 @@ mark {
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-item);
   border: 1px solid var(--color-line-soft);
   background: radial-gradient(
     120% 90% at 100% 0%,
@@ -715,7 +650,7 @@ mark {
   gap: 0.75rem;
   margin-inline: -0.6rem;
   padding: 0.45rem 0.6rem;
-  border-radius: 0.45rem;
+  border-radius: var(--radius-item);
   color: var(--color-ink);
   transition: background 0.15s;
 }
@@ -748,7 +683,7 @@ mark {
 .palette .search-box {
   border: 0;
   border-bottom: 1px solid var(--color-line-soft);
-  border-radius: 0.75rem 0.75rem 0 0;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
   background: transparent;
   width: 100%;
 }

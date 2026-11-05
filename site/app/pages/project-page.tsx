@@ -197,7 +197,7 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
                     {Math.round(deploy.durationMs / 1000)} s
                     {deploy.healthStatus ? ` · health ${deploy.healthStatus}` : ''}
                   </span>
-                  {deploy.count > 1 && <span className="times">×{deploy.count}</span>}
+                  {deploy.count > 1 && <span className="tag">×{deploy.count}</span>}
                 </li>
               ))}
             </ol>
@@ -225,7 +225,7 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
 
         {children.length > 0 && (
           <Section label="projects">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="nodes">
               {children.map((child) => (
                 <ProjectTile key={child.path} project={child} />
               ))}

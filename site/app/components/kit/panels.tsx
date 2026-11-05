@@ -79,7 +79,7 @@ export function ChangelogPanel({
                 <span className="project">{project?.name ?? release.project}</span>
                 <span className="version">
                   <strong>v{release.version}</strong>
-                  <time dateTime={release.date}>{release.date}</time>
+                  <time dateTime={release.date}>{day(release.date)}</time>
                 </span>
                 <span className="line">
                   {releaseLine(release, project?.name ?? release.project)}

@@ -45,7 +45,7 @@ function projectsBody(block: Extract<Block, { type: 'projects' }>, { hub, member
       ))}
     </div>
   ) : (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="nodes">
       {projects.map((project) => (
         <ProjectTile key={project.slug} project={project} />
       ))}

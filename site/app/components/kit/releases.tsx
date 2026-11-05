@@ -7,7 +7,7 @@ import type { ChangeType, Project, Release } from '../../types';
 import { accentStyle } from './basics';
 import { ReleaseTimeline } from './live';
 
-const CHANGE_COLOR: Record<ChangeType, string> = {
+export const CHANGE_COLOR: Record<ChangeType, string> = {
   breaking: 'var(--color-danger)',
   security: 'var(--color-danger)',
   added: 'var(--color-live)',
@@ -26,6 +26,28 @@ interface HistoryProps {
   today: string;
   days: number;
   showProject?: boolean;
+}
+
+export function ChangeMix({ release }: { release: Release }) {
+  return (
+    <span className="mix" aria-hidden="true">
+      {release.groups.length === 0 ? (
+        <i />
+      ) : (
+        release.groups.map((group) => (
+          <i
+            key={group.type}
+            style={
+              {
+                '--n': group.changes.length,
+                '--c': CHANGE_COLOR[group.type],
+              } as CSSProperties
+            }
+          />
+        ))
+      )}
+    </span>
+  );
 }
 
 function Node({
@@ -54,23 +76,7 @@ function Node({
           <strong>v{release.version}</strong>
           <time dateTime={release.date}>{day(release.date)}</time>
         </span>
-        <span className="bar" aria-hidden="true">
-          {release.groups.length === 0 ? (
-            <i />
-          ) : (
-            release.groups.map((group) => (
-              <i
-                key={group.type}
-                style={
-                  {
-                    '--n': group.changes.length,
-                    '--c': CHANGE_COLOR[group.type],
-                  } as CSSProperties
-                }
-              />
-            ))
-          )}
-        </span>
+        <ChangeMix release={release} />
         <span className="line">{releaseLine(release, name)}</span>
         <span className="n">
           {changes === 0 ? 'tagged' : changes === 1 ? '1 change' : `${changes} changes`}
