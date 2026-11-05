@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { data, Link, useFetcher } from 'react-router';
 import type { Route } from './+types/admin';
-import { Panel } from '../components/kit/basics';
+import { Button, Panel } from '../components/kit/basics';
 import { PageHero } from '../components/kit/page';
 import Section from '../components/Section';
 import { Page } from '../components/Shell';
@@ -11,9 +11,13 @@ import {
   isSettingKey,
   SETTINGS,
   type Area,
+  type ColorsSetting,
+  type NumberSetting,
   type OrderItem,
+  type SetSetting,
   type Setting,
   type SettingKey,
+  type TextSetting,
 } from '../settings';
 
 export const handle = { topics: ['settings', 'errors'] };
@@ -69,141 +73,207 @@ export async function action({ context, request }: Route.ActionArgs) {
       { status: 400 },
     );
   }
-  return { ok: 'Saved.', key };
+  return { ok: 'saved', key };
 }
 
 const AREAS: Record<Area, string> = { site: 'site', home: 'home page', rail: 'rail' };
 
-function Control({
-  setting,
-  value,
-  onChange,
-}: {
-  setting: Setting;
-  value: unknown;
-  onChange: (next: unknown) => void;
-}) {
-  const input = 'w-full rounded-md border border-line bg-paper px-3 py-2 text-ink';
-  switch (setting.kind) {
-    case 'text':
-      return setting.multiline ? (
-        <textarea
-          className={input}
-          rows={3}
-          maxLength={setting.max}
-          value={value as string}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      ) : (
-        <input
-          className={input}
-          maxLength={setting.max}
-          value={value as string}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      );
-    case 'number':
-      return (
-        <input
-          className={`${input} max-w-32`}
-          type="number"
-          min={setting.min}
-          max={setting.max}
-          value={value as number}
-          onChange={(event) => onChange(Number(event.target.value))}
-        />
-      );
-    case 'order': {
-      const items = value as OrderItem[];
-      const move = (from: number, to: number) => {
-        const next = [...items];
-        next.splice(to, 0, ...next.splice(from, 1));
-        onChange(next);
-      };
-      return (
-        <ol className="grid gap-1">
-          {items.map((item, index) => (
-            <li
-              key={item.id}
-              className="mono-sm flex items-center gap-2 rounded-md border border-line-soft px-2 py-1"
+interface ControlProps<S extends Setting, V> {
+  setting: S;
+  value: V;
+  change: (next: V) => void;
+  commit: (next: V) => void;
+}
+
+function TextControl({ setting, value, change, commit }: ControlProps<TextSetting, string>) {
+  const props = {
+    className: 'field',
+    maxLength: setting.max,
+    value,
+    placeholder: setting.optional ? 'empty' : undefined,
+    'aria-label': setting.label,
+    onBlur: () => commit(value),
+  };
+  return setting.multiline ? (
+    <textarea {...props} rows={2} onChange={(event) => change(event.target.value)} />
+  ) : (
+    <input
+      {...props}
+      onChange={(event) => change(event.target.value)}
+      onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()}
+    />
+  );
+}
+
+function NumberControl({ setting, value, commit }: ControlProps<NumberSetting, number>) {
+  return (
+    <div className="range">
+      <input
+        type="range"
+        min={setting.min}
+        max={setting.max}
+        value={value}
+        aria-label={setting.label}
+        onChange={(event) => commit(Number(event.target.value))}
+      />
+      <output>{value}</output>
+    </div>
+  );
+}
+
+function Switch({ on, label, toggle }: { on: boolean; label: string; toggle: () => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-label={label}
+      className="switch"
+      onClick={toggle}
+    >
+      <i />
+    </button>
+  );
+}
+
+function OrderControl({ value: items, commit }: ControlProps<Setting, OrderItem[]>) {
+  const [dragging, setDragging] = useState<number | null>(null);
+  const [over, setOver] = useState<number | null>(null);
+  const move = (from: number, to: number) => {
+    const next = [...items];
+    next.splice(to, 0, ...next.splice(from, 1));
+    commit(next);
+  };
+  const end = () => {
+    setDragging(null);
+    setOver(null);
+  };
+  return (
+    <ol className="order">
+      {items.map((item, index) => (
+        <li
+          key={item.id}
+          draggable
+          tabIndex={0}
+          aria-label={`${item.id}, position ${index + 1} of ${items.length}`}
+          title="drag, or Alt and an arrow key"
+          data-off={!item.on || undefined}
+          data-dragging={dragging === index || undefined}
+          data-over={(over === index && dragging !== index) || undefined}
+          onDragStart={(event) => {
+            event.dataTransfer.effectAllowed = 'move';
+            setDragging(index);
+          }}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setOver(index);
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            if (dragging !== null && dragging !== index) {
+              move(dragging, index);
+            }
+            end();
+          }}
+          onDragEnd={end}
+          onKeyDown={(event) => {
+            const to = { ArrowUp: index - 1, ArrowDown: index + 1 }[event.key];
+            if (event.altKey && to !== undefined && to >= 0 && to < items.length) {
+              event.preventDefault();
+              move(index, to);
+            }
+          }}
+        >
+          <span className="grip" aria-hidden="true" />
+          <span className="name">{item.id}</span>
+          <Switch
+            on={item.on}
+            label={`Show ${item.id}`}
+            toggle={() =>
+              commit(
+                items.map((other) => (other.id === item.id ? { ...other, on: !other.on } : other)),
+              )
+            }
+          />
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function SetControl({ setting, value: chosen, commit }: ControlProps<SetSetting, string[]>) {
+  return (
+    <div className="chips">
+      {setting.options.map((option) => (
+        <button
+          key={option}
+          type="button"
+          aria-pressed={chosen.includes(option)}
+          onClick={() =>
+            commit(
+              chosen.includes(option)
+                ? chosen.filter((item) => item !== option)
+                : setting.options.filter((item) => item === option || chosen.includes(item)),
+            )
+          }
+        >
+          {option}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ColorsControl({ value: colours, commit }: ControlProps<ColorsSetting, string[]>) {
+  return (
+    <div className="swatches">
+      {colours.map((colour, index) => (
+        <span key={index} className="swatch" style={{ '--swatch': colour } as CSSProperties}>
+          <input
+            type="color"
+            value={colour}
+            aria-label={`Accent ${index + 1}, ${colour}`}
+            onChange={(event) =>
+              commit(colours.map((other, at) => (at === index ? event.target.value : other)))
+            }
+          />
+          {colours.length > 3 && (
+            <button
+              type="button"
+              aria-label={`Remove accent ${index + 1}`}
+              onClick={() => commit(colours.filter((_, at) => at !== index))}
             >
-              <input
-                type="checkbox"
-                checked={item.on}
-                aria-label={`Show ${item.id}`}
-                onChange={() =>
-                  onChange(
-                    items.map((other) =>
-                      other.id === item.id ? { ...other, on: !other.on } : other,
-                    ),
-                  )
-                }
-              />
-              <span className={`flex-1 ${item.on ? 'text-ink' : 'text-faint line-through'}`}>
-                {item.id}
-              </span>
-              <button
-                type="button"
-                disabled={index === 0}
-                onClick={() => move(index, index - 1)}
-                aria-label={`Move ${item.id} up`}
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                disabled={index === items.length - 1}
-                onClick={() => move(index, index + 1)}
-                aria-label={`Move ${item.id} down`}
-              >
-                ↓
-              </button>
-            </li>
-          ))}
-        </ol>
-      );
-    }
-    case 'set': {
-      const chosen = value as string[];
-      return (
-        <div className="mono-sm flex flex-wrap gap-3">
-          {setting.options.map((option) => (
-            <label key={option} className="flex items-center gap-1.5">
-              <input
-                type="checkbox"
-                checked={chosen.includes(option)}
-                onChange={() =>
-                  onChange(
-                    chosen.includes(option)
-                      ? chosen.filter((item) => item !== option)
-                      : [...chosen, option],
-                  )
-                }
-              />
-              {option}
-            </label>
-          ))}
-        </div>
-      );
-    }
-    case 'colors': {
-      const colours = value as string[];
-      return (
-        <div className="flex flex-wrap gap-2">
-          {colours.map((colour, index) => (
-            <input
-              key={index}
-              type="color"
-              value={colour}
-              aria-label={`Accent ${index + 1}`}
-              onChange={(event) =>
-                onChange(colours.map((other, at) => (at === index ? event.target.value : other)))
-              }
-            />
-          ))}
-        </div>
-      );
-    }
+              ×
+            </button>
+          )}
+        </span>
+      ))}
+      {colours.length < 16 && (
+        <button
+          type="button"
+          className="swatch add"
+          aria-label="Add an accent"
+          onClick={() => commit([...colours, '#8b8b95'])}
+        >
+          +
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Control(props: ControlProps<Setting, unknown>) {
+  switch (props.setting.kind) {
+    case 'text':
+      return <TextControl {...(props as ControlProps<TextSetting, string>)} />;
+    case 'number':
+      return <NumberControl {...(props as ControlProps<NumberSetting, number>)} />;
+    case 'order':
+      return <OrderControl {...(props as ControlProps<Setting, OrderItem[]>)} />;
+    case 'set':
+      return <SetControl {...(props as ControlProps<SetSetting, string[]>)} />;
+    case 'colors':
+      return <ColorsControl {...(props as ControlProps<ColorsSetting, string[]>)} />;
   }
 }
 
@@ -213,44 +283,55 @@ function SettingRow({ settingKey, csrf }: { settingKey: SettingKey; csrf: string
   const [draft, setDraft] = useState<unknown>(stored);
   const [base, setBase] = useState<unknown>(stored);
   const fetcher = useFetcher<typeof action>();
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
   if (JSON.stringify(base) !== JSON.stringify(stored)) {
     setBase(stored);
     setDraft(stored);
   }
-  const changed = JSON.stringify(draft) !== JSON.stringify(stored);
+  const send = (intent: 'set' | 'reset', value?: unknown) =>
+    fetcher.submit(
+      { csrf, intent, key: settingKey, value: JSON.stringify(value ?? null) },
+      { method: 'post' },
+    );
+  const commit = (value: unknown) => {
+    setDraft(value);
+    clearTimeout(timer.current);
+    if (JSON.stringify(value) !== JSON.stringify(stored)) {
+      timer.current = setTimeout(() => void send('set', value), 300);
+    }
+  };
   const result =
     fetcher.data && 'key' in fetcher.data && fetcher.data.key === settingKey ? fetcher.data : null;
+  const state =
+    fetcher.state !== 'idle'
+      ? 'saving'
+      : result && 'error' in result
+        ? 'error'
+        : result && JSON.stringify(draft) === JSON.stringify(stored)
+          ? 'saved'
+          : null;
 
   return (
-    <fetcher.Form method="post" className="grid gap-2 border-b border-line-soft py-4">
-      <input type="hidden" name="csrf" value={csrf} />
-      <input type="hidden" name="key" value={settingKey} />
-      <input type="hidden" name="value" value={JSON.stringify(draft)} />
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <label className="font-semibold">{setting.label}</label>
-        <span className="mono-sm text-faint">{settingKey}</span>
+    <div className="setting" data-kind={setting.kind}>
+      <div className="setting-head">
+        <span className="setting-label">{setting.label}</span>
+        {state && (
+          <span className="setting-state" data-state={state}>
+            {state === 'error' && result && 'error' in result ? result.error : state}
+          </span>
+        )}
+        <span className="setting-tools">
+          <Link to={`?history=${settingKey}`} preventScrollReset>
+            history
+          </Link>
+          <button type="button" onClick={() => void send('reset')}>
+            reset
+          </button>
+        </span>
       </div>
-      <Control setting={setting} value={draft} onChange={setDraft} />
-      <div className="mono-sm flex flex-wrap items-center gap-4">
-        <button
-          type="submit"
-          name="intent"
-          value="set"
-          disabled={!changed || fetcher.state !== 'idle'}
-          className="btn primary disabled:opacity-40"
-        >
-          save
-        </button>
-        <button type="submit" name="intent" value="reset" className="rule-link">
-          reset to default
-        </button>
-        <Link to={`?history=${settingKey}`} className="rule-link" preventScrollReset>
-          history
-        </Link>
-        {result && 'error' in result && <span className="text-danger">{result.error}</span>}
-        {result && 'ok' in result && !changed && <span className="text-live">{result.ok}</span>}
-      </div>
-    </fetcher.Form>
+      <Control setting={setting} value={draft} change={setDraft} commit={commit} />
+    </div>
   );
 }
 
@@ -262,6 +343,28 @@ const PREVIEWS = [
   ['/messages', 'messages'],
 ] as const;
 const DEVICES = { desktop: { width: 1440, height: 900 }, phone: { width: 390, height: 844 } };
+
+function Segmented<T extends string>({
+  options,
+  value,
+  choose,
+  label,
+}: {
+  options: readonly (readonly [T, string])[];
+  value: T;
+  choose: (next: T) => void;
+  label: string;
+}) {
+  return (
+    <div className="segmented" role="group" aria-label={label}>
+      {options.map(([id, name]) => (
+        <button key={id} type="button" aria-pressed={value === id} onClick={() => choose(id)}>
+          {name}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function Preview() {
   const [path, setPath] = useState<string>('/');
@@ -284,35 +387,21 @@ function Preview() {
 
   return (
     <Panel title="preview">
-      <div className="mono-sm mb-3 flex flex-wrap items-center gap-3">
-        <select
-          value={path}
-          onChange={(event) => setPath(event.target.value)}
-          aria-label="Page to preview"
-          className="rounded-md border border-line bg-paper px-2 py-1 text-ink"
-        >
-          {PREVIEWS.map(([to, label]) => (
-            <option key={to} value={to}>
-              {label}
-            </option>
-          ))}
-        </select>
-        {(Object.keys(DEVICES) as (keyof typeof DEVICES)[]).map((name) => (
-          <button
-            key={name}
-            type="button"
-            aria-pressed={device === name}
-            onClick={() => setDevice(name)}
-            className={device === name ? 'text-ink' : 'text-faint'}
-          >
-            {name}
-          </button>
-        ))}
-        <span className="text-faint">updates as you save</span>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <Segmented options={PREVIEWS} value={path} choose={setPath} label="Page to preview" />
+        <Segmented
+          options={[
+            ['desktop', 'desktop'],
+            ['phone', 'phone'],
+          ]}
+          value={device}
+          choose={setDevice}
+          label="Device"
+        />
       </div>
       <div ref={box} className="preview" style={{ height: size.height * scale }}>
         <iframe
-          src={path}
+          src={`${path}?edit`}
           title="Preview of the live site"
           width={size.width}
           height={size.height}
@@ -336,18 +425,21 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
       <div className="admin-layout">
         <div className="min-w-0">
           <PageHero crumb="/admin" title="Admin">
-            <p className="lede">
-              Every setting on the site. A save is live on every open tab within a second and kept
-              as a version you can revert.
-            </p>
+            <div className="actions">
+              <Button to="/?edit" primary arrow>
+                edit the home page
+              </Button>
+            </div>
           </PageHero>
           {(Object.keys(AREAS) as Area[]).map((area) => (
             <Section key={area} label={AREAS[area]}>
-              {keys
-                .filter((key) => SETTINGS[key].area === area)
-                .map((key) => (
-                  <SettingRow key={key} settingKey={key} csrf={csrf} />
-                ))}
+              <div className="settings">
+                {keys
+                  .filter((key) => SETTINGS[key].area === area)
+                  .map((key) => (
+                    <SettingRow key={key} settingKey={key} csrf={csrf} />
+                  ))}
+              </div>
             </Section>
           ))}
           <Section label={`messages · ${loaderData.waiting} waiting`}>
@@ -398,48 +490,45 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
         </div>
         <aside className="admin-side">
           <Preview />
-          <>
-            <Panel title={loaderData.history ? `history · ${loaderData.history.key}` : 'history'}>
-              {loaderData.history ? (
-                <ol className="grid gap-3">
-                  {loaderData.history.versions.map((version) => (
-                    <li key={version.id} className="mono-sm grid gap-1">
-                      <span className="text-faint">
-                        {version.at.slice(0, 16).replace('T', ' ')} · {version.by}
-                      </span>
-                      <code className="truncate text-muted">{JSON.stringify(version.value)}</code>
-                      <revert.Form method="post">
-                        <input type="hidden" name="csrf" value={csrf} />
-                        <input type="hidden" name="version" value={version.id} />
-                        <button type="submit" name="intent" value="revert" className="rule-link">
-                          revert to this
-                        </button>
-                      </revert.Form>
-                    </li>
-                  ))}
-                  {loaderData.history.versions.length === 0 && (
-                    <li className="mono-sm text-faint">Never changed; on its default.</li>
-                  )}
-                </ol>
-              ) : (
-                <p className="mono-sm text-faint">
-                  Choose history on a setting to see its versions.
-                </p>
-              )}
-            </Panel>
-            <Panel title="sessions">
-              <signOut.Form method="post" className="grid gap-2">
-                <input type="hidden" name="csrf" value={csrf} />
-                <p className="text-sm text-muted">Ends every member's session, yours included.</p>
-                <button type="submit" name="intent" value="sign-out-everyone" className="btn">
-                  sign everyone out
-                </button>
-                {signOut.data && 'ok' in signOut.data && (
-                  <span className="mono-sm text-live">{signOut.data.ok}</span>
+          {loaderData.history && (
+            <Panel
+              title={`history · ${SETTINGS[loaderData.history.key].label}`}
+              link={{ to: '?', label: 'close' }}
+            >
+              <ol className="grid gap-3">
+                {loaderData.history.versions.map((version) => (
+                  <li key={version.id} className="mono-sm grid gap-1">
+                    <span className="text-faint">
+                      {version.at.slice(0, 16).replace('T', ' ')} · {version.by}
+                    </span>
+                    <code className="truncate text-muted">{JSON.stringify(version.value)}</code>
+                    <revert.Form method="post">
+                      <input type="hidden" name="csrf" value={csrf} />
+                      <input type="hidden" name="version" value={version.id} />
+                      <button type="submit" name="intent" value="revert" className="rule-link">
+                        revert to this
+                      </button>
+                    </revert.Form>
+                  </li>
+                ))}
+                {loaderData.history.versions.length === 0 && (
+                  <li className="mono-sm text-faint">Never changed; on its default.</li>
                 )}
-              </signOut.Form>
+              </ol>
             </Panel>
-          </>
+          )}
+          <Panel title="sessions">
+            <signOut.Form method="post" className="grid gap-2">
+              <input type="hidden" name="csrf" value={csrf} />
+              <p className="text-sm text-muted">Ends every member's session, yours included.</p>
+              <button type="submit" name="intent" value="sign-out-everyone" className="btn">
+                sign everyone out
+              </button>
+              {signOut.data && 'ok' in signOut.data && (
+                <span className="mono-sm text-live">{signOut.data.ok}</span>
+              )}
+            </signOut.Form>
+          </Panel>
         </aside>
       </div>
     </Page>

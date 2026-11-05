@@ -146,8 +146,9 @@ export function Mark() {
     pen.lineTo(21.75, 18);
     pen.closePath();
     pen.fill();
+    pen.stroke();
     const pixels = pen.getImageData(0, 0, size, size).data;
-    const step = Math.max(2, Math.round(2.6 * dpr));
+    const step = Math.max(3, Math.round(2.8 * dpr));
     const points: Particle[] = [];
     for (let y = 0; y < size; y += step) {
       for (let x = 0; x < size; x += step) {
@@ -167,7 +168,7 @@ export function Mark() {
     let pointer: { x: number; y: number } | null = null;
     const draw = () => {
       context.clearRect(0, 0, size, size);
-      context.fillStyle = 'rgba(232,232,234,.85)';
+      context.fillStyle = '#e8e8ea';
       for (const point of points) {
         if (allowed) {
           point.vx += (point.tx - point.x) * 0.05;

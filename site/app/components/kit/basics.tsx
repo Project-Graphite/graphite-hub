@@ -19,11 +19,10 @@ export function Avatar({ member, size }: AvatarProps) {
   );
 }
 
-export function Cover({ name, accent, label }: { name: string; accent: string; label: string }) {
+export function Cover({ name, accent }: { name: string; accent: string }) {
   return (
     <div className="cover" style={accentStyle(accent)}>
       <span>{name.slice(0, 2)}</span>
-      <em>{label}</em>
     </div>
   );
 }
@@ -56,8 +55,8 @@ export function Button({ to, children, primary = false, arrow = false }: ButtonP
 }
 
 interface BandProps {
-  title: string;
-  description?: string;
+  title: ReactNode;
+  description?: ReactNode;
   more?: { to: string; label: string };
   children: ReactNode;
 }
@@ -68,7 +67,7 @@ export function Band({ title, description, more, children }: BandProps) {
       <div className="band-head">
         <h2>{title}</h2>
         <div className="rule" />
-        {description && <p>{description}</p>}
+        {description}
       </div>
       {children}
       {more && (

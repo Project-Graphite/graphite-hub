@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import type { Hub } from '../../context';
 import { useRoot } from '../../hub';
 import type { ConsoleLine, Running } from '../../types';
-import { ConsolePanel, RunningPanel } from './panels';
+import { Console } from './live';
+import { RunningPanel } from './panels';
 
 export function PageHero({
   crumb,
@@ -35,7 +36,7 @@ export function StandardRail({ running, lines }: { running: Running[]; lines: Co
   return (
     <>
       <RunningPanel running={running} />
-      <ConsolePanel lines={lines} limit={limit} />
+      <Console initial={lines} limit={limit} link={{ to: '/status', label: 'status' }} />
     </>
   );
 }

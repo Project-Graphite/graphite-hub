@@ -79,15 +79,20 @@ export function createMessages(
       }
       const at = new Date().toISOString();
       db.prepare(
-        'INSERT INTO messages (name, body, public, address_hash, at) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO messages (name, body, public, address_hash, published_at, at) VALUES (?, ?, ?, ?, ?, ?)',
       ).run(
         name || null,
         body,
         leaving.public ? 1 : 0,
         createHmac('sha256', secret).update(leaving.address).digest('hex'),
+        leaving.public ? at : null,
         at,
       );
-      await changed('A message is waiting', false, at);
+      await changed(
+        leaving.public ? 'A message went on the wall' : 'A private message arrived',
+        leaving.public,
+        at,
+      );
       return { ok: true };
     },
 

@@ -13,14 +13,6 @@ export function shortTag(tag: unknown) {
   return typeof tag === 'string' ? tag.replace(/^sha-/, '').slice(0, 7) : '';
 }
 
-export const KIND_LABEL: Record<string, string> = {
-  deploy: 'deployed',
-  release: 'released',
-  post: 'published',
-  sync: 'synced',
-  uptime: 'uptime',
-};
-
 export function describe(detail: Record<string, unknown>) {
   const parts: string[] = [];
   if (typeof detail.tag === 'string') {

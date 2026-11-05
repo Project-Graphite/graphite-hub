@@ -94,22 +94,20 @@ export default function Kit({ loaderData }: Route.ComponentProps) {
         </div>
         <div className="mark">
           <Mark />
-          <em>move through it</em>
         </div>
       </section>
-      <Ticker lines={LINES} />
-      <ReleaseTimeline
-        releases={hub.releases}
-        accentOf={(release) => ownerOf(release.project)?.accent ?? 'var(--color-muted)'}
-        nameOf={(release) => hub.projectBySlug(release.project)?.name ?? release.project}
-        today={new Date(now).toISOString().slice(0, 10)}
-        days={60}
-      />
-      <Band
-        title="Windows"
-        description="Hover a window for its drawer."
-        more={{ to: '/projects', label: 'more' }}
-      >
+      <div className="pulse">
+        <Ticker lines={LINES} />
+        <ReleaseTimeline
+          releases={hub.releases}
+          accentOf={(release) => ownerOf(release.project)?.accent ?? 'var(--color-muted)'}
+          nameOf={(release) => hub.projectBySlug(release.project)?.name ?? release.project}
+          today={new Date(now).toISOString().slice(0, 10)}
+          days={60}
+          width={440}
+        />
+      </div>
+      <Band title="Windows" more={{ to: '/projects', label: 'more' }}>
         <div className="band-grid">
           {hub.rootProjects.slice(0, 3).map((project) => (
             <Window key={project.slug} project={project} owner={ownerOf(project.slug)} />
@@ -127,7 +125,7 @@ export default function Kit({ loaderData }: Route.ComponentProps) {
           {hub.projects.slice(3, 6).map((project) => (
             <AccentCard key={project.slug} project={project} owner={ownerOf(project.slug)} />
           ))}
-          <Cover name="Graphite" accent="#6f8fd1" label="cover · generated" />
+          <Cover name="Graphite" accent="#6f8fd1" />
         </div>
       </Band>
       <Band title="Console">

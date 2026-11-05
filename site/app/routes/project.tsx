@@ -4,6 +4,7 @@ import AuthorLink from '../components/AuthorLink';
 import { accentStyle, Avatar, Cover, Panel } from '../components/kit/basics';
 import { ReleaseTimeline } from '../components/kit/live';
 import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
+import { WindowBar } from '../components/kit/projects';
 import ProjectTile from '../components/ProjectTile';
 import Section from '../components/Section';
 import { Page } from '../components/Shell';
@@ -79,19 +80,8 @@ export default function Project({ loaderData }: Route.ComponentProps) {
           {project.slug}
         </p>
         <div className="window mt-2" style={accentStyle(owner?.accent)}>
-          <div className="bar">
-            <i />
-            <i />
-            <i />
-            <span>
-              {project.url ? project.url.replace('https://', '') : `${project.slug} · source only`}
-            </span>
-          </div>
-          <Cover
-            name={project.name}
-            accent={owner?.accent ?? ''}
-            label="cover · set by the owner"
-          />
+          <WindowBar project={project} />
+          <Cover name={project.name} accent={owner?.accent ?? ''} />
         </div>
         <div className="mt-6 flex flex-wrap items-baseline justify-between gap-4">
           <h1>{project.name}</h1>
