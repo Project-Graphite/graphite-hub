@@ -19,6 +19,10 @@ import { slidingLimit, type Redis } from './redis.ts';
 import { clientAddress } from './address.ts';
 import type { Admin } from './admin.ts';
 import type { Messages } from './messages.ts';
+import type { Presentations } from './presentation.ts';
+import type { Profiles } from './profiles.ts';
+import type { Writeback } from './writeback.ts';
+import type { Uploads } from './uploads.ts';
 import type { Share } from './share.ts';
 import type { Reads } from './reads.ts';
 import type { Settings } from './settings.ts';
@@ -35,6 +39,10 @@ export interface Services {
   admin: Admin;
   messages: Messages;
   share: Share;
+  profiles: Profiles;
+  presentations: Presentations;
+  writeback: Writeback;
+  uploads: Uploads;
   auth: Auth;
   live: Live;
   sync: Sync;
@@ -43,17 +51,17 @@ export interface Services {
 }
 
 const MOVED: Record<string, string> = {
-  '/amr': '/members/amrmscll/',
-  '/members/amr': '/members/amrmscll/',
-  '/amr/windhawk-mods': '/epics/windhawk-mods/',
-  '/projects/windhawk-mods': '/epics/windhawk-mods/',
-  '/projects/windhawk-mods/stack-switch': '/epics/windhawk-mods/stack-switch/',
-  '/projects/windhawk-mods/tasktune': '/epics/windhawk-mods/tasktune/',
+  '/amr': '/members/amrmscll',
+  '/members/amr': '/members/amrmscll',
+  '/amr/windhawk-mods': '/windhawk-mods',
+  '/projects/windhawk-mods/stack-switch': '/windhawk-mods/stack-switch',
+  '/projects/windhawk-mods/tasktune': '/windhawk-mods/tasktune',
 };
 
 export function createApp(
   services: Services,
   loadBuild: () => Promise<ServerBuild>,
+  uploadsDirectory: string,
   assets?: express.RequestHandler,
 ) {
   const { db, redis, bus, snapshot, settings, reads, admin, auth, live, sync, capture, metrics } =
@@ -176,8 +184,9 @@ export function createApp(
   });
 
   app.use((request, response, next) => {
-    const target = MOVED[request.path.replace(/(.)\/$/, '$1')];
-    if (target) {
+    const path = request.path.replace(/(.)\/$/, '$1');
+    const target = MOVED[path];
+    if (target && !services.profiles.handleForAlias(path.split('/')[1])) {
       response.redirect(301, target);
     } else {
       next();
@@ -186,6 +195,17 @@ export function createApp(
 
   app.use(auth.router);
   app.get('/live', live.handler);
+  app.use(
+    '/uploads',
+    express.static(uploadsDirectory, {
+      immutable: true,
+      maxAge: '1y',
+      index: false,
+      dotfiles: 'deny',
+      fallthrough: false,
+      setHeaders: (response) => response.setHeader('Content-Disposition', 'inline'),
+    }),
+  );
 
   if (assets) {
     app.use(assets);
@@ -219,6 +239,10 @@ export function createApp(
             admin,
             messages: services.messages,
             share: services.share,
+            profiles: services.profiles,
+            presentations: services.presentations,
+            writeback: services.writeback,
+            uploads: services.uploads,
             address: clientAddress(request),
             origin: new URL(config.appUrl).origin,
             viewer: signedIn

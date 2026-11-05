@@ -100,45 +100,61 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
     return NOT_FOUND(path);
   }
 
-  const changelog = path.startsWith('/changelog/');
-  const [section, slug, childSlug] = path.replace(/^\/(changelog\/)?/, '').split('/');
-
-  if ((section === 'projects' || section === 'epics') && slug) {
-    const project = model.projectByRoute(childSlug ? slug : undefined, childSlug ?? slug);
-    if (project && changelog) {
+  if (path.startsWith('/changelog/')) {
+    const [section, slug, childSlug] = path.slice('/changelog/'.length).split('/');
+    const project =
+      (section === 'projects' || section === 'epics') && slug
+        ? model.projectByRoute(childSlug ? slug : undefined, childSlug ?? slug)
+        : undefined;
+    const member = section === 'members' && slug ? model.memberByHandle(slug) : undefined;
+    if (project) {
       return {
         title: `${project.name} changelog — ${SITE}`,
         description: `Every recorded release of ${project.name}.`,
         canonical: canonicalFor(changelogPath(project)),
       };
     }
-    if (project) {
-      return {
-        title: `${project.name} — ${SITE}`,
-        description: project.summary,
-        canonical: canonicalFor(project.path),
-      };
-    }
-  }
-
-  if (section === 'members' && slug) {
-    const member = model.memberByHandle(slug);
-    if (member && changelog) {
+    if (member) {
       return {
         title: `${member.name} changelog — ${SITE}`,
         description: `Releases of the projects ${member.name} owns.`,
         canonical: canonicalFor(changelogPath(member)),
       };
     }
+    return NOT_FOUND(path);
+  }
+
+  if (path.endsWith('/edit')) {
+    const base = path.slice(0, -'/edit'.length);
+    const handle = base.match(/^\/members\/([^/]+)$/)?.[1];
+    const member = handle ? model.memberByHandle(handle) : model.resolve(base).member;
     if (member) {
       return {
-        title: `${member.name} — ${SITE}`,
-        description: member.headline ?? member.bio ?? member.name,
+        title: `Editing ${member.name} — ${SITE}`,
+        description: `The editor for ${member.name}'s page.`,
         canonical: canonicalFor(member.path),
       };
     }
   }
 
+  const handle = path.match(/^\/members\/([^/]+)$/)?.[1];
+  const { project, member } = handle
+    ? { project: undefined, member: model.memberByHandle(handle) }
+    : model.resolve(path);
+  if (project) {
+    return {
+      title: `${project.name} — ${SITE}`,
+      description: project.summary,
+      canonical: canonicalFor(project.path),
+    };
+  }
+  if (member) {
+    return {
+      title: `${member.name} — ${SITE}`,
+      description: member.headline ?? member.bio ?? member.name,
+      canonical: canonicalFor(member.path),
+    };
+  }
   return NOT_FOUND(path);
 }
 

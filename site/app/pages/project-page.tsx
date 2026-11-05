@@ -1,5 +1,4 @@
 import { Link } from 'react-router';
-import type { Route } from './+types/project';
 import AuthorLink from '../components/AuthorLink';
 import { accentStyle, Avatar, Cover, Panel } from '../components/kit/basics';
 import { ReleaseTimeline } from '../components/kit/live';
@@ -10,16 +9,20 @@ import Section from '../components/Section';
 import { Page } from '../components/Shell';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
-import { hubContext } from '../context';
+import type { Hub } from '../context';
 import { day, shortTag } from '../format';
-import { found, modelFrom, useHub, useRoot } from '../hub';
+import { useHub, useRoot } from '../hub';
+import type { Project } from '../types';
 
-export const handle = { topics: ['deploys', 'releases', 'projects', 'uptime'] };
+export const PROJECT_TOPICS = ['deploys', 'releases', 'projects', 'uptime'];
 
-export function loader({ context, params }: Route.LoaderArgs) {
-  const project = found(modelFrom(context).projectByRoute(params.parentSlug, params.slug));
-  const { reads, directory } = context.get(hubContext);
+export function loadProject({ reads, directory, viewer }: Hub, project: Project) {
+  const owner = directory.members.find((member) => member.handle === project.owner);
   return {
+    page: 'project' as const,
+    editable: Boolean(
+      viewer && (viewer.owner || viewer.login.toLowerCase() === owner?.github.toLowerCase()),
+    ),
     parent: project.parent ?? undefined,
     slug: project.slug,
     running: reads.running(directory).filter((running) => running.slug === project.slug),
@@ -28,7 +31,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
   };
 }
 
-export default function Project({ loaderData }: Route.ComponentProps) {
+export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof loadProject> }) {
   const hub = useHub();
   const settings = useRoot()!.settings;
   const { childProjects, memberByHandle, memberByGithub, projectByRoute, projectBySlug } = hub;
@@ -38,11 +41,20 @@ export default function Project({ loaderData }: Route.ComponentProps) {
   const children = childProjects(project.slug);
   const releases = hub.releasesForProject(project);
   const authors = project.authors.flatMap((login) => memberByGithub(login) ?? []);
+  const accent = project.accent ?? owner?.accent ?? '';
 
   return (
     <Page
       rail={
         <>
+          {loaderData.editable && owner && (
+            <Link
+              to={`${owner.path}/edit?project=${project.slug}`}
+              className="btn primary justify-center"
+            >
+              edit this project
+            </Link>
+          )}
           {loaderData.running.length > 0 && <RunningPanel running={loaderData.running} />}
           <ChangelogPanel
             releases={releases.slice(0, settings['rail.changelog.count'] + 1)}
@@ -68,7 +80,7 @@ export default function Project({ loaderData }: Route.ComponentProps) {
     >
       <section className="page-hero">
         <p className="mono-sm mb-3 text-faint">
-          /{project.path.split('/')[1]}/
+          /
           {parent && (
             <>
               <Link to={parent.path} className="hover:text-ink hover:underline">
@@ -79,10 +91,14 @@ export default function Project({ loaderData }: Route.ComponentProps) {
           )}
           {project.slug}
         </p>
-        <div className="window mt-2" style={accentStyle(owner?.accent)}>
-          <WindowBar project={project} />
-          <Cover name={project.name} accent={owner?.accent ?? ''} />
-        </div>
+        {project.layout === 'window' ? (
+          <div className="window mt-2" style={accentStyle(accent)}>
+            <WindowBar project={project} />
+            <Cover name={project.name} accent={accent} image={project.coverUrl} />
+          </div>
+        ) : (
+          project.coverUrl && <img className="member-cover mt-2" src={project.coverUrl} alt="" />
+        )}
         <div className="mt-6 flex flex-wrap items-baseline justify-between gap-4">
           <h1>{project.name}</h1>
           <Status status={project.status} />
@@ -90,6 +106,19 @@ export default function Project({ loaderData }: Route.ComponentProps) {
         <p className="lede">{project.summary}</p>
         <TagList tags={project.tags} className="mt-4.5" />
       </section>
+
+      {(project.feature.note || project.feature.screenshotUrl) && (
+        <Section label="feature">
+          <div className="feature" style={accentStyle(accent)}>
+            {project.feature.screenshotUrl && (
+              <img src={project.feature.screenshotUrl} alt="" loading="lazy" />
+            )}
+            {project.feature.note && (
+              <p className="whitespace-pre-line text-muted">{project.feature.note}</p>
+            )}
+          </div>
+        </Section>
+      )}
 
       {releases.length > 0 && (
         <Section label="releases">

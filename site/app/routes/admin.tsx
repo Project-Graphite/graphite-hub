@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { data, Link, useFetcher } from 'react-router';
 import type { Route } from './+types/admin';
 import { Button, Panel } from '../components/kit/basics';
+import { Segmented, Sortable, Switch } from '../components/kit/controls';
 import { PageHero } from '../components/kit/page';
 import Section from '../components/Section';
 import { Page } from '../components/Shell';
@@ -121,70 +122,17 @@ function NumberControl({ setting, value, commit }: ControlProps<NumberSetting, n
   );
 }
 
-function Switch({ on, label, toggle }: { on: boolean; label: string; toggle: () => void }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      aria-label={label}
-      className="switch"
-      onClick={toggle}
-    >
-      <i />
-    </button>
-  );
-}
-
 function OrderControl({ value: items, commit }: ControlProps<Setting, OrderItem[]>) {
-  const [dragging, setDragging] = useState<number | null>(null);
-  const [over, setOver] = useState<number | null>(null);
-  const move = (from: number, to: number) => {
-    const next = [...items];
-    next.splice(to, 0, ...next.splice(from, 1));
-    commit(next);
-  };
-  const end = () => {
-    setDragging(null);
-    setOver(null);
-  };
   return (
-    <ol className="order">
-      {items.map((item, index) => (
-        <li
-          key={item.id}
-          draggable
-          tabIndex={0}
-          aria-label={`${item.id}, position ${index + 1} of ${items.length}`}
-          title="drag, or Alt and an arrow key"
-          data-off={!item.on || undefined}
-          data-dragging={dragging === index || undefined}
-          data-over={(over === index && dragging !== index) || undefined}
-          onDragStart={(event) => {
-            event.dataTransfer.effectAllowed = 'move';
-            setDragging(index);
-          }}
-          onDragOver={(event) => {
-            event.preventDefault();
-            setOver(index);
-          }}
-          onDrop={(event) => {
-            event.preventDefault();
-            if (dragging !== null && dragging !== index) {
-              move(dragging, index);
-            }
-            end();
-          }}
-          onDragEnd={end}
-          onKeyDown={(event) => {
-            const to = { ArrowUp: index - 1, ArrowDown: index + 1 }[event.key];
-            if (event.altKey && to !== undefined && to >= 0 && to < items.length) {
-              event.preventDefault();
-              move(index, to);
-            }
-          }}
-        >
-          <span className="grip" aria-hidden="true" />
+    <Sortable
+      items={items}
+      keyOf={(item) => item.id}
+      labelOf={(item) => item.id}
+      dimmed={(item) => !item.on}
+      reorder={commit}
+    >
+      {(item) => (
+        <>
           <span className="name">{item.id}</span>
           <Switch
             on={item.on}
@@ -195,9 +143,9 @@ function OrderControl({ value: items, commit }: ControlProps<Setting, OrderItem[
               )
             }
           />
-        </li>
-      ))}
-    </ol>
+        </>
+      )}
+    </Sortable>
   );
 }
 
@@ -344,28 +292,6 @@ const PREVIEWS = [
 ] as const;
 const DEVICES = { desktop: { width: 1440, height: 900 }, phone: { width: 390, height: 844 } };
 
-function Segmented<T extends string>({
-  options,
-  value,
-  choose,
-  label,
-}: {
-  options: readonly (readonly [T, string])[];
-  value: T;
-  choose: (next: T) => void;
-  label: string;
-}) {
-  return (
-    <div className="segmented" role="group" aria-label={label}>
-      {options.map(([id, name]) => (
-        <button key={id} type="button" aria-pressed={value === id} onClick={() => choose(id)}>
-          {name}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function Preview() {
   const [path, setPath] = useState<string>('/');
   const [device, setDevice] = useState<keyof typeof DEVICES>('desktop');
@@ -442,6 +368,29 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
               </div>
             </Section>
           ))}
+          <Section label="members">
+            <div className="settings">
+              {root.directory.members.map((member) => (
+                <div key={member.handle} className="setting">
+                  <div className="setting-head">
+                    <span className="setting-label">{member.name}</span>
+                    <span className="mono-sm text-faint">
+                      {member.path}
+                      {member.listed ? '' : ' · unlisted'}
+                    </span>
+                    <span className="mono-sm ml-auto flex gap-4">
+                      <Link to={member.path} className="rule-link">
+                        view
+                      </Link>
+                      <Link to={`${member.path}/edit`} className="rule-link">
+                        edit
+                      </Link>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
           <Section label={`messages · ${loaderData.waiting} waiting`}>
             <Link to="/messages" className="rule-link mono-sm">
               moderate on /messages
