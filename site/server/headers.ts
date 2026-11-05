@@ -5,6 +5,7 @@ export function contentSecurityPolicy(nonce: string) {
     'default-src': ["'self'"],
     'script-src': ["'self'", `'nonce-${nonce}'`],
     'style-src': ["'self'", `'nonce-${nonce}'`],
+    'style-src-attr': ["'unsafe-inline'"],
     'img-src': ["'self'", 'data:', 'https://avatars.githubusercontent.com'],
     'font-src': ["'self'"],
     'connect-src': ["'self'"],
