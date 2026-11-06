@@ -15,6 +15,7 @@ import {
 import { Refused, uploadUrl } from '../app/profile.ts';
 import type { Bus } from './bus.ts';
 import { json, transaction, type Database } from './db.ts';
+import { atom, rss } from './feeds.ts';
 import type { Jobs } from './jobs.ts';
 import { jsonToState, render, stateToJson, type Rendered } from './render.ts';
 import { BUILT_IN_TEMPLATES } from './templates.ts';
@@ -220,6 +221,8 @@ export function createPosts(db: Database, bus: Bus, jobs: Jobs) {
     read,
     accessTo,
     state,
+    rss,
+    atom,
 
     async create(author: string, by: string, template: string | null) {
       const id = randomBytes(8).toString('hex');

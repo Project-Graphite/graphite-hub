@@ -14,6 +14,7 @@ const FIXED: Record<string, { label: string; title: string }> = {
   '/changelog': { label: 'changelog', title: 'What changed, version by version' },
   '/status': { label: 'status', title: 'What is running right now' },
   '/messages': { label: 'messages', title: 'Leave a message for the members' },
+  '/blog': { label: 'blog', title: 'Writing by the members' },
 };
 
 export function shareCard(
@@ -33,6 +34,26 @@ export function shareCard(
   }
   if (fixed) {
     return { ...fixed, subtitle: 'project-graphite.com', accent: accents[0] };
+  }
+  const post = model.posts.find((entry) => entry.path === path);
+  if (post) {
+    const writer = model.memberByHandle(post.author);
+    return {
+      label: writer ? `${writer.name} · ${post.readingMinutes} min read` : 'post',
+      title: post.title,
+      subtitle: post.summary || 'project-graphite.com',
+      accent: writer?.accent ?? accents[0],
+    };
+  }
+  const blogOf = path.match(/^(.+)\/blog$/)?.[1];
+  const writer = blogOf ? model.resolve(blogOf).member : undefined;
+  if (writer) {
+    return {
+      label: 'writing',
+      title: `${writer.name} writes`,
+      subtitle: `${model.postsBy(writer).length} posts`,
+      accent: writer.accent,
+    };
   }
   const { project, member } = model.resolve(path);
   if (member) {

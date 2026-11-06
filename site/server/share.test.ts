@@ -30,6 +30,7 @@ const directory = {
     },
   ],
   releases: [],
+  posts: [],
 } as unknown as Directory;
 
 describe('share cards', () => {

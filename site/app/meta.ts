@@ -92,12 +92,57 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
       description: 'Site settings and errors.',
       canonical: `${ORIGIN}/admin/`,
     },
+    '/blog': {
+      title: `Writing — ${SITE}`,
+      description: 'Posts by the members of Project Graphite.',
+      canonical: `${ORIGIN}/blog/`,
+    },
+    '/blog/new': {
+      title: `New post — ${SITE}`,
+      description: 'Start a post from a template.',
+      canonical: `${ORIGIN}/blog/new/`,
+    },
+    '/blog/mine': {
+      title: `Your posts — ${SITE}`,
+      description: 'Drafts, scheduled and published posts.',
+      canonical: `${ORIGIN}/blog/mine/`,
+    },
   };
   if (fixed[path]) {
     return fixed[path];
   }
   if (!model) {
     return NOT_FOUND(path);
+  }
+
+  if (/^\/blog\/[^/]+\/edit$/.test(path)) {
+    return {
+      title: `Writing a post — ${SITE}`,
+      description: 'The post editor.',
+      canonical: `${ORIGIN}/blog/`,
+    };
+  }
+  const post = model.posts.find((entry) => entry.path === path);
+  if (post) {
+    const writer = model.memberByHandle(post.author);
+    return {
+      title: `${post.title} — ${SITE}`,
+      description: post.summary || `A post by ${writer?.name ?? post.author}.`,
+      canonical: canonicalFor(post.path),
+    };
+  }
+  const blogOf = path.match(/^(.+)\/blog$/)?.[1];
+  const writer = blogOf
+    ? blogOf.match(/^\/members\/([^/]+)$/)?.[1]
+      ? model.memberByHandle(blogOf.split('/')[2])
+      : model.resolve(blogOf).member
+    : undefined;
+  if (writer) {
+    return {
+      title: `${writer.name} writes — ${SITE}`,
+      description: `Posts by ${writer.name}.`,
+      canonical: canonicalFor(`${writer.path}/blog`),
+    };
   }
 
   if (path.startsWith('/changelog/')) {

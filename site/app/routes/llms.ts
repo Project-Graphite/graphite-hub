@@ -15,7 +15,7 @@ function projectLine(project: Project) {
 }
 
 export function loader({ context }: Route.LoaderArgs) {
-  const { members, projects } = modelFrom(context);
+  const { members, projects, posts } = modelFrom(context);
   const body = [
     '# Project Graphite',
     '',
@@ -38,8 +38,19 @@ export function loader({ context }: Route.LoaderArgs) {
         `- [${member.name}](${ORIGIN}${member.path}/): ${member.headline ?? `@${member.github}`}`,
     ),
     '',
+    ...(posts.length > 0
+      ? [
+          '## Writing',
+          '',
+          ...posts
+            .slice(0, 20)
+            .map((post) => `- [${post.title}](${ORIGIN}${post.path}/): ${post.summary}`),
+          '',
+        ]
+      : []),
     '## Site',
     '',
+    `- [Blog](${ORIGIN}/blog/): posts by the members, with RSS at ${ORIGIN}/blog/feed.xml`,
     `- [Changelog](${ORIGIN}/changelog/): every release of every project`,
     `- [Sitemap](${ORIGIN}/sitemap.xml): every page on the site`,
     '',

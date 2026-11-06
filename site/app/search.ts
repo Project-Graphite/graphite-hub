@@ -2,7 +2,7 @@ import { changelogPath, createModel } from './model';
 import type { Directory } from './types';
 
 export interface Hit {
-  kind: 'member' | 'project' | 'release';
+  kind: 'member' | 'project' | 'release' | 'post';
   title: string;
   detail: string;
   to: string;
@@ -32,6 +32,14 @@ export function search(directory: Directory, query: string, limit = 20): Hit[] {
         title: project.name,
         detail: project.summary,
         to: project.path,
+      })),
+    ...directory.posts
+      .filter((post) => matches(post.title, post.summary, ...post.tags))
+      .map((post): Hit => ({
+        kind: 'post',
+        title: post.title,
+        detail: post.summary || `${post.readingMinutes} min read`,
+        to: post.path,
       })),
     ...directory.releases.flatMap((release): Hit[] => {
       const project = model.projectBySlug(release.project);
