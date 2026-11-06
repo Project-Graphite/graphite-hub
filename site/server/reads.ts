@@ -36,12 +36,12 @@ export function createReads(db: Database) {
   return {
     upNow,
 
-    consoleLines(limit: number): ConsoleLine[] {
+    consoleLines(limit: number, kinds?: readonly string[]): ConsoleLine[] {
       return db
         .prepare(
-          'SELECT seq, kind, public, summary, detail, at FROM activity WHERE public = 1 AND seq IS NOT NULL ORDER BY id DESC LIMIT ?',
+          `SELECT seq, kind, public, summary, detail, at FROM activity WHERE public = 1 AND seq IS NOT NULL${kinds ? ' AND kind IN (SELECT value FROM json_each(?))' : ''} ORDER BY id DESC LIMIT ?`,
         )
-        .all(limit * 2)
+        .all(...(kinds ? [JSON.stringify(kinds)] : []), limit * 2)
         .flatMap((row) => {
           const projected = toPublicEvent({
             topic: 'console',

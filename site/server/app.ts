@@ -203,7 +203,6 @@ export function createApp(
       maxAge: '1y',
       index: false,
       dotfiles: 'deny',
-      fallthrough: false,
       setHeaders: (response) => response.setHeader('Content-Disposition', 'inline'),
     }),
   );
