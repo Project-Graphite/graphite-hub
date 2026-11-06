@@ -5,6 +5,7 @@ import * as Y from 'yjs';
 import { cookies } from './auth.ts';
 import { config } from './config.ts';
 import type { Database } from './db.ts';
+import { log } from './log.ts';
 import type { Posts } from './posts.ts';
 import { fillFragment, FRAGMENT } from './render.ts';
 import { sameSecret, type Sessions } from './sessions.ts';
@@ -30,8 +31,12 @@ export function createCollab(db: Database, posts: Posts, sessions: Sessions) {
     maxDebounce: 10_000,
     stopOnSignals: false,
     async onAuthenticate({ requestHeaders, documentName, token }) {
+      const refuse = (reason: string) => {
+        log.warn({ reason, post: documentName }, 'collab refused');
+        return new Error(reason);
+      };
       if (requestHeaders.get('origin') !== new URL(config.appUrl).origin) {
-        throw new Error('Wrong origin');
+        throw refuse('wrong origin');
       }
       const session = await sessions.read(
         cookies({ headers: { cookie: requestHeaders.get('cookie') ?? '' } } as IncomingMessage)[
@@ -39,7 +44,7 @@ export function createCollab(db: Database, posts: Posts, sessions: Sessions) {
         ],
       );
       if (!session || !sameSecret(token, session.csrf)) {
-        throw new Error('Not signed in');
+        throw refuse('not signed in');
       }
       const row = member.get(session.login);
       const post = posts.read(documentName);
@@ -49,7 +54,7 @@ export function createCollab(db: Database, posts: Posts, sessions: Sessions) {
         post.status === 'trashed' ||
         !posts.accessTo(post, { handle, owner: session.owner }).edit
       ) {
-        throw new Error('Not yours to edit');
+        throw refuse('not an editor');
       }
       return {
         handle: handle ?? session.login,

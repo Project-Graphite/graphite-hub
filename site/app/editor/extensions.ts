@@ -87,7 +87,7 @@ export function postExtensions(collaborative = false): Extensions {
   return [
     StarterKit.configure({
       undoRedo: collaborative ? false : undefined,
-      link: { openOnClick: false, autolink: true, protocols: ['https', 'http', 'mailto'] },
+      link: { openOnClick: false, autolink: true },
       heading: { levels: [2, 3, 4] },
     }),
     TaskList,
