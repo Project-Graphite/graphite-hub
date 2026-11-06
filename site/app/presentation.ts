@@ -3,6 +3,7 @@ import type { ProjectStatus } from './types';
 export interface Feature {
   note: string;
   screenshot: string | null;
+  posts: string[];
 }
 
 export interface Presentation {
@@ -18,7 +19,7 @@ export const NO_PRESENTATION: Presentation = {
   accent: null,
   summary: null,
   layout: 'window',
-  feature: { note: '', screenshot: null },
+  feature: { note: '', screenshot: null, posts: [] },
 };
 
 export interface RegistryFields {
@@ -36,7 +37,11 @@ export const STATUSES: ProjectStatus[] = ['live', 'wip', 'archived', 'source-onl
 const TAG = /^[a-z0-9][a-z0-9+.-]*$/;
 const HEX = /^#[0-9a-f]{6}$/i;
 
-export function presentationProblem(value: Presentation, uploads: (id: string) => boolean) {
+export function presentationProblem(
+  value: Presentation,
+  uploads: (id: string) => boolean,
+  posts: (id: string) => boolean,
+) {
   if (value.accent !== null && !HEX.test(value.accent)) {
     return 'An accent is a colour like #6f8fd1.';
   }
@@ -48,6 +53,13 @@ export function presentationProblem(value: Presentation, uploads: (id: string) =
   }
   if (typeof value.feature?.note !== 'string' || value.feature.note.length > 600) {
     return 'The feature note is at most 600 characters.';
+  }
+  if (
+    !Array.isArray(value.feature.posts) ||
+    value.feature.posts.length > 3 ||
+    !value.feature.posts.every((id) => typeof id === 'string' && posts(id))
+  ) {
+    return 'The feature slot links up to three published posts.';
   }
   for (const upload of [value.coverUpload, value.feature.screenshot]) {
     if (upload !== null && !uploads(upload)) {

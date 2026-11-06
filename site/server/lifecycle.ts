@@ -49,6 +49,10 @@ export function applyRetention(db: Database, now = Date.now()) {
              WHERE place <= 50)`,
         )
         .run(before(90, now)).changes,
+      trashedPosts: db
+        .prepare("DELETE FROM posts WHERE status = 'trashed' AND trashed_at < ?")
+        .run(before(30, now)).changes,
+      jobs: db.prepare('DELETE FROM jobs WHERE done_at < ?').run(before(30, now)).changes,
     };
   });
 }

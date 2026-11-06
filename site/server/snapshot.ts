@@ -6,10 +6,11 @@ import type { Directory, Member, MemberLink, Project, Release, StackGroup } from
 import { compareVersions } from '../scripts/rules.mjs';
 import type { Bus } from './bus.ts';
 import { json, type Database } from './db.ts';
+import { readPublished } from './posts.ts';
 import { storedEntries, type RegistryEntry } from './registry.ts';
 import type { Settings } from './settings.ts';
 
-const TOPICS = new Set(['members', 'profiles', 'projects', 'releases', 'settings']);
+const TOPICS = new Set(['members', 'profiles', 'projects', 'releases', 'settings', 'posts']);
 
 type Block = { type: 'stack'; groups: StackGroup[] } | { type: 'links'; links: MemberLink[] };
 
@@ -33,7 +34,7 @@ export function projectFromEntry(entry: RegistryEntry): Project {
     coverUrl: null,
     accent: null,
     layout: 'window',
-    feature: { note: '', screenshotUrl: null },
+    feature: { note: '', screenshotUrl: null, posts: [] },
     pending: [],
     pullRequest: null,
   };
@@ -59,6 +60,7 @@ export function presentedProject(
       screenshotUrl: presentation?.feature.screenshot
         ? uploadUrl(presentation.feature.screenshot, 'screenshot')
         : null,
+      posts: presentation?.feature.posts ?? [],
     },
     pending: Object.keys(pending?.fields ?? {}),
     pullRequest: pending?.pullRequest ?? null,
@@ -153,7 +155,12 @@ function build(db: Database, palette: string[]): Directory {
         a.project.localeCompare(b.project),
     );
 
-  return { members, projects, releases };
+  const posts = readPublished(
+    db,
+    (author) => members.find((member) => member.handle === author)?.path,
+  );
+
+  return { members, projects, releases, posts };
 }
 
 export function createSnapshot(db: Database, bus: Bus, settings: Settings) {

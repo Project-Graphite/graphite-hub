@@ -54,6 +54,13 @@ const projections: Record<string, (detail: Detail) => PublicEvent['detail']> = {
     }),
   uptime: (detail) =>
     defined({ up: number(detail.up), total: number(detail.total), p95Ms: number(detail.p95Ms) }),
+  post: (detail) =>
+    defined({
+      author: text(detail.author),
+      title: text(detail.title),
+      project: text(detail.project),
+      slug: text(detail.slug),
+    }),
 };
 
 export function toPublicEvent(event: HubEvent): PublicEvent | null {

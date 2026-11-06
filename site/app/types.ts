@@ -1,3 +1,5 @@
+import type { PostSummary } from './posts';
+
 export type ProjectStatus = 'live' | 'wip' | 'archived' | 'source-only';
 
 export interface ProjectContribution {
@@ -31,7 +33,7 @@ export interface Project {
   coverUrl: string | null;
   accent: string | null;
   layout: 'window' | 'card';
-  feature: { note: string; screenshotUrl: string | null };
+  feature: { note: string; screenshotUrl: string | null; posts: string[] };
   pending: string[];
   pullRequest: string | null;
 }
@@ -95,6 +97,7 @@ export interface Directory {
   members: Member[];
   projects: Project[];
   releases: Release[];
+  posts: PostSummary[];
 }
 
 export interface ConsoleLine {
