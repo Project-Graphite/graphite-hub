@@ -27,16 +27,17 @@ export function loader({ context }: Route.LoaderArgs) {
   return {
     running,
     counts: reads.counts(directory, running),
-    lines: reads.consoleLines(
-      Math.max(settings['rail.console.lines'], settings['home.ticker.count']),
-    ),
+    lines: reads.consoleLines(settings['rail.console.lines']),
+    ticker: reads
+      .consoleLines(settings['home.ticker.count'], settings['home.ticker.kinds'])
+      .reverse(),
     today: new Date().toISOString().slice(0, 10),
     messages: visible(settings['home.rail']).includes('messages') ? messages.wall(5) : [],
   };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const { running, counts, lines, today, messages } = loaderData;
+  const { running, counts, lines, ticker, today, messages } = loaderData;
   const settings = useRoot()!.settings;
   const hub = useHub();
   const ownerOf = (owner: string) => hub.memberByHandle(owner);
@@ -53,12 +54,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     0,
     settings['home.more.count'],
   );
-  const tickerKinds = settings['home.ticker.kinds'];
-  const ticker = lines
-    .filter((line) => tickerKinds.includes(line.kind))
-    .slice(-settings['home.ticker.count'])
-    .reverse();
-
   const shownSections = visible(settings['home.sections']);
   const days = settings['home.timeline.days'];
   const recent = hub.releases.filter(
@@ -154,7 +149,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     running: <RunningPanel running={running} />,
     console: (
       <Console
-        initial={lines.slice(-settings['rail.console.lines'])}
+        initial={lines}
         limit={settings['rail.console.lines']}
         link={{ to: '/status', label: 'status' }}
       />
