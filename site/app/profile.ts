@@ -52,6 +52,7 @@ export const UPLOAD_WIDTHS = {
   cover: [1600, 800],
   gallery: [1600, 800],
   screenshot: [1600, 800],
+  post: [1600, 800],
 } as const;
 
 export type UploadKind = keyof typeof UPLOAD_WIDTHS;

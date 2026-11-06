@@ -24,6 +24,8 @@ export function readPresentations(db: Database) {
 export function createPresentations(db: Database, bus: Bus) {
   const uploaded = (id: string) =>
     Boolean(db.prepare('SELECT 1 FROM uploads WHERE id = ?').get(id));
+  const published = (id: string) =>
+    Boolean(db.prepare("SELECT 1 FROM posts WHERE id = ? AND status = 'published'").get(id));
 
   return {
     read(slug: string): Presentation {
@@ -31,7 +33,7 @@ export function createPresentations(db: Database, bus: Bus) {
     },
 
     async save(slug: string, value: Presentation, by: string) {
-      const problem = presentationProblem(value, uploaded);
+      const problem = presentationProblem(value, uploaded, published);
       if (problem) {
         throw new Refused(problem);
       }

@@ -10,6 +10,7 @@ const JUMPS = [
   { to: '/members', label: 'members' },
   { to: '/epics', label: 'epics' },
   { to: '/projects', label: 'projects' },
+  { to: '/blog', label: 'blog' },
   { to: '/changelog', label: 'changelog' },
   { to: '/messages', label: 'messages' },
   { to: '/status', label: 'status' },

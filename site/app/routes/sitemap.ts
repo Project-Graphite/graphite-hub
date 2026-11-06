@@ -4,14 +4,20 @@ import { ORIGIN } from '../meta';
 import { changelogPath } from '../model';
 
 export function loader({ context }: Route.LoaderArgs) {
-  const { members, projects } = modelFrom(context);
+  const { members, projects, posts } = modelFrom(context);
+  const writers = new Set(posts.map((post) => post.author));
   const paths = [
     '/',
     '/members',
     '/epics',
     '/projects',
+    '/blog',
     ...members.map((member) => member.path),
     ...projects.map((project) => project.path),
+    ...members
+      .filter((member) => writers.has(member.handle))
+      .map((member) => `${member.path}/blog`),
+    ...posts.map((post) => post.path),
     '/changelog',
     '/status',
     '/messages',

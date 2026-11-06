@@ -19,7 +19,9 @@ import './styles/global.css';
 
 import.meta.glob('./styles/pages/*.css', { eager: true });
 
-export const handle = { topics: ['members', 'profiles', 'projects', 'releases', 'settings'] };
+export const handle = {
+  topics: ['members', 'profiles', 'projects', 'releases', 'settings', 'posts'],
+};
 
 export function loader({ context }: Route.LoaderArgs) {
   const { directory, settings, viewer, csrf } = context.get(hubContext);

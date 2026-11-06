@@ -89,18 +89,21 @@ export function Highlight({ text, needle }: { text: string; needle: string }) {
   );
 }
 
-export function describeHit(hit: Hit, { members, projects, releases }: Directory) {
+export function describeHit(hit: Hit, { members, projects, releases, posts }: Directory) {
   const member = hit.kind === 'member' ? members.find((entry) => entry.path === hit.to) : undefined;
   const project =
     hit.kind === 'project' ? projects.find((entry) => entry.path === hit.to) : undefined;
   const release =
     hit.kind === 'release' ? releases.find((entry) => hit.to.endsWith(`#${entry.id}`)) : undefined;
+  const post = hit.kind === 'post' ? posts.find((entry) => entry.path === hit.to) : undefined;
+  const writer = post ? members.find((entry) => entry.handle === post.author) : undefined;
   return {
     member,
     project,
     release,
-    accent: member?.accent ?? project?.accent ?? undefined,
-    owner: project ? members.find((entry) => entry.handle === project.owner) : undefined,
+    post,
+    accent: member?.accent ?? project?.accent ?? writer?.accent ?? undefined,
+    owner: project ? members.find((entry) => entry.handle === project.owner) : writer,
   };
 }
 
@@ -119,10 +122,16 @@ export function HitRow({
   onHover?: () => void;
   onPick?: () => void;
 }) {
-  const { member, project, release, accent, owner } = describeHit(hit, directory);
+  const { member, project, release, post, accent, owner } = describeHit(hit, directory);
   let lead: ReactNode;
   if (member) {
     lead = <Avatar member={member} size="md" />;
+  } else if (post) {
+    lead = (
+      <span className="glyph" aria-hidden="true">
+        ¶
+      </span>
+    );
   } else if (project) {
     lead = (
       <span className="glyph" aria-hidden="true">
@@ -154,6 +163,7 @@ export function HitRow({
           </strong>
           {project && <Status status={project.status} />}
           {release && <time dateTime={release.date}>{day(release.date)}</time>}
+          {post && <time dateTime={post.publishedAt}>{day(post.publishedAt)}</time>}
           {owner && <span className="owner">{owner.name}</span>}
         </span>
         <span className="detail">

@@ -8,7 +8,10 @@ import { createMessages } from './messages.ts';
 import { createShare } from './share.ts';
 import { createAuth } from './auth.ts';
 import { createBus } from './bus.ts';
+import { createCollab } from './collab.ts';
 import { config } from './config.ts';
+import { createJobs } from './jobs.ts';
+import { createPosts } from './posts.ts';
 import { openDatabase } from './db.ts';
 import { createErrors } from './errors.ts';
 import { runLifecycle } from './lifecycle.ts';
@@ -46,6 +49,17 @@ const writeback = createWriteback(db, bus, github);
 const sync = createSync(db, bus, sessions, writeback);
 const settings = createSettings(db, bus);
 const snapshot = createSnapshot(db, bus, settings);
+const jobs = createJobs(
+  db,
+  {
+    publish: async (id) => {
+      await posts.publishDue(id);
+    },
+  },
+  capture,
+);
+const posts = createPosts(db, bus, jobs);
+const collab = createCollab(db, posts, sessions);
 
 process.on('unhandledRejection', (reason) => capture(reason, { route: 'process' }));
 process.on('uncaughtExceptionMonitor', (error) => capture(error, { route: 'process' }));
@@ -87,6 +101,8 @@ const app = createApp(
       (address) => slidingLimit(redis, `messages:${address}`, 3, 3_600_000),
       config.sessionSecret,
     ),
+    posts,
+    collab,
     auth,
     live,
     sync,
@@ -98,6 +114,8 @@ const app = createApp(
   assets,
 );
 const server = app.listen(config.port, () => log.info({ port: config.port }, 'listening'));
+server.on('upgrade', collab.upgrade);
+jobs.start();
 
 function every(name: string, ms: number, job: () => Promise<unknown>) {
   const run = () => job().catch((error: unknown) => capture(error, { route: `job:${name}` }));
@@ -127,6 +145,8 @@ const timers = [
 process.on('SIGTERM', () => {
   log.info('shutting down');
   timers.forEach(clearTimeout);
+  jobs.stop();
+  collab.destroy();
   server.close();
   server.closeAllConnections();
   Promise.allSettled([redis.quit(), subscriber.quit()]).then(() => {

@@ -77,7 +77,7 @@ export async function action({ context, request }: Route.ActionArgs) {
   return { ok: 'saved', key };
 }
 
-const AREAS: Record<Area, string> = { site: 'site', home: 'home page', rail: 'rail' };
+const AREAS: Record<Area, string> = { site: 'site', home: 'home page', rail: 'rail', blog: 'blog' };
 
 type Versions = NonNullable<Route.ComponentProps['loaderData']['history']>['versions'];
 

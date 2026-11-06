@@ -24,7 +24,7 @@ function project(slug: string, extra: Partial<Project> = {}): Project {
     coverUrl: null,
     accent: null,
     layout: 'window',
-    feature: { note: '', screenshotUrl: null },
+    feature: { note: '', screenshotUrl: null, posts: [] },
     pending: [],
     pullRequest: null,
     ...extra,
@@ -55,6 +55,7 @@ const model = createModel({
     project('pixelpocket', { owner: 'omar-mohamed24', authors: ['Omar-Mohamed24'] }),
   ],
   releases: [],
+  posts: [],
 } as Directory);
 
 describe('addresses', () => {

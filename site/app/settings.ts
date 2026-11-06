@@ -1,4 +1,4 @@
-export type Area = 'site' | 'home' | 'rail';
+export type Area = 'site' | 'home' | 'rail' | 'blog';
 
 interface Base<Kind extends string, T> {
   kind: Kind;
@@ -121,7 +121,7 @@ export const SETTINGS = {
     'Footer line',
     'Project Graphite · Made for Learning · Made for Fun · Made for Everyone',
   ),
-  'site.nav': order('site', 'Navigation', NAV, ['blog', 'status']),
+  'site.nav': order('site', 'Navigation', NAV, ['status']),
   'site.motion': set('site', 'Motion pieces', MOTION),
   'site.accents': colors('site', 'Accent set', [
     '#6f8fd1',
@@ -170,6 +170,18 @@ export const SETTINGS = {
   'home.rail': order('rail', 'Home rail panels', RAIL_PANELS, ['running']),
   'rail.changelog.count': number('rail', 'Changelog entries in the rail', 2, 1, 8),
   'rail.console.lines': number('rail', 'Console lines', 12, 4, 30),
+  'blog.title': text('blog', 'Blog heading', 'Writing', 60),
+  'blog.intro': text(
+    'blog',
+    'Blog introduction',
+    'Notes, releases and lessons from the members, as they happen.',
+    240,
+    true,
+    true,
+  ),
+  'blog.filmstrip.count': number('blog', 'Posts on the filmstrip', 6, 3, 12),
+  'blog.page.count': number('blog', 'Posts shown before "more"', 12, 6, 48),
+  'blog.project.title': text('blog', 'Writing about a project heading', 'writing about it', 60),
   'messages.intro': text(
     'site',
     'Messages introduction',

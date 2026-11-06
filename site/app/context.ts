@@ -1,8 +1,10 @@
 import { createContext as createReactContext } from 'react';
 import { createContext } from 'react-router';
 import type { Admin } from '../server/admin.ts';
+import type { Collab } from '../server/collab.ts';
 import type { Capture } from '../server/errors.ts';
 import type { Messages } from '../server/messages.ts';
+import type { Posts } from '../server/posts.ts';
 import type { Presentations } from '../server/presentation.ts';
 import type { Profiles } from '../server/profiles.ts';
 import type { Writeback } from '../server/writeback.ts';
@@ -23,6 +25,8 @@ export interface Hub {
   presentations: Presentations;
   writeback: Writeback;
   uploads: Uploads;
+  posts: Posts;
+  collab: Collab;
   address: string;
   origin: string;
   viewer: Viewer | null;

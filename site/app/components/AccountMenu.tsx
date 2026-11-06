@@ -102,6 +102,8 @@ export default function AccountMenu() {
         ...(root!.directory.projects.some((project) => project.owner === member.handle)
           ? [{ to: `${member.path}/edit?project`, label: 'edit your projects' }]
           : []),
+        { to: '/blog/mine', label: viewer?.owner ? 'every post' : 'your posts' },
+        { to: '/blog/new', label: 'write a post' },
       ]
     : [];
   const owner: Entry[] = viewer?.owner

@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 import { Link } from 'react-router';
+import { day } from '../../format';
+import { useHub } from '../../hub';
 import { useSpotlight, useTilt } from '../../motion/motion';
 import type { Member, Project } from '../../types';
 import Status from '../Status';
@@ -39,10 +41,22 @@ export function WindowBar({ project }: { project: Project }) {
 export function Window({ project, owner }: Props) {
   const pointer = useCardPointer<HTMLElement>();
   const accent = project.accent ?? owner?.accent ?? '';
+  const latest = useHub().postsAbout(project)[0];
   return (
     <article ref={pointer} className="window spot tilt" style={accentStyle(accent)}>
       <WindowBar project={project} />
-      <Cover name={project.name} seed={project.slug} accent={accent} image={project.coverUrl} />
+      <div className="pane">
+        <Cover name={project.name} seed={project.slug} accent={accent} image={project.coverUrl} />
+        {latest && (
+          <Link to={latest.path} className="drawer">
+            <span className="kind" data-kind="post">
+              post
+            </span>
+            <span className="line">{latest.title}</span>
+            <time dateTime={latest.publishedAt}>{day(latest.publishedAt)}</time>
+          </Link>
+        )}
+      </div>
       <div className="body">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h3>

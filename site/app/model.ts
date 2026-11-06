@@ -48,7 +48,7 @@ export function releaseLine(release: Release, projectName: string) {
   );
 }
 
-export function createModel({ members, projects, releases }: Directory) {
+export function createModel({ members, projects, releases, posts }: Directory) {
   const rootProjects = projects.filter((project) => project.kind === 'project' && !project.parent);
   const epics = projects.filter((project) => project.kind === 'epic');
 
@@ -86,6 +86,10 @@ export function createModel({ members, projects, releases }: Directory) {
     members: members.filter((member) => member.listed),
     projects,
     releases,
+    posts,
+    postById: (id: string) => posts.find((post) => post.id === id),
+    postsBy: (member: Member) => posts.filter((post) => post.author === member.handle),
+    postsAbout: (project: Project) => posts.filter((post) => post.project === project.slug),
     rootProjects,
     epics,
     memberByHandle,
