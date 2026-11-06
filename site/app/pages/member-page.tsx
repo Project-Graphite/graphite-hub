@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { accentStyle, Avatar, Button, Panel } from '../components/kit/basics';
 import { blockTitle, Blocks, useRenderedBlocks, type PageProfile } from '../components/kit/blocks';
 import { Fact, PageHeader } from '../components/kit/page';
@@ -9,7 +10,7 @@ import { useHub, useRoot } from '../hub';
 import { createModel } from '../model';
 import type { Member } from '../types';
 
-export const MEMBER_TOPICS = ['deploys', 'releases', 'projects', 'uptime', 'profiles'];
+export const MEMBER_TOPICS = ['deploys', 'releases', 'projects', 'uptime', 'profiles', 'posts'];
 
 export function loadMember({ reads, directory, profiles, viewer }: Hub, member: Member) {
   const owned = new Set(
@@ -37,6 +38,7 @@ export function editPath(member: Member) {
 export function MemberHero({ member, actions }: { member: Member; actions?: ReactNode }) {
   const hub = useHub();
   const live = hub.projectsOwnedBy(member).filter((project) => project.status === 'live').length;
+  const posts = hub.postsBy(member).length;
   return (
     <PageHeader
       banner={member.coverUrl && <img className="member-cover" src={member.coverUrl} alt="" />}
@@ -53,6 +55,11 @@ export function MemberHero({ member, actions }: { member: Member; actions?: Reac
           />
           {live > 0 && <Fact value={live} label="live" />}
           <Fact value={hub.releasesOwnedBy(member).length} label="releases" />
+          {posts > 0 && (
+            <Link to={`${member.path}/blog`}>
+              <Fact value={posts} label={posts === 1 ? 'post' : 'posts'} />
+            </Link>
+          )}
           {member.joined && <Fact label="on GitHub since" value={member.joined} />}
         </>
       }

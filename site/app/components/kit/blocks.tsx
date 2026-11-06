@@ -8,6 +8,7 @@ import Section from '../Section';
 import TagList from '../TagList';
 import { useCountUp } from '../../motion/motion';
 import { Button } from './basics';
+import { WritingStrip } from './posts';
 import { Window } from './projects';
 import { ReleaseHistory } from './releases';
 
@@ -149,8 +150,10 @@ function body(block: Block, context: Context): ReactNode {
           </ul>
         )
       );
-    case 'writing':
-      return null;
+    case 'writing': {
+      const posts = context.hub.postsBy(member);
+      return posts.length > 0 && <WritingStrip posts={posts} label={`${member.name}'s posts`} />;
+    }
     case 'gallery':
       return (
         block.images.length > 0 && (

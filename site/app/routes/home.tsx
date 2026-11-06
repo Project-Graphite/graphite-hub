@@ -10,6 +10,7 @@ import {
   MessagesPanel,
   RunningPanel,
 } from '../components/kit/panels';
+import { WritingStrip } from '../components/kit/posts';
 import { AccentCard, Window } from '../components/kit/projects';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
@@ -18,7 +19,7 @@ import { Field, Mark } from '../motion/canvases';
 import { visible } from '../settings';
 
 export const handle = {
-  topics: ['deploys', 'releases', 'projects', 'members', 'stats', 'uptime', 'messages'],
+  topics: ['deploys', 'releases', 'projects', 'members', 'stats', 'uptime', 'messages', 'posts'],
 };
 
 export function loader({ context }: Route.LoaderArgs) {
@@ -132,7 +133,14 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </div>
       </Band>
     ),
-    writing: null,
+    writing: hub.posts.length > 0 && (
+      <Band
+        title={<Editable setting="home.writing.title" />}
+        more={{ to: '/blog', label: 'all the writing' }}
+      >
+        <WritingStrip posts={hub.posts.slice(0, settings['home.writing.count'])} />
+      </Band>
+    ),
     more: more.length > 0 && (
       <Band title={<Editable setting="home.more.title" />}>
         <div className="band-grid">

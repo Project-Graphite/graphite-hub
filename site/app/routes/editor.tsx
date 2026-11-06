@@ -887,6 +887,10 @@ function ProjectEditor({
   const save = useFetcher<Result>();
   const send = useFetcher<Result & { outcome?: string; pullRequest?: string | null }>();
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const hub = useHub();
+  const linkable = hub.posts.filter(
+    (post) => post.project === project.slug || draft.feature.posts.includes(post.id),
+  );
   useEffect(() => () => clearTimeout(timer.current), []);
   const change = (next: Presentation, delay = 700) => {
     setDraft(next);
@@ -1008,6 +1012,37 @@ function ProjectEditor({
             </button>
           )}
         </div>
+        {linkable.length > 0 && (
+          <div className="chips">
+            {linkable.map((post) => {
+              const on = draft.feature.posts.includes(post.id);
+              return (
+                <button
+                  key={post.id}
+                  type="button"
+                  aria-pressed={on}
+                  disabled={!on && draft.feature.posts.length >= 3}
+                  onClick={() =>
+                    change(
+                      {
+                        ...draft,
+                        feature: {
+                          ...draft.feature,
+                          posts: on
+                            ? draft.feature.posts.filter((id) => id !== post.id)
+                            : [...draft.feature.posts, post.id],
+                        },
+                      },
+                      0,
+                    )
+                  }
+                >
+                  {post.title}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </Field>
 
       <div className="registry">

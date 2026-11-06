@@ -3,6 +3,7 @@ import AuthorLink from '../components/AuthorLink';
 import { accentStyle, Avatar, Button, Cover, Panel } from '../components/kit/basics';
 import { Fact, PageHeader } from '../components/kit/page';
 import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
+import { PostCard, WritingStrip } from '../components/kit/posts';
 import { WindowBar } from '../components/kit/projects';
 import { ReleaseHistory } from '../components/kit/releases';
 import ProjectTile from '../components/ProjectTile';
@@ -16,7 +17,7 @@ import { useHub, useRoot } from '../hub';
 import { changelogPath } from '../model';
 import type { Deploy, Project } from '../types';
 
-export const PROJECT_TOPICS = ['deploys', 'releases', 'projects', 'uptime'];
+export const PROJECT_TOPICS = ['deploys', 'releases', 'projects', 'uptime', 'posts'];
 
 export function loadProject({ reads, directory, viewer }: Hub, project: Project) {
   const owner = directory.members.find((member) => member.handle === project.owner);
@@ -57,6 +58,8 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
   const authors = project.authors.flatMap((login) => memberByGithub(login) ?? []);
   const accent = project.accent ?? owner?.accent ?? '';
   const deploys = groupDeploys(loaderData.deploys);
+  const linked = project.feature.posts.flatMap((id) => hub.postById(id) ?? []);
+  const writing = hub.postsAbout(project);
 
   return (
     <Page
@@ -141,7 +144,7 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
           <TagList tags={project.tags} className="mt-4.5" />
         </PageHeader>
 
-        {(project.feature.note || project.feature.screenshotUrl) && (
+        {(project.feature.note || project.feature.screenshotUrl || linked.length > 0) && (
           <Section label="feature">
             <div className="feature">
               {project.feature.screenshotUrl && (
@@ -150,7 +153,27 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
               {project.feature.note && (
                 <p className="whitespace-pre-line text-muted">{project.feature.note}</p>
               )}
+              {linked.length > 0 && (
+                <div className="linked">
+                  {linked.map((post) => (
+                    <PostCard key={post.id} post={post} compact />
+                  ))}
+                </div>
+              )}
             </div>
+          </Section>
+        )}
+
+        {writing.length > 0 && (
+          <Section
+            label={settings['blog.project.title']}
+            action={
+              <Link to={`/blog?project=${project.slug}`} className="rule-link mono-sm">
+                {writing.length} {writing.length === 1 ? 'post' : 'posts'}
+              </Link>
+            }
+          >
+            <WritingStrip posts={writing} label={`posts about ${project.name}`} />
           </Section>
         )}
 
