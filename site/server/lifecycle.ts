@@ -53,6 +53,12 @@ export function applyRetention(db: Database, now = Date.now()) {
         .prepare("DELETE FROM posts WHERE status = 'trashed' AND trashed_at < ?")
         .run(before(30, now)).changes,
       jobs: db.prepare('DELETE FROM jobs WHERE done_at < ?').run(before(30, now)).changes,
+      subscribers: db
+        .prepare(
+          'DELETE FROM subscribers WHERE unsubscribed_at < ? OR (confirmed_at IS NULL AND created_at < ?)',
+        )
+        .run(before(30, now), before(7, now)).changes,
+      sends: db.prepare('DELETE FROM sends WHERE created_at < ?').run(before(90, now)).changes,
     };
   });
 }

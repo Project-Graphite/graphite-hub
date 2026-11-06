@@ -12,6 +12,7 @@ import {
   isSettingKey,
   SETTINGS,
   type Area,
+  type ChoiceSetting,
   type ColorsSetting,
   type NumberSetting,
   type OrderItem,
@@ -20,8 +21,9 @@ import {
   type SettingKey,
   type TextSetting,
 } from '../settings';
+import { describeScope, parseScope, validEmail } from '../subscribe';
 
-export const handle = { topics: ['settings', 'errors'] };
+export const handle = { topics: ['settings', 'errors', 'subscribers'] };
 
 function owner(hub: Hub) {
   if (!hub.viewer?.owner) {
@@ -38,6 +40,7 @@ export function loader({ context, request }: Route.LoaderArgs) {
     errors: hub.admin.errors(),
     waiting: hub.messages.queue().length,
     history: key && isSettingKey(key) ? { key, versions: hub.admin.history(key) } : null,
+    email: hub.subscribers.overview(),
   };
 }
 
@@ -67,6 +70,17 @@ export async function action({ context, request }: Route.ActionArgs) {
         break;
       case 'sign-out-everyone':
         return { ok: `${await hub.admin.signOutEveryone(viewer.login)} sessions ended.` };
+      case 'test-email': {
+        const to = String(form.get('to') ?? '')
+          .trim()
+          .toLowerCase();
+        const kind = String(form.get('kind'));
+        if (!validEmail(to) || !['confirm', 'post', 'digest'].includes(kind)) {
+          return data({ error: 'Type an address to send the test to.', key }, { status: 400 });
+        }
+        await hub.subscribers.sendTest(kind as 'confirm' | 'post' | 'digest', to);
+        return { ok: `${kind} sent to ${to}`, key: 'test-email' };
+      }
     }
   } catch (error) {
     return data(
@@ -77,7 +91,13 @@ export async function action({ context, request }: Route.ActionArgs) {
   return { ok: 'saved', key };
 }
 
-const AREAS: Record<Area, string> = { site: 'site', home: 'home page', rail: 'rail', blog: 'blog' };
+const AREAS: Record<Area, string> = {
+  site: 'site',
+  home: 'home page',
+  rail: 'rail',
+  blog: 'blog',
+  email: 'email',
+};
 
 type Versions = NonNullable<Route.ComponentProps['loaderData']['history']>['versions'];
 
@@ -221,8 +241,21 @@ function ColorsControl({ value: colours, commit }: ControlProps<ColorsSetting, s
   );
 }
 
+function ChoiceControl({ setting, value, commit }: ControlProps<ChoiceSetting, string>) {
+  return (
+    <Segmented
+      options={setting.options.map((option) => [option, option] as const)}
+      value={value}
+      choose={commit}
+      label={setting.label}
+    />
+  );
+}
+
 function Control(props: ControlProps<Setting, unknown>) {
   switch (props.setting.kind) {
+    case 'choice':
+      return <ChoiceControl {...(props as ControlProps<ChoiceSetting, string>)} />;
     case 'text':
       return <TextControl {...(props as ControlProps<TextSetting, string>)} />;
     case 'number':
@@ -411,6 +444,133 @@ function Preview() {
   );
 }
 
+const EMAIL_KINDS = [
+  ['post', 'new post'],
+  ['digest', 'digest'],
+  ['confirm', 'confirmation'],
+] as const;
+
+function EmailStudio({ csrf, testTo }: { csrf: string; testTo: string }) {
+  const settings = useRoot()!.settings;
+  const [kind, setKind] = useState<(typeof EMAIL_KINDS)[number][0]>('post');
+  const test = useFetcher<typeof action>();
+  const version = JSON.stringify(
+    Object.entries(settings).filter(([key]) => key.startsWith('email.') || key === 'site.name'),
+  );
+  const result =
+    test.data && 'key' in test.data && test.data.key === 'test-email' ? test.data : null;
+  return (
+    <div className="studio">
+      <div className="window screen mail">
+        <div className="bar">
+          <i />
+          <i />
+          <i />
+          <Segmented options={EMAIL_KINDS} value={kind} choose={setKind} label="Email to preview" />
+        </div>
+        <iframe
+          key={`${kind}${version}`}
+          src={`/admin/email?kind=${kind}`}
+          title={`Preview of the ${kind} email`}
+          className="mail-preview"
+        />
+        <test.Form method="post" className="foot">
+          <input type="hidden" name="csrf" value={csrf} />
+          <input type="hidden" name="intent" value="test-email" />
+          <input type="hidden" name="kind" value={kind} />
+          <input
+            type="email"
+            name="to"
+            defaultValue={testTo}
+            placeholder="you@somewhere.com"
+            aria-label="Send the test to"
+            className="field"
+          />
+          <button type="submit" className="chip-button" disabled={test.state !== 'idle'}>
+            {test.state !== 'idle' ? 'sending' : 'send a test'}
+          </button>
+          {result && 'ok' in result && <span className="text-live">{result.ok}</span>}
+          {result && 'error' in result && <span className="text-danger">{result.error}</span>}
+        </test.Form>
+      </div>
+    </div>
+  );
+}
+
+function Subscribers({ email }: { email: Route.ComponentProps['loaderData']['email'] }) {
+  const root = useRoot()!;
+  return (
+    <div className="mailroom">
+      <div className="mail-facts">
+        <Fact value={email.confirmed} label="confirmed" />
+        <Fact value={email.pending} label="waiting to confirm" />
+        <Fact value={email.each} label="per post" />
+        <Fact value={email.weekly} label="weekly" />
+        <Fact value={email.unsubscribed} label="left" />
+        <Fact value={email.sends.queued} label="queued" />
+        <Fact value={email.sends.today} label="sent today" />
+        {email.nextDigestAt && <Fact label="next digest" value={when(email.nextDigestAt)} />}
+      </div>
+      {email.scopes.length > 0 && (
+        <div className="chips scopes">
+          {email.scopes.map(({ scope, count }) => (
+            <span key={scope} className="tag">
+              {describeScope(parseScope(scope) ?? { kind: 'all' }, root.directory)}
+              <b>{count}</b>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="mail-lists">
+        <div>
+          <h3 className="setting-label">recent sends</h3>
+          {email.recent.length === 0 ? (
+            <p className="mono-sm text-faint">nothing sent yet</p>
+          ) : (
+            <ol className="sends">
+              {email.recent.map((send) => (
+                <li key={send.id} data-status={send.status}>
+                  <span className="status" data-status={send.status}>
+                    {send.status}
+                  </span>
+                  <span className="kind" data-kind={send.kind}>
+                    {send.kind}
+                  </span>
+                  <span className="who">{send.email}</span>
+                  <span className="when">
+                    {when(send.at)}
+                    {send.attempts > 1 && ` · ${send.attempts} tries`}
+                  </span>
+                  {send.error && <span className="why">{send.error}</span>}
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+        <div>
+          <h3 className="setting-label">bounces</h3>
+          {email.bounces.length === 0 ? (
+            <p className="mono-sm text-faint">no address has bounced</p>
+          ) : (
+            <ol className="sends">
+              {email.bounces.map((bounce) => (
+                <li key={bounce.id} data-status="bounced">
+                  <span className="status" data-status="bounced">
+                    suppressed
+                  </span>
+                  <span className="who">{bounce.email}</span>
+                  <span className="when">{when(bounce.at)}</span>
+                  <span className="why">{bounce.reason}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Sessions({ csrf }: { csrf: string }) {
   const signOut = useFetcher<typeof action>();
   return (
@@ -477,6 +637,7 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
   const resolved = loaderData.errors.filter((error) => error.resolvedAt);
   const jumps = [
     ...Object.entries(AREAS),
+    ['subscribers', `subscribers · ${loaderData.email.confirmed}`],
     ['members', `members · ${root.directory.members.length}`],
     ['errors', `errors · ${open.length}`],
   ];
@@ -509,6 +670,7 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
               <Fact value={loaderData.waiting} label="waiting" />
               <Fact value={open.length} label="open errors" />
               <Fact value={root.directory.members.length} label="members" />
+              <Fact value={loaderData.email.confirmed} label="subscribers" />
             </>
           }
         >
@@ -535,9 +697,15 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
                     />
                   ))}
               </div>
+              {area === 'email' && <EmailStudio csrf={csrf} testTo={loaderData.email.testTo} />}
             </Band>
           </div>
         ))}
+        <div id="subscribers">
+          <Band title="subscribers">
+            <Subscribers email={loaderData.email} />
+          </Band>
+        </div>
         <div id="members">
           <Band title="members">
             <div className="seats">

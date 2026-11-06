@@ -7,6 +7,7 @@ import { defaults, visible, type NAV } from '../settings';
 import AccountMenu from './AccountMenu';
 import { Editable, useEditing } from './kit/Editable';
 import { openSearch, Palette } from './kit/Palette';
+import { SubscribeForm, SubscribeLink } from './kit/subscribe';
 
 const NAV_TARGET: Record<(typeof NAV)[number], { to: string; label: string }> = {
   members: { to: '/members', label: 'members' },
@@ -81,11 +82,18 @@ export default function Shell({ children }: { children: ReactNode }) {
       </main>
 
       <footer className="frame-footer">
-        <div className="shell flex flex-wrap justify-between gap-4">
-          <Editable setting="site.footer" />
-          <Link to="/privacy" className="hover:text-ink">
-            privacy
-          </Link>
+        <div className="shell footer-grid">
+          <div className="footer-subscribe">
+            <span className="footer-lead">new writing, by email</span>
+            <SubscribeForm scope={{ kind: 'all' }} cadence="each" compact />
+            <SubscribeLink />
+          </div>
+          <div className="footer-line">
+            <Editable setting="site.footer" />
+            <Link to="/privacy" className="hover:text-ink">
+              privacy
+            </Link>
+          </div>
         </div>
       </footer>
       <Palette />

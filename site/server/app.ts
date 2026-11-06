@@ -29,6 +29,7 @@ import type { Share } from './share.ts';
 import type { Reads } from './reads.ts';
 import type { Settings } from './settings.ts';
 import type { Snapshot } from './snapshot.ts';
+import type { Subscribers } from './subscribers.ts';
 import type { Sync } from './sync.ts';
 
 export interface Services {
@@ -46,6 +47,7 @@ export interface Services {
   writeback: Writeback;
   uploads: Uploads;
   posts: Posts;
+  subscribers: Subscribers;
   collab: Collab;
   auth: Auth;
   live: Live;
@@ -200,6 +202,22 @@ export function createApp(
 
   app.use(auth.router);
   app.get('/live', live.handler);
+  app.get('/admin/email', async (request, response) => {
+    const signedIn = await auth.current(request, response);
+    const kind = String(request.query.kind ?? '');
+    if (!signedIn?.session.owner || !['confirm', 'post', 'digest'].includes(kind)) {
+      response.status(404).end();
+      return;
+    }
+    response.setHeader(
+      'Content-Security-Policy',
+      "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' https: data:",
+    );
+    response.setHeader('Cache-Control', 'no-store');
+    response
+      .type('html')
+      .send(services.subscribers.preview(kind as 'confirm' | 'post' | 'digest').html);
+  });
   app.use(
     '/uploads',
     express.static(uploadsDirectory, {
@@ -248,6 +266,7 @@ export function createApp(
             writeback: services.writeback,
             uploads: services.uploads,
             posts: services.posts,
+            subscribers: services.subscribers,
             collab: services.collab,
             address: clientAddress(request),
             origin: new URL(config.appUrl).origin,

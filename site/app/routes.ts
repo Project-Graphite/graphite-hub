@@ -14,6 +14,8 @@ export default [
   route('admin', 'routes/admin.tsx'),
   route('search', 'routes/search.tsx'),
   route('messages', 'routes/messages.tsx'),
+  route('subscribe', 'routes/subscribe.tsx'),
+  route('subscribe/:purpose/:id/:sig', 'routes/subscription.tsx'),
   route('privacy', 'routes/privacy.tsx'),
   route('sign-in', 'routes/sign-in.tsx'),
   route('changelog/members/:handle', 'routes/member-changelog.tsx'),

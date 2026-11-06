@@ -12,6 +12,7 @@ export interface PageMeta {
   title: string;
   description: string;
   canonical: string;
+  noindex?: boolean;
 }
 
 export const INDEX: PageMeta = {
@@ -77,6 +78,11 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
       description: 'Search members, projects and releases.',
       canonical: `${ORIGIN}/search/`,
     },
+    '/subscribe': {
+      title: `Subscribe — ${SITE}`,
+      description: 'New writing by email: every post as it publishes, or a weekly digest.',
+      canonical: `${ORIGIN}/subscribe/`,
+    },
     '/privacy': {
       title: `Privacy — ${SITE}`,
       description: 'What Project Graphite keeps, and for how long.',
@@ -110,6 +116,14 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
   };
   if (fixed[path]) {
     return fixed[path];
+  }
+  if (path.startsWith('/subscribe/')) {
+    return {
+      title: `Your subscription — ${SITE}`,
+      description: 'What you get by email, and how to stop.',
+      canonical: `${ORIGIN}/subscribe/`,
+      noindex: true,
+    };
   }
   if (!model) {
     return NOT_FOUND(path);
@@ -204,12 +218,13 @@ export function metaFor(model: Model | undefined, rawPath: string): PageMeta {
 }
 
 export function metaTags(
-  { title, description, canonical }: PageMeta,
+  { title, description, canonical, noindex }: PageMeta,
   image: string | undefined,
 ): MetaDescriptor[] {
   return [
     { title },
     { name: 'description', content: description },
+    ...(noindex ? [{ name: 'robots', content: 'noindex' }] : []),
     { tagName: 'link', rel: 'canonical', href: canonical },
     { property: 'og:title', content: title },
     { property: 'og:description', content: description },

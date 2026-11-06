@@ -4,6 +4,7 @@ import { accentStyle, Avatar, Button, Cover, Panel } from '../components/kit/bas
 import { Fact, PageHeader } from '../components/kit/page';
 import { PostRow } from '../components/kit/posts';
 import { WindowBar } from '../components/kit/projects';
+import { SubscribePanel } from '../components/kit/subscribe';
 import { Page } from '../components/Shell';
 import TagList from '../components/TagList';
 import { hubContext } from '../context';
@@ -123,6 +124,12 @@ export default function Post({ loaderData }: Route.ComponentProps) {
                 ))}
               </div>
             </Panel>
+          )}
+          {!draft && (
+            <SubscribePanel
+              scope={{ kind: 'member', handle: author.handle }}
+              title={`follow ${author.name.split(' ')[0]}`}
+            />
           )}
         </>
       }

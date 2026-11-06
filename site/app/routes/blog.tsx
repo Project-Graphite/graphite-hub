@@ -7,6 +7,7 @@ import { Editable } from '../components/kit/Editable';
 import { Console } from '../components/kit/live';
 import { Fact, PageHeader } from '../components/kit/page';
 import { PostCard, WritingStrip } from '../components/kit/posts';
+import { SubscribePanel } from '../components/kit/subscribe';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
 import { useHub, useRoot } from '../hub';
@@ -69,6 +70,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
     <Page
       rail={
         <>
+          <SubscribePanel scope={{ kind: 'all' }} />
           {writers.length > 0 && (
             <Panel title="writers">
               <div className="panel-list">
@@ -123,6 +125,7 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
                 </Button>
               )}
               {loaderData.writer && <Button to="/blog/mine">your posts</Button>}
+              <Button to="/subscribe">subscribe</Button>
               <Button to="/blog/feed.xml">rss</Button>
             </>
           }

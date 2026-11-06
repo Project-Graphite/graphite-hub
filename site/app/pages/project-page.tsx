@@ -6,6 +6,7 @@ import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
 import { PostCard, WritingStrip } from '../components/kit/posts';
 import { WindowBar } from '../components/kit/projects';
 import { ReleaseHistory } from '../components/kit/releases';
+import { SubscribePanel } from '../components/kit/subscribe';
 import ProjectTile from '../components/ProjectTile';
 import Section from '../components/Section';
 import { Page } from '../components/Shell';
@@ -69,6 +70,10 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
           <ChangelogPanel
             releases={releases.slice(0, settings['rail.changelog.count'] + 1)}
             projectOf={(release) => projectBySlug(release.project)}
+          />
+          <SubscribePanel
+            scope={{ kind: 'project', slug: project.slug }}
+            title={`follow ${project.name}`}
           />
           {authors.length > 0 && (
             <Panel title="built by">

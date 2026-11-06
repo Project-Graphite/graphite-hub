@@ -13,6 +13,7 @@ export function createJobs(
   let timer: ReturnType<typeof setTimeout> | undefined;
   let running = false;
   let stopped = false;
+  const active = new Set<number>();
 
   function arm(now = Date.now()) {
     clearTimeout(timer);
@@ -34,20 +35,24 @@ export function createJobs(
       .all(MAX_ATTEMPTS, new Date(now).toISOString());
     const ran: string[] = [];
     for (const job of due) {
-      db.prepare('UPDATE jobs SET attempts = attempts + 1 WHERE id = ?').run(job.id as number);
+      const id = job.id as number;
+      db.prepare('UPDATE jobs SET attempts = attempts + 1 WHERE id = ?').run(id);
+      active.add(id);
       try {
         await handlers[job.kind as string]?.(job.ref as string);
         db.prepare('UPDATE jobs SET done_at = ?, last_error = NULL WHERE id = ?').run(
           new Date().toISOString(),
-          job.id as number,
+          id,
         );
         ran.push(`${job.kind as string}:${job.ref as string}`);
       } catch (error) {
         db.prepare('UPDATE jobs SET last_error = ? WHERE id = ?').run(
           error instanceof Error ? error.message : String(error),
-          job.id as number,
+          id,
         );
         capture(error, { route: `job:${job.kind as string}` });
+      } finally {
+        active.delete(id);
       }
     }
     return ran;
@@ -68,7 +73,9 @@ export function createJobs(
 
   return {
     add(kind: string, ref: string, dueAt: string) {
-      db.prepare('DELETE FROM jobs WHERE kind = ? AND ref = ? AND done_at IS NULL').run(kind, ref);
+      db.prepare(
+        'DELETE FROM jobs WHERE kind = ? AND ref = ? AND done_at IS NULL AND id NOT IN (SELECT value FROM json_each(?))',
+      ).run(kind, ref, JSON.stringify([...active]));
       db.prepare('INSERT INTO jobs (kind, ref, due_at) VALUES (?, ?, ?)').run(kind, ref, dueAt);
       arm();
     },

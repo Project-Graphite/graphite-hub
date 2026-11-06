@@ -4,6 +4,7 @@ import { accentStyle, Avatar, Button, Panel } from '../components/kit/basics';
 import { blockTitle, Blocks, useRenderedBlocks, type PageProfile } from '../components/kit/blocks';
 import { Fact, PageHeader } from '../components/kit/page';
 import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
+import { SubscribePanel } from '../components/kit/subscribe';
 import { Page } from '../components/Shell';
 import type { Hub } from '../context';
 import { useHub, useRoot } from '../hub';
@@ -116,6 +117,10 @@ export function MemberPage({ data }: { data: ReturnType<typeof loadMember> }) {
             />
           )}
           {data.running.length > 0 && <RunningPanel running={data.running} />}
+          <SubscribePanel
+            scope={{ kind: 'member', handle: member.handle }}
+            title={`follow ${member.name.split(' ')[0]}`}
+          />
         </>
       }
     >

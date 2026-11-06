@@ -1,4 +1,4 @@
-export type Area = 'site' | 'home' | 'rail' | 'blog';
+export type Area = 'site' | 'home' | 'rail' | 'blog' | 'email';
 
 interface Base<Kind extends string, T> {
   kind: Kind;
@@ -17,7 +17,9 @@ export type OrderItem = { id: string; on: boolean };
 export type OrderSetting = Base<'order', OrderItem[]> & { options: readonly string[] };
 export type SetSetting = Base<'set', string[]> & { options: readonly string[] };
 export type ColorsSetting = Base<'colors', string[]>;
-export type Setting = TextSetting | NumberSetting | OrderSetting | SetSetting | ColorsSetting;
+export type ChoiceSetting = Base<'choice', string> & { options: readonly string[] };
+export type Setting =
+  TextSetting | NumberSetting | OrderSetting | SetSetting | ColorsSetting | ChoiceSetting;
 
 const text = (
   area: Area,
@@ -79,6 +81,18 @@ const colors = (area: Area, label: string, value: string[]): ColorsSetting => ({
   label,
   default: value,
 });
+const choice = (
+  area: Area,
+  label: string,
+  options: readonly string[],
+  value: string,
+): ChoiceSetting => ({
+  kind: 'choice',
+  area,
+  label,
+  options,
+  default: value,
+});
 
 export const HOME_SECTIONS = [
   'hero',
@@ -113,6 +127,15 @@ export const MOTION = [
   'orbit',
 ] as const;
 export const EVENT_KINDS = ['deploy', 'release', 'post', 'sync', 'uptime'] as const;
+export const WEEKDAYS = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+] as const;
 
 export const SETTINGS = {
   'site.name': text('site', 'Site name', 'Project Graphite', 40),
@@ -189,6 +212,64 @@ export const SETTINGS = {
     300,
     true,
   ),
+  'subscribe.intro': text(
+    'blog',
+    'Subscribe introduction',
+    'New writing lands in your inbox as it publishes, or once a week in one email. Nothing else, ever.',
+    240,
+    true,
+  ),
+  'email.from.name': text('email', 'Sender name', 'Project Graphite', 60),
+  'email.reply_to': text('email', 'Reply-to address', '', 120, false, true),
+  'email.hourly': number('email', 'Emails an hour', 20, 5, 100),
+  'email.digest.day': choice('email', 'Digest day', WEEKDAYS, 'monday'),
+  'email.digest.hour': number('email', 'Digest hour, UTC', 8, 0, 23),
+  'email.confirm.subject': text(
+    'email',
+    'Confirmation subject · {{site}} {{what}}',
+    'Confirm your subscription to {{site}}',
+    120,
+  ),
+  'email.confirm.body': text(
+    'email',
+    'Confirmation intro · {{site}} {{what}}',
+    'One click and you will get {{what}} from {{site}}. If this was not you, ignore this email and nothing happens.',
+    400,
+    true,
+  ),
+  'email.post.subject': text(
+    'email',
+    'New post subject · {{title}} {{author}} {{site}}',
+    '{{author}} published: {{title}}',
+    120,
+  ),
+  'email.post.body': text(
+    'email',
+    'New post intro · {{title}} {{author}} {{about}} {{site}}',
+    '{{author}} just published a new post{{about}}.',
+    400,
+    true,
+  ),
+  'email.digest.subject': text(
+    'email',
+    'Digest subject · {{count}} {{posts}} {{site}}',
+    'This week on {{site}}: {{count}} new {{posts}}',
+    120,
+  ),
+  'email.digest.body': text(
+    'email',
+    'Digest intro · {{count}} {{posts}} {{site}}',
+    'What the members wrote this week, in one place.',
+    400,
+    true,
+  ),
+  'email.footer': text(
+    'email',
+    'Email footer · {{site}} {{what}}',
+    'You get this because you subscribed to {{what}} at {{site}}.',
+    200,
+    true,
+  ),
 } satisfies Record<string, Setting>;
 
 export type SettingKey = keyof typeof SETTINGS;
@@ -238,6 +319,10 @@ export function problem(key: SettingKey, value: unknown): string | null {
         value.every((item) => HEX.test(item))
         ? null
         : `${setting.label} must be 3 to 16 colours like #6f8fd1.`;
+    case 'choice':
+      return typeof value === 'string' && setting.options.includes(value)
+        ? null
+        : `${setting.label} must be one of ${setting.options.join(', ')}.`;
   }
 }
 

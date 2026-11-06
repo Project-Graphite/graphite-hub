@@ -21,6 +21,7 @@ export function loader({ context }: Route.LoaderArgs) {
     '/changelog',
     '/status',
     '/messages',
+    '/subscribe',
     '/privacy',
     ...members.map(changelogPath),
     ...projects.map(changelogPath),
