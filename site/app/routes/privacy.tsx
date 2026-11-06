@@ -28,6 +28,11 @@ const KEPT = [
     kept: 'until a member deletes it',
   },
   {
+    what: 'Subscribers',
+    how: 'The address you confirmed, what you chose to get, and a record of each email sent to it. Never shared, never used for anything else.',
+    kept: 'until you unsubscribe, plus 30 days',
+  },
+  {
     what: 'Uptime',
     how: 'Checks of each project, minute by minute for thirty days, then one line a day.',
     kept: '30 days by the minute',

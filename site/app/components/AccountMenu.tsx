@@ -111,6 +111,7 @@ export default function AccountMenu() {
         { to: '/admin', label: 'admin' },
         { to: `${pathname}?edit`, label: 'edit this page' },
         { to: '/messages', label: 'moderate messages' },
+        { to: '/admin#subscribers', label: 'subscribers' },
         ...(import.meta.env.DEV ? [{ to: '/kit', label: 'kit' }] : []),
       ]
     : [];

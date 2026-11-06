@@ -51,6 +51,7 @@ export function loader({ context }: Route.LoaderArgs) {
     '## Site',
     '',
     `- [Blog](${ORIGIN}/blog/): posts by the members, with RSS at ${ORIGIN}/blog/feed.xml`,
+    `- [Subscribe](${ORIGIN}/subscribe/): new posts by email, per post or as a weekly digest`,
     `- [Changelog](${ORIGIN}/changelog/): every release of every project`,
     `- [Sitemap](${ORIGIN}/sitemap.xml): every page on the site`,
     '',
