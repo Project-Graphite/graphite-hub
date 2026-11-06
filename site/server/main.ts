@@ -17,7 +17,7 @@ import { createErrors } from './errors.ts';
 import { runLifecycle } from './lifecycle.ts';
 import { createLive } from './live.ts';
 import { log } from './log.ts';
-import { alertOwner } from './mail.ts';
+import { alertOwner, sendEmail } from './mail.ts';
 import { createMetrics } from './metrics.ts';
 import { connectRedis, slidingLimit } from './redis.ts';
 import { createSessions } from './sessions.ts';
@@ -29,6 +29,7 @@ import { createReads } from './reads.ts';
 import { createUploads } from './uploads.ts';
 import { createSettings } from './settings.ts';
 import { createSnapshot } from './snapshot.ts';
+import { createSubscribers } from './subscribers.ts';
 import { createSync } from './sync.ts';
 import { pingAll } from './uptime.ts';
 
@@ -55,10 +56,25 @@ const jobs = createJobs(
     publish: async (id) => {
       await posts.publishDue(id);
     },
+    email: async () => {
+      await subscribers.sends.drain();
+    },
+    digest: async () => {
+      subscribers.runDigest();
+    },
   },
   capture,
 );
-const posts = createPosts(db, bus, jobs);
+const subscribers = createSubscribers(db, jobs, bus, {
+  secret: config.sessionSecret,
+  origin: new URL(config.appUrl).origin,
+  allow: (address) => slidingLimit(redis, `subscribe:${address}`, 5, HOUR),
+  settings: settings.get,
+  directory: snapshot.get,
+  deliver: sendEmail,
+  testAddress: config.alertsEmail,
+});
+const posts = createPosts(db, bus, jobs, subscribers.queuePost);
 const collab = createCollab(db, posts, sessions);
 
 process.on('unhandledRejection', (reason) => capture(reason, { route: 'process' }));
@@ -102,6 +118,7 @@ const app = createApp(
       config.sessionSecret,
     ),
     posts,
+    subscribers,
     collab,
     auth,
     live,
@@ -115,6 +132,7 @@ const app = createApp(
 );
 const server = app.listen(config.port, () => log.info({ port: config.port }, 'listening'));
 server.on('upgrade', collab.upgrade);
+subscribers.start();
 jobs.start();
 
 function every(name: string, ms: number, job: () => Promise<unknown>) {

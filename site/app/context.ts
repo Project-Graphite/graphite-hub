@@ -11,6 +11,7 @@ import type { Writeback } from '../server/writeback.ts';
 import type { Uploads } from '../server/uploads.ts';
 import type { Share } from '../server/share.ts';
 import type { Reads } from '../server/reads.ts';
+import type { Subscribers } from '../server/subscribers.ts';
 import type { Values } from './settings';
 import type { Directory, Viewer } from './types';
 
@@ -26,6 +27,7 @@ export interface Hub {
   writeback: Writeback;
   uploads: Uploads;
   posts: Posts;
+  subscribers: Subscribers;
   collab: Collab;
   address: string;
   origin: string;

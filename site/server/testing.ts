@@ -8,6 +8,7 @@ export function memoryDatabase() {
 export function recordingBus() {
   const recorded: HubEvent[] = [];
   const published: HubEvent[] = [];
+  const listeners = new Set<(delivery: { event: HubEvent }) => void>();
   const bus = {
     ready: Promise.resolve(),
     record: async (event: HubEvent) => {
@@ -16,9 +17,15 @@ export function recordingBus() {
     },
     publish: async (event: HubEvent) => {
       published.push(event);
+      for (const listener of listeners) {
+        listener({ event });
+      }
     },
     since: async () => [],
-    listen: () => () => true,
+    listen: (listener: (delivery: { event: HubEvent }) => void) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
   } as unknown as Bus;
   return { bus, recorded, published };
 }

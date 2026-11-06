@@ -92,7 +92,12 @@ export function readPublished(db: Database, pathOf: (author: string) => string |
     });
 }
 
-export function createPosts(db: Database, bus: Bus, jobs: Jobs) {
+export function createPosts(
+  db: Database,
+  bus: Bus,
+  jobs: Jobs,
+  onPublished: (post: Post) => void = () => {},
+) {
   const known = {
     upload: (id: string) => Boolean(db.prepare('SELECT 1 FROM uploads WHERE id = ?').get(id)),
     member: (handle: string) =>
@@ -214,6 +219,7 @@ export function createPosts(db: Database, bus: Bus, jobs: Jobs) {
       },
       at,
     });
+    onPublished(published);
     return published;
   }
 

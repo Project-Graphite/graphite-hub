@@ -40,6 +40,32 @@ describe('jobs', () => {
     jobs.stop();
   });
 
+  it('lets a running job arm its own next run without losing either row', async () => {
+    const db = memoryDatabase();
+    const jobs = createJobs(
+      db,
+      {
+        digest: async () => {
+          jobs.add('digest', 'weekly', '2026-01-08T00:00:00.000Z');
+        },
+      },
+      () => {},
+    );
+    jobs.add('digest', 'weekly', '2026-01-01T00:00:00.000Z');
+    assert.deepEqual(await jobs.runDue(Date.parse('2026-01-01T00:00:01.000Z')), ['digest:weekly']);
+    assert.deepEqual(
+      db
+        .prepare('SELECT due_at, done_at IS NOT NULL AS done FROM jobs ORDER BY id')
+        .all()
+        .map((row) => [row.due_at, row.done]),
+      [
+        ['2026-01-01T00:00:00.000Z', 1],
+        ['2026-01-08T00:00:00.000Z', 0],
+      ],
+    );
+    jobs.stop();
+  });
+
   it('is re-read from SQLite by a fresh executor', async () => {
     const db = memoryDatabase();
     const first = createJobs(db, {}, () => {});
