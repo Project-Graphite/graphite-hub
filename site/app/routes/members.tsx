@@ -108,7 +108,8 @@ export default function Members({ loaderData }: Route.ComponentProps) {
         facts={
           <>
             <Fact value={hub.members.length} label="members" />
-            <Fact value={hub.projects.length} label="projects" />
+            <Fact value={hub.rootProjects.length} label="projects" />
+            <Fact value={hub.epics.length} label={hub.epics.length === 1 ? 'epic' : 'epics'} />
             <Fact value={hub.releases.length} label="releases" />
           </>
         }

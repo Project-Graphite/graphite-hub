@@ -7,7 +7,7 @@ import { day } from '../format';
 import { useHub } from '../hub';
 
 export default function Changelog() {
-  const { projects, releases } = useHub();
+  const { rootProjects, epics, releases } = useHub();
   return (
     <Page
       rail={
@@ -22,7 +22,8 @@ export default function Changelog() {
         facts={
           <>
             <Fact value={releases.length} label="releases" />
-            <Fact value={projects.length} label="projects" />
+            <Fact value={rootProjects.length} label="projects" />
+            <Fact value={epics.length} label={epics.length === 1 ? 'epic' : 'epics'} />
             {releases[0] && <Fact label="latest" value={day(releases[0].date)} />}
           </>
         }
