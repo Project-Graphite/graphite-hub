@@ -638,6 +638,9 @@
 .window.mini:hover {
   border-color: var(--color-muted);
 }
+.window.mini .face {
+  display: grid;
+}
 .window.mini .cover {
   aspect-ratio: 16 / 6;
 }

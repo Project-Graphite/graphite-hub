@@ -33,7 +33,9 @@ function setup(deliver: (message: Outgoing) => Promise<string>, perHour = 20) {
     compose: async (send) =>
       send.ref === 'skip' ? null : message(`${send.subscriber}@example.com`),
     perHour: () => perHour,
-    bounced: (subscriber) => bounced.push(subscriber),
+    bounced: async (subscriber) => {
+      bounced.push(subscriber);
+    },
   });
   return { db, jobs, sends, bounced };
 }

@@ -94,23 +94,21 @@ export default function Post({ loaderData }: Route.ComponentProps) {
           )}
           {project && (
             <Panel title="about">
-              <Link
-                to={project.path}
-                className="window mini"
-                style={accentStyle(project.accent ?? owner?.accent)}
-              >
+              <div className="window mini" style={accentStyle(project.accent ?? owner?.accent)}>
                 <WindowBar project={project} />
-                <Cover
-                  name={project.name}
-                  seed={project.slug}
-                  accent={project.accent ?? owner?.accent ?? ''}
-                  image={project.coverUrl}
-                />
-                <span className="body">
-                  <strong>{project.name}</strong>
-                  <span>{project.summary}</span>
-                </span>
-              </Link>
+                <Link to={project.path} className="face">
+                  <Cover
+                    name={project.name}
+                    seed={project.slug}
+                    accent={project.accent ?? owner?.accent ?? ''}
+                    image={project.coverUrl}
+                  />
+                  <span className="body">
+                    <strong>{project.name}</strong>
+                    <span>{project.summary}</span>
+                  </span>
+                </Link>
+              </div>
             </Panel>
           )}
           {more.length > 0 && (

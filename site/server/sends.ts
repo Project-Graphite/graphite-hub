@@ -68,7 +68,7 @@ export function createSends(
     deliver: Deliver;
     compose: (send: SendRow) => Promise<Outgoing | null>;
     perHour: () => number;
-    bounced: (subscriber: string, reason: string, at: string) => void;
+    bounced: (subscriber: string, reason: string, at: string) => Promise<void>;
   },
 ) {
   const columns = 'id, subscriber, kind, ref, due_at, sent_at, status, attempts, error FROM sends';
@@ -124,7 +124,7 @@ export function createSends(
       const failure = classify(error);
       if (failure.bounce) {
         finish(send.id, 'bounced', failure.message, at);
-        deps.bounced(send.subscriber, failure.message, at);
+        await deps.bounced(send.subscriber, failure.message, at);
         return 'bounced';
       }
       if (failure.permanent || attempts >= MAX_ATTEMPTS) {
