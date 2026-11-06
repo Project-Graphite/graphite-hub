@@ -1,6 +1,7 @@
-import { Link } from 'react-router';
-import { accentStyle, Avatar, Panel } from '../components/kit/basics';
+import type { ReactNode } from 'react';
+import { accentStyle, Avatar, Button, Panel } from '../components/kit/basics';
 import { blockTitle, Blocks, useRenderedBlocks, type PageProfile } from '../components/kit/blocks';
+import { Fact, PageHeader } from '../components/kit/page';
 import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
 import { Page } from '../components/Shell';
 import type { Hub } from '../context';
@@ -33,19 +34,29 @@ export function editPath(member: Member) {
   return `${member.path}/edit`;
 }
 
-export function MemberHero({ member }: { member: Member }) {
+export function MemberHero({ member, actions }: { member: Member; actions?: ReactNode }) {
+  const hub = useHub();
+  const live = hub.projectsOwnedBy(member).filter((project) => project.status === 'live').length;
   return (
-    <section className="page-hero member-hero">
-      {member.coverUrl && <img className="member-cover" src={member.coverUrl} alt="" />}
-      <p className="mono-sm m-0 text-faint">{member.path}</p>
-      <div className="mt-3 flex items-center gap-5">
-        <Avatar member={member} size="lg" />
-        <div>
-          <h1 className="page-title max-w-[18ch]">{member.name}</h1>
-          {member.headline && <p className="mt-2 mb-0 text-muted">{member.headline}</p>}
-        </div>
-      </div>
-    </section>
+    <PageHeader
+      banner={member.coverUrl && <img className="member-cover" src={member.coverUrl} alt="" />}
+      path={member.path}
+      lead={<Avatar member={member} size="lg" />}
+      title={member.name}
+      subtitle={member.headline}
+      actions={actions}
+      facts={
+        <>
+          <Fact
+            value={hub.projectsForMember(member).length + hub.epicsForMember(member).length}
+            label="projects"
+          />
+          {live > 0 && <Fact value={live} label="live" />}
+          <Fact value={hub.releasesOwnedBy(member).length} label="releases" />
+          {member.joined && <Fact label="on GitHub since" value={member.joined} />}
+        </>
+      }
+    />
   );
 }
 
@@ -60,7 +71,7 @@ export function MemberView({
 }) {
   const rendered = useRenderedBlocks(member, profile, today);
   return (
-    <div style={accentStyle(member.accent)}>
+    <div className="profile member" style={accentStyle(member.accent)}>
       <MemberHero member={member} />
       <Blocks rendered={rendered} />
     </div>
@@ -78,11 +89,6 @@ export function MemberPage({ data }: { data: ReturnType<typeof loadMember> }) {
     <Page
       rail={
         <>
-          {data.editable && (
-            <Link to={editPath(member)} className="btn primary justify-center">
-              edit this page
-            </Link>
-          )}
           {rendered.length > 2 && (
             <Panel title="on this page">
               <ol className="mono-sm grid gap-1.5">
@@ -106,8 +112,17 @@ export function MemberPage({ data }: { data: ReturnType<typeof loadMember> }) {
         </>
       }
     >
-      <div style={accentStyle(member.accent)}>
-        <MemberHero member={member} />
+      <div className="profile member" style={accentStyle(member.accent)}>
+        <MemberHero
+          member={member}
+          actions={
+            data.editable && (
+              <Button to={editPath(member)} primary>
+                edit this page
+              </Button>
+            )
+          }
+        />
         <Blocks rendered={rendered} />
       </div>
     </Page>

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { data, Link, useFetcher } from 'react-router';
 import type { Route } from './+types/admin';
-import { Button, Panel } from '../components/kit/basics';
-import { Segmented, Sortable, Switch } from '../components/kit/controls';
-import { PageHero } from '../components/kit/page';
-import Section from '../components/Section';
+import { Avatar, Band, Button, Panel } from '../components/kit/basics';
+import { Confirm, Segmented, Sortable, Switch } from '../components/kit/controls';
+import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import { hubContext, type Hub } from '../context';
 import { useRoot } from '../hub';
+import { useSpotlight } from '../motion/motion';
 import {
   isSettingKey,
   SETTINGS,
@@ -79,6 +79,10 @@ export async function action({ context, request }: Route.ActionArgs) {
 
 const AREAS: Record<Area, string> = { site: 'site', home: 'home page', rail: 'rail' };
 
+type Versions = NonNullable<Route.ComponentProps['loaderData']['history']>['versions'];
+
+const when = (iso: string) => iso.slice(0, 16).replace('T', ' ');
+
 interface ControlProps<S extends Setting, V> {
   setting: S;
   value: V;
@@ -108,7 +112,14 @@ function TextControl({ setting, value, change, commit }: ControlProps<TextSettin
 
 function NumberControl({ setting, value, commit }: ControlProps<NumberSetting, number>) {
   return (
-    <div className="range">
+    <div
+      className="range"
+      style={
+        {
+          '--fill': `${(((value - setting.min) / (setting.max - setting.min)) * 100).toFixed(1)}%`,
+        } as CSSProperties
+      }
+    >
       <input
         type="range"
         min={setting.min}
@@ -225,12 +236,55 @@ function Control(props: ControlProps<Setting, unknown>) {
   }
 }
 
-function SettingRow({ settingKey, csrf }: { settingKey: SettingKey; csrf: string }) {
+function History({ versions, csrf }: { versions: Versions; csrf: string }) {
+  const revert = useFetcher<typeof action>();
+  return (
+    <ol className="versions">
+      {versions.length === 0 && <li className="text-faint">on its default</li>}
+      {versions.map((version, index) => (
+        <li key={version.id}>
+          <span className="when">
+            {when(version.at)} · {version.by}
+          </span>
+          <code>{JSON.stringify(version.value)}</code>
+          {index === 0 ? (
+            <span className="text-faint">current</span>
+          ) : (
+            <button
+              type="button"
+              className="rule-link"
+              disabled={revert.state !== 'idle'}
+              onClick={() =>
+                revert.submit(
+                  { csrf, intent: 'revert', key: version.key, version: String(version.id) },
+                  { method: 'post' },
+                )
+              }
+            >
+              revert
+            </button>
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function SettingRow({
+  settingKey,
+  csrf,
+  history,
+}: {
+  settingKey: SettingKey;
+  csrf: string;
+  history: Versions | null;
+}) {
   const stored = useRoot()!.settings[settingKey];
   const setting: Setting = SETTINGS[settingKey];
   const [draft, setDraft] = useState<unknown>(stored);
   const [base, setBase] = useState<unknown>(stored);
   const fetcher = useFetcher<typeof action>();
+  const spot = useSpotlight<HTMLElement>();
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
   if (JSON.stringify(base) !== JSON.stringify(stored)) {
@@ -258,19 +312,29 @@ function SettingRow({ settingKey, csrf }: { settingKey: SettingKey; csrf: string
         ? 'error'
         : result && JSON.stringify(draft) === JSON.stringify(stored)
           ? 'saved'
-          : null;
+          : 'idle';
+  const wide = setting.kind === 'text' ? setting.multiline : setting.kind !== 'number';
 
   return (
-    <div className="setting" data-kind={setting.kind}>
+    <article
+      ref={spot}
+      className="setting spot"
+      data-kind={setting.kind}
+      data-state={state}
+      data-wide={wide || undefined}
+    >
       <div className="setting-head">
-        <span className="setting-label">{setting.label}</span>
-        {state && (
-          <span className="setting-state" data-state={state}>
-            {state === 'error' && result && 'error' in result ? result.error : state}
-          </span>
-        )}
+        <h3 className="setting-label">{setting.label}</h3>
+        <span className="setting-state" data-state={state}>
+          <i />
+          {state === 'error' && result && 'error' in result ? result.error : state}
+        </span>
         <span className="setting-tools">
-          <Link to={`?history=${settingKey}`} preventScrollReset>
+          <Link
+            to={history ? '?' : `?history=${settingKey}`}
+            preventScrollReset
+            aria-expanded={Boolean(history)}
+          >
             history
           </Link>
           <button type="button" onClick={() => void send('reset')}>
@@ -279,7 +343,8 @@ function SettingRow({ settingKey, csrf }: { settingKey: SettingKey; csrf: string
         </span>
       </div>
       <Control setting={setting} value={draft} change={setDraft} commit={commit} />
-    </div>
+      {history && <History versions={history} csrf={csrf} />}
+    </article>
   );
 }
 
@@ -295,7 +360,7 @@ const DEVICES = { desktop: { width: 1440, height: 900 }, phone: { width: 390, he
 function Preview() {
   const [path, setPath] = useState<string>('/');
   const [device, setDevice] = useState<keyof typeof DEVICES>('desktop');
-  const [scale, setScale] = useState(0.4);
+  const [scale, setScale] = useState(0.35);
   const box = useRef<HTMLDivElement>(null);
   const size = DEVICES[device];
 
@@ -312,18 +377,12 @@ function Preview() {
   }, [size.width]);
 
   return (
-    <Panel title="preview">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+    <div className="window screen">
+      <div className="bar">
+        <i />
+        <i />
+        <i />
         <Segmented options={PREVIEWS} value={path} choose={setPath} label="Page to preview" />
-        <Segmented
-          options={[
-            ['desktop', 'desktop'],
-            ['phone', 'phone'],
-          ]}
-          value={device}
-          choose={setDevice}
-          label="Device"
-        />
       </div>
       <div ref={box} className="preview" style={{ height: size.height * scale }}>
         <iframe
@@ -334,151 +393,195 @@ function Preview() {
           style={{ transform: `scale(${scale})`, marginInline: scale < 1 ? 0 : 'auto' }}
         />
       </div>
+      <div className="foot">
+        <Link to={`${path}?edit`} className="rule-link">
+          write on {path}
+        </Link>
+        <Segmented
+          options={[
+            ['desktop', 'desktop'],
+            ['phone', 'phone'],
+          ]}
+          value={device}
+          choose={setDevice}
+          label="Device"
+        />
+      </div>
+    </div>
+  );
+}
+
+function Sessions({ csrf }: { csrf: string }) {
+  const signOut = useFetcher<typeof action>();
+  return (
+    <Panel title="sessions">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Confirm
+          label="sign everyone out"
+          sure="sure? everyone, you included"
+          disabled={signOut.state !== 'idle'}
+          act={() => signOut.submit({ csrf, intent: 'sign-out-everyone' }, { method: 'post' })}
+        />
+        {signOut.data && 'ok' in signOut.data && (
+          <span className="mono-sm text-live">{signOut.data.ok}</span>
+        )}
+      </div>
     </Panel>
+  );
+}
+
+function ErrorRow({
+  error,
+  csrf,
+}: {
+  error: Route.ComponentProps['loaderData']['errors'][number];
+  csrf: string;
+}) {
+  const resolve = useFetcher<typeof action>();
+  return (
+    <article className="error" data-resolved={error.resolvedAt ? '' : undefined}>
+      <strong>{error.message}</strong>
+      <span className="count">{error.count}×</span>
+      <span className="meta">
+        <span>{error.route ?? 'no route'}</span>
+        <span>{when(error.lastAt)}</span>
+        <span>{error.fingerprint}</span>
+        {error.requestId && <span>{error.requestId}</span>}
+      </span>
+      {error.resolvedAt ? (
+        <span className="mono-sm text-faint">resolved {when(error.resolvedAt)}</span>
+      ) : (
+        <button
+          type="button"
+          className="chip-button"
+          disabled={resolve.state !== 'idle'}
+          onClick={() =>
+            resolve.submit(
+              { csrf, intent: 'resolve', fingerprint: error.fingerprint },
+              { method: 'post' },
+            )
+          }
+        >
+          resolve
+        </button>
+      )}
+    </article>
   );
 }
 
 export default function AdminPage({ loaderData }: Route.ComponentProps) {
   const root = useRoot()!;
   const csrf = root.csrf ?? '';
-  const signOut = useFetcher<typeof action>();
-  const resolve = useFetcher<typeof action>();
-  const revert = useFetcher<typeof action>();
   const keys = Object.keys(SETTINGS) as SettingKey[];
+  const open = loaderData.errors.filter((error) => !error.resolvedAt);
+  const resolved = loaderData.errors.filter((error) => error.resolvedAt);
+  const jumps = [
+    ...Object.entries(AREAS),
+    ['members', `members · ${root.directory.members.length}`],
+    ['errors', `errors · ${open.length}`],
+  ];
 
   return (
-    <Page>
-      <div className="admin-layout">
-        <div className="min-w-0">
-          <PageHero crumb="/admin" title="Admin">
-            <div className="actions">
-              <Button to="/?edit" primary arrow>
-                edit the home page
+    <Page
+      rail={
+        <div className="admin-side">
+          <Preview />
+          <Sessions csrf={csrf} />
+        </div>
+      }
+    >
+      <div className="admin">
+        <PageHeader
+          path="/admin"
+          title="Admin"
+          actions={
+            <>
+              <Button to="/messages">
+                moderate{loaderData.waiting > 0 && ` · ${loaderData.waiting}`}
               </Button>
-            </div>
-          </PageHero>
-          {(Object.keys(AREAS) as Area[]).map((area) => (
-            <Section key={area} label={AREAS[area]}>
+              <Button to="/?edit" primary arrow>
+                write on the home page
+              </Button>
+            </>
+          }
+          facts={
+            <>
+              <Fact value={loaderData.waiting} label="waiting" />
+              <Fact value={open.length} label="open errors" />
+              <Fact value={root.directory.members.length} label="members" />
+            </>
+          }
+        >
+          <nav className="jumps" aria-label="Sections">
+            {jumps.map(([id, label]) => (
+              <a key={id} href={`#${id}`}>
+                {label}
+              </a>
+            ))}
+          </nav>
+        </PageHeader>
+        {(Object.keys(AREAS) as Area[]).map((area) => (
+          <div key={area} id={area}>
+            <Band title={AREAS[area]}>
               <div className="settings">
                 {keys
                   .filter((key) => SETTINGS[key].area === area)
                   .map((key) => (
-                    <SettingRow key={key} settingKey={key} csrf={csrf} />
+                    <SettingRow
+                      key={key}
+                      settingKey={key}
+                      csrf={csrf}
+                      history={loaderData.history?.key === key ? loaderData.history.versions : null}
+                    />
                   ))}
               </div>
-            </Section>
-          ))}
-          <Section label="members">
-            <div className="settings">
+            </Band>
+          </div>
+        ))}
+        <div id="members">
+          <Band title="members">
+            <div className="seats">
               {root.directory.members.map((member) => (
-                <div key={member.handle} className="setting">
-                  <div className="setting-head">
-                    <span className="setting-label">{member.name}</span>
-                    <span className="mono-sm text-faint">
+                <article key={member.handle} className="seat">
+                  <Avatar member={member} size="md" />
+                  <span className="who">
+                    <strong>{member.name}</strong>
+                    <span>
                       {member.path}
-                      {member.listed ? '' : ' · unlisted'}
+                      {!member.listed && <i>unlisted</i>}
                     </span>
-                    <span className="mono-sm ml-auto flex gap-4">
-                      <Link to={member.path} className="rule-link">
-                        view
-                      </Link>
-                      <Link to={`${member.path}/edit`} className="rule-link">
-                        edit
-                      </Link>
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Section>
-          <Section label={`messages · ${loaderData.waiting} waiting`}>
-            <Link to="/messages" className="rule-link mono-sm">
-              moderate on /messages
-            </Link>
-          </Section>
-          <Section
-            label={`errors · ${loaderData.errors.filter((error) => !error.resolvedAt).length} open`}
-          >
-            <div className="grid gap-3">
-              {loaderData.errors.length === 0 && (
-                <p className="mono-sm text-faint">No errors recorded.</p>
-              )}
-              {loaderData.errors.map((error) => (
-                <article
-                  key={error.fingerprint}
-                  className={`panel ${error.resolvedAt ? 'opacity-60' : ''}`}
-                >
-                  <div className="flex flex-wrap items-baseline justify-between gap-3">
-                    <strong className="font-semibold">{error.message}</strong>
-                    <span className="mono-sm text-faint">
-                      {error.count}× · last {error.lastAt.slice(0, 16).replace('T', ' ')}
-                    </span>
-                  </div>
-                  <p className="mono-sm mt-2 text-faint">
-                    {error.route ?? 'no route'} · request {error.requestId ?? 'none'} ·{' '}
-                    {error.fingerprint}
-                  </p>
-                  {!error.resolvedAt && (
-                    <resolve.Form method="post" className="mt-3">
-                      <input type="hidden" name="csrf" value={csrf} />
-                      <input type="hidden" name="fingerprint" value={error.fingerprint} />
-                      <button
-                        type="submit"
-                        name="intent"
-                        value="resolve"
-                        className="rule-link mono-sm"
-                      >
-                        resolve
-                      </button>
-                    </resolve.Form>
-                  )}
+                  </span>
+                  <span className="links">
+                    <Link to={member.path} className="rule-link">
+                      view
+                    </Link>
+                    <Link to={`${member.path}/edit`} className="rule-link">
+                      edit
+                    </Link>
+                  </span>
                 </article>
               ))}
             </div>
-          </Section>
+          </Band>
         </div>
-        <aside className="admin-side">
-          <Preview />
-          {loaderData.history && (
-            <Panel
-              title={`history · ${SETTINGS[loaderData.history.key].label}`}
-              link={{ to: '?', label: 'close' }}
-            >
-              <ol className="grid gap-3">
-                {loaderData.history.versions.map((version) => (
-                  <li key={version.id} className="mono-sm grid gap-1">
-                    <span className="text-faint">
-                      {version.at.slice(0, 16).replace('T', ' ')} · {version.by}
-                    </span>
-                    <code className="truncate text-muted">{JSON.stringify(version.value)}</code>
-                    <revert.Form method="post">
-                      <input type="hidden" name="csrf" value={csrf} />
-                      <input type="hidden" name="version" value={version.id} />
-                      <button type="submit" name="intent" value="revert" className="rule-link">
-                        revert to this
-                      </button>
-                    </revert.Form>
-                  </li>
-                ))}
-                {loaderData.history.versions.length === 0 && (
-                  <li className="mono-sm text-faint">Never changed; on its default.</li>
-                )}
-              </ol>
-            </Panel>
-          )}
-          <Panel title="sessions">
-            <signOut.Form method="post" className="grid gap-2">
-              <input type="hidden" name="csrf" value={csrf} />
-              <p className="text-sm text-muted">Ends every member's session, yours included.</p>
-              <button type="submit" name="intent" value="sign-out-everyone" className="btn">
-                sign everyone out
-              </button>
-              {signOut.data && 'ok' in signOut.data && (
-                <span className="mono-sm text-live">{signOut.data.ok}</span>
+        <div id="errors">
+          <Band title="errors">
+            <div className="errors">
+              {open.length === 0 && <p className="mono-sm text-faint">nothing open</p>}
+              {open.map((error) => (
+                <ErrorRow key={error.fingerprint} error={error} csrf={csrf} />
+              ))}
+              {resolved.length > 0 && (
+                <details className="resolved">
+                  <summary>resolved · {resolved.length}</summary>
+                  {resolved.map((error) => (
+                    <ErrorRow key={error.fingerprint} error={error} csrf={csrf} />
+                  ))}
+                </details>
               )}
-            </signOut.Form>
-          </Panel>
-        </aside>
+            </div>
+          </Band>
+        </div>
       </div>
     </Page>
   );

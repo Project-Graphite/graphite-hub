@@ -42,7 +42,7 @@ export function Window({ project, owner }: Props) {
   return (
     <article ref={pointer} className="window spot tilt" style={accentStyle(accent)}>
       <WindowBar project={project} />
-      <Cover name={project.name} accent={accent} image={project.coverUrl} />
+      <Cover name={project.name} seed={project.slug} accent={accent} image={project.coverUrl} />
       <div className="body">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h3>
@@ -64,9 +64,13 @@ export function Window({ project, owner }: Props) {
 }
 
 export function AccentCard({ project, owner }: Props) {
-  const spot = useSpotlight<HTMLElement>();
+  const pointer = useCardPointer<HTMLElement>();
   return (
-    <article ref={spot} className="card spot" style={accentStyle(project.accent ?? owner?.accent)}>
+    <article
+      ref={pointer}
+      className="card spot tilt"
+      style={accentStyle(project.accent ?? owner?.accent)}
+    >
       <div className="title">
         <h3>
           <Link to={project.path}>{project.name}</Link>

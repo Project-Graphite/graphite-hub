@@ -1,10 +1,13 @@
 import { data, useFetcher } from 'react-router';
 import type { Route } from './+types/messages';
-import { PageHero } from '../components/kit/page';
-import Section from '../components/Section';
+import { accentStyle, Panel } from '../components/kit/basics';
+import { Editable } from '../components/kit/Editable';
+import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
+import { day } from '../format';
 import { useRoot } from '../hub';
+import { useSpotlight } from '../motion/motion';
 import type { Message } from '../types';
 
 export const handle = { topics: ['messages'] };
@@ -50,7 +53,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 function Moderate({ message, csrf }: { message: Message; csrf: string }) {
   const fetcher = useFetcher();
   return (
-    <fetcher.Form method="post" className="mono-sm flex flex-wrap gap-4">
+    <fetcher.Form method="post" className="moderate">
       <input type="hidden" name="csrf" value={csrf} />
       <input type="hidden" name="id" value={message.id} />
       {message.publishedAt ? (
@@ -71,106 +74,113 @@ function Moderate({ message, csrf }: { message: Message; csrf: string }) {
   );
 }
 
-function Note({ message, csrf }: { message: Message; csrf?: string }) {
+function Note({ message, accent, csrf }: { message: Message; accent: string; csrf?: string }) {
+  const spot = useSpotlight<HTMLElement>();
   return (
-    <article className="panel grid gap-2">
-      <div className="mono-sm flex flex-wrap items-baseline justify-between gap-3 text-faint">
-        <span>{message.name ?? 'someone'}</span>
-        <time dateTime={message.at}>{message.at.slice(0, 10)}</time>
-      </div>
-      <p className="whitespace-pre-line text-muted">{message.body}</p>
+    <article ref={spot} className="note spot" style={accentStyle(accent)}>
+      <p>{message.body}</p>
+      <footer>
+        <span className="who">{message.name ?? 'someone'}</span>
+        <time dateTime={message.at}>{day(message.at)}</time>
+      </footer>
       {csrf && <Moderate message={message} csrf={csrf} />}
     </article>
   );
 }
 
-export default function Messages({ loaderData }: Route.ComponentProps) {
-  const root = useRoot()!;
+function Leave() {
   const leave = useFetcher<typeof action>();
   const sent = leave.data && 'sent' in leave.data;
+  return (
+    <Panel title="leave a message">
+      <Editable as="p" className="intro" setting="messages.intro" />
+      {sent ? (
+        <p className="sent">Sent. A member reads every message.</p>
+      ) : (
+        <leave.Form method="post" className="leave">
+          <input type="hidden" name="intent" value="leave" />
+          <input name="name" maxLength={60} placeholder="name" className="field" />
+          <textarea
+            name="body"
+            required
+            maxLength={LIMIT}
+            rows={4}
+            placeholder="message"
+            className="field"
+          />
+          <input
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            className="absolute -left-[9999px]"
+          />
+          <div className="foot">
+            <span className="choice">
+              <label>
+                <input type="radio" name="visibility" value="public" defaultChecked />
+                on the wall
+              </label>
+              <label>
+                <input type="radio" name="visibility" value="private" />
+                members only
+              </label>
+            </span>
+            <button type="submit" className="btn primary" disabled={leave.state !== 'idle'}>
+              send <span className="arrow">→</span>
+            </button>
+          </div>
+          {leave.data && 'reason' in leave.data && (
+            <p className="mono-sm text-danger">{leave.data.reason}</p>
+          )}
+        </leave.Form>
+      )}
+    </Panel>
+  );
+}
+
+export default function Messages({ loaderData }: Route.ComponentProps) {
+  const root = useRoot()!;
+  const { wall, queue } = loaderData;
+  const accents = root.settings['site.accents'];
+  const accentOf = (message: Message) => accents[message.id % accents.length];
   const csrf = root.viewer ? (root.csrf ?? '') : undefined;
 
   return (
-    <Page>
-      <PageHero crumb="/messages" title="Messages">
-        <p className="lede">{root.settings['messages.intro']}</p>
-      </PageHero>
-
-      <Section label="leave a message">
-        {sent ? (
-          <p className="text-live">Thank you. A member reads every message.</p>
-        ) : (
-          <leave.Form method="post" className="grid max-w-[52ch] gap-3">
-            <input type="hidden" name="intent" value="leave" />
-            <input
-              name="name"
-              maxLength={60}
-              placeholder="your name, if you like"
-              className="rounded-md border border-line bg-paper px-3 py-2 text-ink"
-            />
-            <textarea
-              name="body"
-              required
-              maxLength={LIMIT}
-              rows={5}
-              placeholder="your message"
-              className="rounded-md border border-line bg-paper px-3 py-2 text-ink"
-            />
-            <input
-              name="website"
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-              className="absolute -left-[9999px]"
-            />
-            <fieldset className="mono-sm flex flex-wrap gap-4 text-muted">
-              <label className="flex items-center gap-1.5">
-                <input type="radio" name="visibility" value="public" defaultChecked /> on the wall
-              </label>
-              <label className="flex items-center gap-1.5">
-                <input type="radio" name="visibility" value="private" /> only for the members
-              </label>
-            </fieldset>
-            <div className="flex items-center gap-4">
-              <button type="submit" className="btn primary" disabled={leave.state !== 'idle'}>
-                send <span className="arrow">→</span>
-              </button>
-              {leave.data && 'reason' in leave.data && (
-                <span className="mono-sm text-danger">{leave.data.reason}</span>
-              )}
-            </div>
-          </leave.Form>
-        )}
-      </Section>
-
-      {loaderData.queue && (
-        <Section label={`waiting · ${loaderData.queue.length}`}>
-          <div className="grid gap-3">
-            {loaderData.queue.length === 0 && (
-              <p className="mono-sm text-faint">Nothing is waiting.</p>
-            )}
-            {loaderData.queue.map((message) => (
-              <div key={message.id} className="grid gap-1">
-                <span className="mono-sm text-faint">
-                  {message.public ? 'public, off the wall' : 'private'}
-                </span>
-                <Note message={message} csrf={csrf} />
+    <Page rail={<Leave />}>
+      <PageHeader
+        path="/messages"
+        title="Messages"
+        facts={
+          <>
+            <Fact value={wall.length} label="on the wall" />
+            {queue && <Fact value={queue.length} label="waiting" />}
+          </>
+        }
+      />
+      {queue && queue.length > 0 && (
+        <section className="queue">
+          <div className="head">
+            <span>
+              <b>{queue.length}</b> waiting
+            </span>
+          </div>
+          <div className="notes">
+            {queue.map((message) => (
+              <div key={message.id} className="held">
+                <span className="kind">{message.public ? 'off the wall' : 'private'}</span>
+                <Note message={message} accent={accentOf(message)} csrf={csrf} />
               </div>
             ))}
           </div>
-        </Section>
+        </section>
       )}
-
-      <Section label={`the wall · ${loaderData.wall.length}`}>
-        <div className="band-grid two mt-0 auto-rows-auto items-start">
-          {loaderData.wall.length === 0 && (
-            <p className="mono-sm text-faint">Nothing on the wall yet.</p>
-          )}
-          {loaderData.wall.map((message) => (
-            <Note key={message.id} message={message} csrf={csrf} />
-          ))}
-        </div>
-      </Section>
+      <section className="notes wall-notes">
+        {wall.length === 0 && <p className="mono-sm text-faint">nothing on the wall yet</p>}
+        {wall.map((message) => (
+          <Note key={message.id} message={message} accent={accentOf(message)} csrf={csrf} />
+        ))}
+      </section>
     </Page>
   );
 }

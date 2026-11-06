@@ -1,12 +1,13 @@
 import Browse from '../components/Browse';
 import { Panel } from '../components/kit/basics';
+import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import Timeline from '../components/Timeline';
-import { CHANGELOG } from '../meta';
+import { day } from '../format';
 import { useHub } from '../hub';
 
 export default function Changelog() {
-  const { releases } = useHub();
+  const { projects, releases } = useHub();
   return (
     <Page
       rail={
@@ -15,13 +16,17 @@ export default function Changelog() {
         </Panel>
       }
     >
-      <section className="page-hero">
-        <p className="mono-sm m-0 mb-3 text-faint">/changelog</p>
-        <h1 className="page-title max-w-[20ch]">Changelog</h1>
-        <div className="hero-rule mt-5.5 max-w-[52ch]" />
-        <p className="mt-5.5 mb-0 max-w-[56ch] text-muted">{CHANGELOG.description}</p>
-      </section>
-
+      <PageHeader
+        path="/changelog"
+        title="Changelog"
+        facts={
+          <>
+            <Fact value={releases.length} label="releases" />
+            <Fact value={projects.length} label="projects" />
+            {releases[0] && <Fact label="latest" value={day(releases[0].date)} />}
+          </>
+        }
+      />
       <Timeline releases={releases} showProject />
     </Page>
   );

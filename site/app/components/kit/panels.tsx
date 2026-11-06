@@ -1,7 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { Link, useFetcher } from 'react-router';
+import { Link } from 'react-router';
 import { day, shortTag } from '../../format';
-import { changelogPath } from '../../model';
+import { changelogPath, releaseLine } from '../../model';
 import type { Member, Message, Project, Release, Running } from '../../types';
 import Status from '../Status';
 import { Avatar, Panel } from './basics';
@@ -80,10 +79,10 @@ export function ChangelogPanel({
                 <span className="project">{project?.name ?? release.project}</span>
                 <span className="version">
                   <strong>v{release.version}</strong>
-                  <time dateTime={release.date}>{release.date}</time>
+                  <time dateTime={release.date}>{day(release.date)}</time>
                 </span>
                 <span className="line">
-                  {release.title ?? release.summary ?? release.groups[0]?.changes[0]?.text}
+                  {releaseLine(release, project?.name ?? release.project)}
                 </span>
               </Link>
             </li>
@@ -95,39 +94,17 @@ export function ChangelogPanel({
 }
 
 export function MessagesPanel({ messages }: { messages: Message[] }) {
-  const leave = useFetcher<{ sent?: boolean; reason?: string }>();
-  const form = useRef<HTMLFormElement>(null);
-  useEffect(() => {
-    if (leave.data?.sent) {
-      form.current?.reset();
-    }
-  }, [leave.data]);
   return (
     <Panel title="the wall" link={{ to: '/messages', label: 'all messages' }}>
-      <leave.Form ref={form} method="post" action="/messages" className="wall-form">
-        <input type="hidden" name="intent" value="leave" />
-        <input type="hidden" name="visibility" value="public" />
-        <textarea name="body" required maxLength={1000} rows={2} placeholder="write on the wall" />
-        <input
-          name="website"
-          tabIndex={-1}
-          autoComplete="off"
-          aria-hidden="true"
-          className="absolute -left-[9999px]"
-        />
-        <div>
-          <input name="name" maxLength={60} placeholder="name" aria-label="your name" />
-          <button type="submit" disabled={leave.state !== 'idle'}>
-            post
-          </button>
-        </div>
-        {leave.data?.reason && <p className="mono-sm text-danger">{leave.data.reason}</p>}
-      </leave.Form>
       <ol className="wall">
+        {messages.length === 0 && <li className="mono-sm text-faint">nothing on the wall yet</li>}
         {messages.map((message) => (
           <li key={message.id}>
-            <span className="mono-sm text-faint">{message.name ?? 'someone'}</span>
-            <span className="line-clamp-3 text-sm text-muted">{message.body}</span>
+            <span className="who">
+              <span>{message.name ?? 'someone'}</span>
+              <time dateTime={message.at}>{day(message.at)}</time>
+            </span>
+            <span className="what">{message.body}</span>
           </li>
         ))}
       </ol>

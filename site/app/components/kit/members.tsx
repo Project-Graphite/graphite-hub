@@ -6,38 +6,15 @@ import { accentStyle, Avatar } from './basics';
 
 function MemberRow({ member, projects }: { member: Member; projects: number }) {
   const spot = useSpotlight<HTMLAnchorElement>();
-  const stack = member.stack.flatMap((group) => group.items).slice(0, 7);
   return (
     <Link ref={spot} to={member.path} className="spot" style={accentStyle(member.accent)}>
-      <Avatar member={member} />
+      <Avatar member={member} size="md" />
       <span>
         <strong>{member.name}</strong>
         <span className="headline">{member.headline ?? `@${member.github}`}</span>
       </span>
-      <span className="links">
-        {member.links.map((link) => (
-          <i key={link.url}>{link.label}</i>
-        ))}
-      </span>
-      <span className="more">
-        {member.bio && <p>{member.bio}</p>}
-        <span className="facts">
-          <span>
-            <b>{projects}</b> {projects === 1 ? 'project' : 'projects'}
-          </span>
-          {member.joined && (
-            <span>
-              on GitHub since <b>{member.joined}</b>
-            </span>
-          )}
-        </span>
-        {stack.length > 0 && (
-          <span className="stack">
-            {stack.map((item) => (
-              <i key={item}>{item}</i>
-            ))}
-          </span>
-        )}
+      <span className="count" aria-label={`${projects} projects`}>
+        {projects}
       </span>
     </Link>
   );

@@ -1,0 +1,55 @@
+.counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+.counter .n {
+  font-size: 1.7rem;
+  font-weight: 640;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.counter .l {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--color-faint);
+  margin-top: 0.25rem;
+}
+
+.pulse {
+  margin-top: 1.75rem;
+  border-top: 1px solid var(--color-line-soft);
+}
+.pulse .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding-right: 0.25rem;
+}
+.pulse .window-count {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-faint);
+  white-space: nowrap;
+}
+.pulse .window-count b {
+  font-weight: 600;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+.pulse .timeline {
+  margin-top: 0.25rem;
+  padding-bottom: 1.5rem;
+}
+.pulse:not(:has(.timeline)) {
+  border-bottom: 1px solid var(--color-line-soft);
+}
+@media (max-width: 640px) {
+  .pulse .window-count {
+    display: none;
+  }
+}

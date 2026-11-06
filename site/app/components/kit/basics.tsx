@@ -1,6 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Link } from 'react-router';
+import { useFolded } from '../../folds';
 import { useMagnetic } from '../../motion/motion';
+import { Art } from './art';
 
 export const accentStyle = (accent: string | undefined) =>
   ({ '--accent': accent }) as CSSProperties;
@@ -21,16 +23,18 @@ export function Avatar({ member, size }: AvatarProps) {
 
 export function Cover({
   name,
+  seed = name,
   accent,
   image,
 }: {
   name: string;
+  seed?: string;
   accent: string;
   image?: string | null;
 }) {
   return (
     <div className="cover" style={accentStyle(accent)}>
-      {image ? <img src={image} alt="" loading="lazy" /> : <span>{name.slice(0, 2)}</span>}
+      {image ? <img src={image} alt="" loading="lazy" /> : <Art seed={seed} />}
     </div>
   );
 }
@@ -75,16 +79,15 @@ export function Band({ title, description, more, children }: BandProps) {
       <div className="band-head">
         <h2>{title}</h2>
         <div className="rule" />
+        {more && (
+          <Link to={more.to} className="more">
+            {more.label}
+            <span className="arrow">→</span>
+          </Link>
+        )}
         {description}
       </div>
       {children}
-      {more && (
-        <div className="band-more">
-          <Button to={more.to} arrow>
-            {more.label}
-          </Button>
-        </div>
-      )}
     </section>
   );
 }
@@ -98,17 +101,40 @@ export function Panel({
   link?: { to: string; label: string };
   children: ReactNode;
 }) {
+  const [folded, toggle] = useFolded(title);
   return (
-    <aside className="panel">
+    <aside className="panel" data-folded={folded || undefined}>
       <div className="panel-head">
-        <h2>{title}</h2>
+        <h2>
+          <Fold open={!folded} toggle={toggle}>
+            {title}
+          </Fold>
+        </h2>
         {link && (
           <Link to={link.to} className="rule-link mono-sm">
             {link.label}
           </Link>
         )}
       </div>
-      {children}
+      <div className="panel-body" hidden={folded}>
+        {children}
+      </div>
     </aside>
+  );
+}
+
+export function Fold({
+  open,
+  toggle,
+  children,
+}: {
+  open: boolean;
+  toggle: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button type="button" className="fold" aria-expanded={open} onClick={toggle}>
+      {children}
+    </button>
   );
 }

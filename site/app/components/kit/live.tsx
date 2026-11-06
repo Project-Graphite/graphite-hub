@@ -1,11 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
+import { useFolded } from '../../folds';
 import { clock, day, describe } from '../../format';
 import { useLiveMessages } from '../../live';
+import { releaseLine } from '../../model';
 import { useCountUp, useCycle } from '../../motion/motion';
 import type { COUNTERS } from '../../settings';
 import type { ConsoleLine, Counts, Release } from '../../types';
 import Status from '../Status';
+import { Fold } from './basics';
 
 const COUNTER_LABEL: Record<(typeof COUNTERS)[number], string> = {
   members: 'members',
@@ -73,118 +76,110 @@ interface TimelineProps {
   nameOf: (release: Release) => string;
   today: string;
   days: number;
-  width?: number;
 }
 
-export function ReleaseTimeline({
-  releases,
-  accentOf,
-  nameOf,
-  today,
-  days,
-  width = 1000,
-}: TimelineProps) {
-  const [tip, setTip] = useState<{ release: Release; left: number; top: number } | null>(null);
+const DAY = 86_400_000;
+
+export function ReleaseTimeline({ releases, accentOf, nameOf, today, days }: TimelineProps) {
+  const [tip, setTip] = useState<{ date: string; releases: Release[] } | null>(null);
   const end = Date.parse(today);
-  const start = end - days * 86_400_000;
-  const right = width - 20;
-  const x = (iso: string) => 20 + ((Date.parse(iso) - start) / (end - start)) * (right - 20);
+  const start = end - days * DAY;
+  const at = (iso: string) => ((Date.parse(iso) - start) / (end - start)) * 100;
   const ticks = useMemo(() => {
-    const weeks = Math.ceil(days / 7 / ((width - 40) / 70));
+    const weeks = Math.ceil(days / 70);
     return Array.from(
       { length: Math.floor(days / 7 / weeks) + 1 },
-      (_, tick) => new Date(start + tick * weeks * 7 * 86_400_000),
+      (_, tick) => new Date(start + tick * weeks * 7 * DAY),
     );
-  }, [start, days, width]);
-  const shown = releases.filter((release) => Date.parse(release.date) >= start);
-  const size = (release: Release) =>
-    4 + Math.sqrt(release.groups.reduce((sum, group) => sum + group.changes.length, 0)) * 2.2;
+  }, [start, days]);
+  const byDay = useMemo(() => {
+    const groups = new Map<string, Release[]>();
+    for (const release of releases) {
+      const date = Date.parse(release.date);
+      if (date >= start && date <= end) {
+        groups.set(release.date, [...(groups.get(release.date) ?? []), release]);
+      }
+    }
+    return [...groups.entries()];
+  }, [releases, start, end]);
+  const size = (group: Release[]) =>
+    7 +
+    Math.sqrt(
+      group.reduce(
+        (sum, release) =>
+          sum + release.groups.reduce((total, changes) => total + changes.changes.length, 0),
+        0,
+      ),
+    ) *
+      2.2;
+  const label = (release: Release) => `${nameOf(release)} v${release.version}`;
 
   return (
     <div className="timeline">
-      <svg
-        viewBox={`0 0 ${width} 110`}
-        role="img"
+      <div
+        className="track"
+        role="group"
         aria-label={`Releases over the last ${days} days`}
         onPointerLeave={() => setTip(null)}
       >
-        <line x1="20" y1="70" x2={right} y2="70" stroke="var(--color-line)" />
         {ticks.map((tick) => (
-          <g key={tick.toISOString()}>
-            <line
-              x1={x(tick.toISOString())}
-              y1="66"
-              x2={x(tick.toISOString())}
-              y2="74"
-              stroke="var(--color-line)"
-            />
-            <text
-              x={x(tick.toISOString())}
-              y="96"
-              textAnchor="middle"
-              fontFamily="var(--font-mono)"
-              fontSize="11"
-              fill="var(--color-faint)"
-            >
-              {day(tick.toISOString())}
-            </text>
-          </g>
+          <span
+            key={tick.toISOString()}
+            className="tick"
+            style={{ left: `${at(tick.toISOString())}%` }}
+          >
+            <span>{day(tick.toISOString())}</span>
+          </span>
         ))}
-        <line
-          x1={right}
-          y1="20"
-          x2={right}
-          y2="70"
-          stroke="var(--color-live)"
-          strokeDasharray="3 3"
-        />
-        <text
-          x={right}
-          y="14"
-          textAnchor="end"
-          fontFamily="var(--font-mono)"
-          fontSize="11"
-          fill="var(--color-live)"
-        >
-          today
-        </text>
-        {shown.map((release) => (
-          <circle
-            key={release.id}
-            cx={x(release.date)}
-            cy="70"
-            r={size(release).toFixed(1)}
-            fill={accentOf(release)}
-            fillOpacity=".55"
-            stroke={accentOf(release)}
-            onPointerEnter={(event) => {
-              const svg = event.currentTarget.ownerSVGElement!.getBoundingClientRect();
-              const dot = event.currentTarget.getBoundingClientRect();
-              setTip({
-                release,
-                left: dot.left + dot.width / 2 - svg.left,
-                top: dot.top - svg.top,
-              });
-            }}
+        <span className="today" />
+
+        {byDay.map(([date, group]) => (
+          <button
+            key={date}
+            type="button"
+            className="dot"
+            aria-label={`${group.map(label).join(', ')}, ${date}`}
+            style={
+              {
+                left: `${at(date)}%`,
+                '--size': `${size(group).toFixed(1)}px`,
+                '--accent': accentOf(group[0]),
+              } as CSSProperties
+            }
+            onPointerEnter={() => setTip({ date, releases: group })}
+            onFocus={() => setTip({ date, releases: group })}
+            onBlur={() => setTip(null)}
           />
         ))}
-      </svg>
-      {tip && (
-        <div className="tip" style={{ left: tip.left, top: tip.top }}>
-          <strong>
-            {nameOf(tip.release)} v{tip.release.version}
-          </strong>
-          <span className="d">{tip.release.date}</span>
-          <span className="l">
-            {tip.release.title ?? tip.release.summary ?? tip.release.groups[0]?.changes[0]?.text}
-          </span>
-        </div>
-      )}
+        {tip && (
+          <div
+            className="tip"
+            data-align={at(tip.date) < 20 ? 'start' : at(tip.date) > 80 ? 'end' : 'center'}
+            style={{ left: `${at(tip.date)}%` }}
+          >
+            <strong>
+              {tip.releases.length === 1
+                ? label(tip.releases[0])
+                : `${tip.releases.length} releases`}
+            </strong>
+            <span className="d">{tip.date}</span>
+            <span className="l">
+              {tip.releases.length === 1
+                ? releaseLine(tip.releases[0], nameOf(tip.releases[0]))
+                : [
+                    ...tip.releases.slice(0, 4).map(label),
+                    ...(tip.releases.length > 4 ? [`${tip.releases.length - 4} more`] : []),
+                  ].join(' · ')}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 const FILTERS = ['all', 'deploy', 'release', 'post', 'sync', 'uptime'];
+const FILTER_LABEL: Record<string, string> = { uptime: 'up' };
 
 export function Console({
   initial,
@@ -200,6 +195,8 @@ export function Console({
   const [arrived, setArrived] = useState<ConsoleLine[]>([]);
   const [filter, setFilter] = useState('all');
   const [open, setOpen] = useState<string | null>(null);
+  const [folded, toggle] = useFolded('console');
+  const box = useRef<HTMLDivElement>(null);
 
   useLiveMessages((message) => {
     const line = message.console;
@@ -227,12 +224,19 @@ export function Console({
         }).length,
     );
   }, [lines]);
+  useEffect(() => {
+    const element = box.current;
+    if (element) {
+      element.scrollTop = element.scrollHeight;
+    }
+  }, [lines, filter, folded]);
 
   return (
-    <aside className="console">
+    <aside className="console" data-folded={folded || undefined}>
       <div className="top">
-        <Status status="live" />
-        <span>console</span>
+        <Fold open={!folded} toggle={toggle}>
+          <Status status="live" />
+        </Fold>
         <span className="rate" aria-hidden="true">
           {hours.map((count, hour) => (
             <i
@@ -248,7 +252,7 @@ export function Console({
           </Link>
         )}
       </div>
-      <div className="filters">
+      <div className="filters" hidden={folded}>
         {FILTERS.map((kind) => (
           <button
             key={kind}
@@ -256,11 +260,11 @@ export function Console({
             aria-pressed={filter === kind}
             onClick={() => setFilter(kind)}
           >
-            {kind}
+            {FILTER_LABEL[kind] ?? kind}
           </button>
         ))}
       </div>
-      <div className={`lines ${tall ? 'tall' : ''}`}>
+      <div ref={box} className={`lines ${tall ? 'tall' : ''}`} hidden={folded}>
         {lines
           .filter((line) => filter === 'all' || line.kind === filter)
           .map((line) => (

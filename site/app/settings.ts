@@ -102,6 +102,7 @@ export const NAV = [
   'github',
 ] as const;
 export const MOTION = [
+  'backdrop',
   'field',
   'mark',
   'tilt',

@@ -1,7 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useRoot } from '../../hub';
 import { search } from '../../search';
+import { hitKeys, HitRow } from './directory';
+
+const OPEN = 'graphite:search';
+
+const JUMPS = [
+  { to: '/members', label: 'members' },
+  { to: '/epics', label: 'epics' },
+  { to: '/projects', label: 'projects' },
+  { to: '/changelog', label: 'changelog' },
+  { to: '/messages', label: 'messages' },
+  { to: '/status', label: 'status' },
+];
+
+export const openSearch = () => dispatchEvent(new Event(OPEN));
 
 export function Palette() {
   const root = useRoot();
@@ -9,9 +23,14 @@ export function Palette() {
   const dialog = useRef<HTMLDialogElement>(null);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
-  const hits = root ? search(root.directory, query, 12) : [];
+  const hits = root ? search(root.directory, query, 16) : [];
 
   useEffect(() => {
+    const show = () => {
+      if (!dialog.current?.open) {
+        dialog.current?.showModal();
+      }
+    };
     const open = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (
@@ -21,16 +40,24 @@ export function Palette() {
         !target.closest('input, textarea, select, [contenteditable]')
       ) {
         event.preventDefault();
-        dialog.current?.showModal();
+        show();
       }
     };
     addEventListener('keydown', open);
-    return () => removeEventListener('keydown', open);
+    addEventListener(OPEN, show);
+    return () => {
+      removeEventListener('keydown', open);
+      removeEventListener(OPEN, show);
+    };
   }, []);
 
-  const go = (to: string) => {
+  const close = () => {
     dialog.current?.close();
     setQuery('');
+    setActive(0);
+  };
+  const go = (to: string) => {
+    close();
     navigate(to);
   };
 
@@ -39,50 +66,57 @@ export function Palette() {
       ref={dialog}
       aria-label="Search"
       className="palette"
-      onClick={(event) => event.target === dialog.current && dialog.current?.close()}
+      onClick={(event) => event.target === dialog.current && close()}
     >
-      <input
-        autoFocus
-        className="w-full border-0 border-b border-line-soft bg-transparent px-4 py-3 text-ink outline-none"
-        placeholder="Search members, projects and releases"
-        value={query}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setActive(0);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'ArrowDown') {
-            event.preventDefault();
-            setActive((index) => Math.min(index + 1, hits.length - 1));
-          } else if (event.key === 'ArrowUp') {
-            event.preventDefault();
-            setActive((index) => Math.max(index - 1, 0));
-          } else if (event.key === 'Enter' && hits[active]) {
-            go(hits[active].to);
+      <div className="search-box">
+        <input
+          autoFocus
+          autoComplete="off"
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setActive(0);
+          }}
+          onKeyDown={(event) =>
+            hitKeys(hits.length, active, setActive, () => go(hits[active].to))(event)
           }
-        }}
-      />
-      <ul role="listbox" className="max-h-96 overflow-y-auto p-2">
-        {hits.map((hit, index) => (
-          <li key={`${hit.kind}:${hit.to}`} role="option" aria-selected={index === active}>
-            <button
-              type="button"
-              className={`grid w-full gap-0.5 rounded-md px-3 py-2 text-left ${index === active ? 'bg-paper' : ''}`}
-              onMouseEnter={() => setActive(index)}
-              onClick={() => go(hit.to)}
-            >
-              <span className="flex items-baseline justify-between gap-3">
-                <strong className="font-semibold">{hit.title}</strong>
-                <span className="mono-sm text-faint">{hit.kind}</span>
-              </span>
-              <span className="truncate text-sm text-muted">{hit.detail}</span>
-            </button>
-          </li>
-        ))}
-        {query && hits.length === 0 && (
-          <li className="mono-sm px-3 py-2 text-faint">Nothing matches “{query}”.</li>
-        )}
-      </ul>
+        />
+        <button type="button" className="kbd" onClick={close}>
+          esc
+        </button>
+      </div>
+      {query.trim() ? (
+        <div className="hits">
+          {root &&
+            hits.map((hit, index) => (
+              <HitRow
+                key={`${hit.kind}:${hit.to}`}
+                hit={hit}
+                needle={query}
+                directory={root.directory}
+                active={index === active}
+                onHover={() => setActive(index)}
+                onPick={close}
+              />
+            ))}
+          {hits.length === 0 && <p className="none">nothing matches “{query.trim()}”</p>}
+          <Link
+            to={`/search?q=${encodeURIComponent(query.trim())}`}
+            className="all"
+            onClick={close}
+          >
+            every match →
+          </Link>
+        </div>
+      ) : (
+        <div className="jumps">
+          {JUMPS.map((jump) => (
+            <Link key={jump.to} to={jump.to} onClick={close}>
+              {jump.label}
+            </Link>
+          ))}
+        </div>
+      )}
     </dialog>
   );
 }

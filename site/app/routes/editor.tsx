@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { data, Link, redirect, useFetcher, useSearchParams } from 'react-router';
 import type { Route } from './+types/editor';
-import { Panel } from '../components/kit/basics';
+import { accentStyle, Avatar } from '../components/kit/basics';
 import { creditedProjects } from '../components/kit/blocks';
-import { Segmented, Sortable, Switch } from '../components/kit/controls';
+import { Confirm, Segmented, Sortable, Switch } from '../components/kit/controls';
 import { Page } from '../components/Shell';
 import { hubContext, type Hub } from '../context';
 import { useHub, useRoot } from '../hub';
@@ -164,6 +164,34 @@ interface Draft {
 
 type Result = { ok?: boolean; error?: string; upload?: string; kind?: UploadKind };
 
+const when = (iso: string) => iso.slice(0, 16).replace('T', ' ');
+
+function locate(id: string) {
+  const target = document.getElementById(id);
+  if (!target) {
+    return;
+  }
+  target.scrollIntoView({ block: 'start' });
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    target.animate(
+      [
+        { outline: '1px solid var(--accent)', outlineOffset: '12px' },
+        { outline: '1px solid transparent', outlineOffset: '12px' },
+      ],
+      { duration: 1400, easing: 'ease-out' },
+    );
+  }
+}
+
+function SaveState({ state, error }: { state: 'saving' | 'saved' | 'error'; error?: string }) {
+  return (
+    <span className="setting-state" data-state={state}>
+      <i />
+      {state === 'error' ? error : state}
+    </span>
+  );
+}
+
 function UploadButton({
   kind,
   label,
@@ -218,12 +246,28 @@ function UploadButton({
   );
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Field({
+  label,
+  row = false,
+  children,
+}: {
+  label: string;
+  row?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <label className="editor-field">
+    <label className="editor-field" data-row={row || undefined}>
       <span>{label}</span>
       {children}
     </label>
+  );
+}
+
+function Thumb({ src, round = false }: { src: string | null; round?: boolean }) {
+  return src ? (
+    <img className={`thumb ${round ? 'round' : ''}`} src={src} alt="" />
+  ) : (
+    <span className={`thumb empty ${round ? 'round' : ''}`} />
   );
 }
 
@@ -294,12 +338,12 @@ function BlockEditor({
           ))}
           <button
             type="button"
-            className="chip-button"
+            className="chip-button add"
             onClick={() =>
               change({ ...block, groups: [...block.groups, { group: '', items: [] }] })
             }
           >
-            add a group
+            + group
           </button>
         </div>
       );
@@ -350,12 +394,12 @@ function BlockEditor({
           ))}
           <button
             type="button"
-            className="chip-button"
+            className="chip-button add"
             onClick={() =>
               change({ ...block, links: [...block.links, { label: '', url: 'https://' }] })
             }
           >
-            add a link
+            + link
           </button>
         </div>
       );
@@ -399,7 +443,7 @@ function BlockEditor({
         <div className="grid gap-3">
           {block.images.map((image, index) => (
             <div key={image.upload} className="editor-row">
-              <img className="thumb" src={uploadUrl(image.upload, 'gallery', 'small')} alt="" />
+              <Thumb src={uploadUrl(image.upload, 'gallery', 'small')} />
               <input
                 className="field grow"
                 value={image.caption}
@@ -428,7 +472,7 @@ function BlockEditor({
           ))}
           <UploadButton
             kind="gallery"
-            label="add an image"
+            label="+ image"
             csrf={csrf}
             uploaded={(upload) =>
               change({ ...block, images: [...block.images, { upload, caption: '' }] })
@@ -495,6 +539,8 @@ function BlockEditor({
   }
 }
 
+const FIXED: BlockType[] = ['bio', 'github', 'timeline', 'short-links', 'writing'];
+
 function PageTab({
   blocks,
   change,
@@ -518,24 +564,18 @@ function PageTab({
         reorder={change}
       >
         {(block) => {
-          const editor = (
-            <BlockEditor
-              block={block}
-              csrf={csrf}
-              credited={credited}
-              change={(next) =>
-                change(blocks.map((other) => (other.id === block.id ? next : other)))
-              }
-            />
-          );
+          const fixed = FIXED.includes(block.type);
           return (
-            <div className="block-row">
+            <div className="block-row" data-open={open === block.id || undefined}>
               <div className="block-head">
                 <button
                   type="button"
                   className="name"
-                  aria-expanded={open === block.id}
-                  onClick={() => setOpen(open === block.id ? null : block.id)}
+                  aria-expanded={fixed ? undefined : open === block.id}
+                  onClick={() => {
+                    setOpen(open === block.id || fixed ? null : block.id);
+                    locate(block.id);
+                  }}
                 >
                   {block.type === 'text' && block.title ? block.title : BLOCK_LABEL[block.type]}
                 </button>
@@ -548,12 +588,23 @@ function PageTab({
                   ×
                 </button>
               </div>
-              {open === block.id && editor}
+              {open === block.id && !fixed && (
+                <div className="block-body">
+                  <BlockEditor
+                    block={block}
+                    csrf={csrf}
+                    credited={credited}
+                    change={(next) =>
+                      change(blocks.map((other) => (other.id === block.id ? next : other)))
+                    }
+                  />
+                </div>
+              )}
             </div>
           );
         }}
       </Sortable>
-      <div className="chips">
+      <div className="chips add">
         {addable.map((type) => (
           <button
             key={type}
@@ -590,7 +641,7 @@ function ProfileTab({
     <div className="grid gap-5">
       <Field label="alias">
         <div className="editor-row">
-          <span className="text-faint">/</span>
+          <span className="mono-sm text-faint">/</span>
           <input
             className="field grow"
             value={alias}
@@ -634,7 +685,7 @@ function ProfileTab({
       </Field>
       <Field label="avatar">
         <div className="editor-row">
-          <img className="thumb round" src={member.avatarUrl} alt="" />
+          <Thumb src={member.avatarUrl} round />
           <UploadButton
             kind="avatar"
             label="upload"
@@ -647,16 +698,14 @@ function ProfileTab({
               className="chip-button"
               onClick={() => change({ ...fields, avatarUpload: null }, 0)}
             >
-              use GitHub's
+              use GitHub&apos;s
             </button>
           )}
         </div>
       </Field>
       <Field label="cover">
         <div className="editor-row">
-          {fields.coverUpload && (
-            <img className="thumb" src={uploadUrl(fields.coverUpload, 'cover', 'small')} alt="" />
-          )}
+          <Thumb src={fields.coverUpload && uploadUrl(fields.coverUpload, 'cover', 'small')} />
           <UploadButton
             kind="cover"
             label="upload"
@@ -674,26 +723,22 @@ function ProfileTab({
           )}
         </div>
       </Field>
-      <Field label="listed on the site">
+      <Field label="listed on the site" row>
         <Switch
           on={fields.listed}
           label="Listed on the site"
           toggle={() => change({ ...fields, listed: !fields.listed }, 0)}
         />
       </Field>
-      <reset.Form
-        method="post"
-        onSubmit={(event) => {
-          if (!confirm('Reset the page to the default blocks and GitHub images?')) {
-            event.preventDefault();
-          }
-        }}
-      >
-        <input type="hidden" name="csrf" value={csrf} />
-        <button type="submit" name="intent" value="reset" className="chip-button">
-          reset to GitHub
-        </button>
-      </reset.Form>
+      <div className="editor-row">
+        <Confirm
+          label="reset to GitHub"
+          sure="sure? blocks and images go"
+          disabled={reset.state !== 'idle'}
+          act={() => reset.submit({ csrf, intent: 'reset' }, { method: 'post' })}
+        />
+        {reset.data?.error && <span className="mono-sm text-danger">{reset.data.error}</span>}
+      </div>
     </div>
   );
 }
@@ -702,50 +747,61 @@ function LinksTab({
   links,
   csrf,
   alias,
+  chooseAlias,
 }: {
   links: ShortLink[];
   csrf: string;
   alias: string | null;
+  chooseAlias: () => void;
 }) {
   const add = useFetcher<Result>();
   const edit = useFetcher<Result>();
+  if (!alias) {
+    return (
+      <button type="button" className="chip-button" onClick={chooseAlias}>
+        set an alias first
+      </button>
+    );
+  }
   return (
     <div className="grid gap-5">
-      {!alias && <p className="text-sm text-muted">Short links work once you choose an alias.</p>}
-      <ul className="grid gap-2">
-        {links.map((link) => (
-          <li key={link.name} className="editor-row">
-            <span className="mono-sm grow">
-              /{alias ?? '…'}/go/{link.name}
-              <span className="block truncate text-faint">{link.url}</span>
-            </span>
-            <Switch
-              on={link.listed}
-              label={`Show ${link.name} on the page`}
-              toggle={() =>
-                edit.submit(
-                  { csrf, intent: 'link', ...link, listed: String(!link.listed) },
-                  { method: 'post' },
-                )
-              }
-            />
-            <button
-              type="button"
-              className="remove"
-              aria-label={`Remove ${link.name}`}
-              onClick={() =>
-                edit.submit({ csrf, intent: 'unlink', name: link.name }, { method: 'post' })
-              }
-            >
-              ×
-            </button>
-          </li>
-        ))}
-      </ul>
+      {links.length > 0 && (
+        <ul className="short-links">
+          {links.map((link) => (
+            <li key={link.name} className="editor-row" data-off={!link.listed || undefined}>
+              <span className="mono-sm grow">
+                /{alias}/go/{link.name}
+                <span className="block truncate text-faint">{link.url}</span>
+              </span>
+              <Switch
+                on={link.listed}
+                label={`Show ${link.name} on the page`}
+                toggle={() =>
+                  edit.submit(
+                    { csrf, intent: 'link', ...link, listed: String(!link.listed) },
+                    { method: 'post' },
+                  )
+                }
+              />
+              <button
+                type="button"
+                className="remove"
+                aria-label={`Remove ${link.name}`}
+                onClick={() =>
+                  edit.submit({ csrf, intent: 'unlink', name: link.name }, { method: 'post' })
+                }
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
       <add.Form method="post" className="grid gap-2" key={links.length}>
         <input type="hidden" name="csrf" value={csrf} />
         <input type="hidden" name="intent" value="link" />
         <div className="editor-row">
+          <span className="mono-sm text-faint">/{alias}/go/</span>
           <input className="field" name="name" placeholder="name" aria-label="Name" required />
           <input
             className="field grow"
@@ -754,7 +810,7 @@ function LinksTab({
             aria-label="Address"
             required
           />
-          <button type="submit" className="chip-button">
+          <button type="submit" className="chip-button" disabled={add.state !== 'idle'}>
             add
           </button>
         </div>
@@ -775,17 +831,20 @@ function HistoryTab({
 }) {
   const revert = useFetcher<Result>();
   return (
-    <ol className="grid gap-3">
-      {history.length === 0 && <li className="mono-sm text-faint">No saves yet.</li>}
+    <ol className="versions">
+      {history.length === 0 && <li className="text-faint">no saves yet</li>}
       {history.map((version, index) => (
-        <li key={version.id} className="mono-sm flex items-baseline justify-between gap-3">
-          <span className="text-faint">
-            {version.at.slice(0, 16).replace('T', ' ')} · {version.by}
+        <li key={version.id}>
+          <span className="when">
+            {when(version.at)} · {version.by}
           </span>
-          {index > 0 && (
+          {index === 0 ? (
+            <span className="text-faint">current</span>
+          ) : (
             <button
               type="button"
               className="rule-link"
+              disabled={revert.state !== 'idle'}
               onClick={() =>
                 revert.submit(
                   { csrf, intent: 'revert', version: String(version.id) },
@@ -842,17 +901,17 @@ function ProjectEditor({
     }, delay);
   };
   const state = dirty || save.state !== 'idle' ? 'saving' : save.data?.error ? 'error' : 'saved';
+  const unchanged = JSON.stringify(registry) === JSON.stringify(project.registry);
 
   return (
     <div className="grid gap-5">
-      <span className="setting-state" data-state={state}>
-        {state === 'error' ? save.data?.error : state}
-      </span>
+      <div className="editor-row">
+        <span className="mono-sm grow text-faint">on the site</span>
+        <SaveState state={state} error={save.data?.error} />
+      </div>
       <Field label="cover">
         <div className="editor-row">
-          {draft.coverUpload && (
-            <img className="thumb" src={uploadUrl(draft.coverUpload, 'cover', 'small')} alt="" />
-          )}
+          <Thumb src={draft.coverUpload && uploadUrl(draft.coverUpload, 'cover', 'small')} />
           <UploadButton
             kind="cover"
             label="upload"
@@ -924,13 +983,11 @@ function ProjectEditor({
           }
         />
         <div className="editor-row">
-          {draft.feature.screenshot && (
-            <img
-              className="thumb"
-              src={uploadUrl(draft.feature.screenshot, 'screenshot', 'small')}
-              alt=""
-            />
-          )}
+          <Thumb
+            src={
+              draft.feature.screenshot && uploadUrl(draft.feature.screenshot, 'screenshot', 'small')
+            }
+          />
           <UploadButton
             kind="screenshot"
             label="screenshot"
@@ -954,7 +1011,10 @@ function ProjectEditor({
       </Field>
 
       <div className="registry">
-        <span className="mono-sm text-faint">registry · .graphite.yml</span>
+        <div className="editor-row">
+          <span className="mono-sm grow text-faint">in the repository · .graphite.yml</span>
+          {!unchanged && <SaveState state="saving" />}
+        </div>
         <Field label="name">
           <input
             className="field"
@@ -994,29 +1054,25 @@ function ProjectEditor({
             choose={(status) => setRegistry({ ...registry, status })}
           />
         </Field>
-        <div className="editor-row">
-          <span className="mono-sm grow text-faint">pinned on the home page</span>
+        <Field label="pinned on the home page" row>
           <Switch
             on={registry.pinned}
             label="Pinned"
             toggle={() => setRegistry({ ...registry, pinned: !registry.pinned })}
           />
-        </div>
-        <div className="editor-row">
-          <span className="mono-sm grow text-faint">listed on the site</span>
+        </Field>
+        <Field label="listed on the site" row>
           <Switch
             on={registry.listed}
             label="Listed"
             toggle={() => setRegistry({ ...registry, listed: !registry.listed })}
           />
-        </div>
+        </Field>
         <div className="editor-row">
           <button
             type="button"
             className="chip-button"
-            disabled={
-              send.state !== 'idle' || JSON.stringify(registry) === JSON.stringify(project.registry)
-            }
+            disabled={send.state !== 'idle' || unchanged}
             onClick={() =>
               send.submit(
                 { csrf, intent: 'registry', slug: project.slug, value: JSON.stringify(registry) },
@@ -1059,7 +1115,7 @@ function ProjectsTab({
   );
   const project = projects.find((candidate) => candidate.slug === slug);
   if (!project) {
-    return <p className="text-sm text-muted">No projects are maintained by this member.</p>;
+    return <p className="mono-sm text-faint">no projects yet</p>;
   }
   return (
     <div className="grid gap-5">
@@ -1146,40 +1202,34 @@ export default function Editor({ loaderData }: Route.ComponentProps) {
     coverUrl: draft.fields.coverUpload ? uploadUrl(draft.fields.coverUpload, 'cover') : null,
   };
   const credited = creditedProjects(hub, member).map(({ slug, name }) => ({ slug, name }));
-  const state = dirty || save.state !== 'idle' ? 'saving' : save.data?.error ? 'error' : null;
+  const state = dirty || save.state !== 'idle' ? 'saving' : save.data?.error ? 'error' : 'saved';
 
   return (
-    <Page>
-      <div className="editor-layout">
-        <div className="editor-preview" aria-label="Live page">
-          <MemberView
-            member={shown}
-            profile={{
-              bio: draft.fields.bio,
-              blocks: draft.blocks,
-              shortLinks: loaderData.shortLinks.filter((link) => link.listed),
-            }}
-            today={loaderData.today}
-          />
-        </div>
-        <aside className="editor-side">
-          <Panel title={`editing ${member.path}`} link={{ to: member.path, label: 'view page' }}>
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <Segmented label="Section" options={TABS} value={tab} choose={setTab} />
-              <span className="flex items-center gap-3">
-                <span className="setting-state" data-state={state ?? 'saved'}>
-                  {state === 'error' ? save.data?.error : (state ?? 'saved')}
-                </span>
-                <button
-                  type="button"
-                  className="chip-button"
-                  disabled={loaderData.history.length < 2 || undo.state !== 'idle'}
-                  onClick={() => undo.submit({ csrf, intent: 'undo' }, { method: 'post' })}
-                >
-                  undo
-                </button>
-              </span>
-            </div>
+    <Page
+      rail={
+        <aside className="inspector" style={accentStyle(shown.accent)}>
+          <div className="inspector-head">
+            <Avatar member={shown} size="sm" />
+            <span className="who">
+              <strong>{member.name}</strong>
+              <Link to={member.path} className="hover:text-ink">
+                {member.path} ↗
+              </Link>
+            </span>
+            <SaveState state={state} error={save.data?.error} />
+            <button
+              type="button"
+              className="chip-button"
+              disabled={loaderData.history.length < 2 || undo.state !== 'idle'}
+              onClick={() => undo.submit({ csrf, intent: 'undo' }, { method: 'post' })}
+            >
+              undo
+            </button>
+          </div>
+          <div className="tabs">
+            <Segmented label="Section" options={TABS} value={tab} choose={setTab} />
+          </div>
+          <div className="inspector-body" key={tab}>
             {tab === 'page' && (
               <PageTab
                 blocks={draft.blocks}
@@ -1204,16 +1254,37 @@ export default function Editor({ loaderData }: Route.ComponentProps) {
               />
             )}
             {tab === 'links' && (
-              <LinksTab links={loaderData.shortLinks} csrf={csrf} alias={member.alias} />
+              <LinksTab
+                links={loaderData.shortLinks}
+                csrf={csrf}
+                alias={member.alias}
+                chooseAlias={() => setTab('profile')}
+              />
             )}
             {tab === 'history' && <HistoryTab history={loaderData.history} csrf={csrf} />}
-          </Panel>
-          {root.viewer?.owner && (
-            <Link to="/admin" className="mono-sm text-faint hover:text-ink">
-              back to admin
-            </Link>
-          )}
+          </div>
         </aside>
+      }
+    >
+      <div className="stage" style={accentStyle(shown.accent)}>
+        <div className="bar">
+          <i />
+          <i />
+          <i />
+          <span>{member.path}</span>
+          <span className="live">live</span>
+        </div>
+        <div className="stage-body" aria-label="Live page">
+          <MemberView
+            member={shown}
+            profile={{
+              bio: draft.fields.bio,
+              blocks: draft.blocks,
+              shortLinks: loaderData.shortLinks.filter((link) => link.listed),
+            }}
+            today={loaderData.today}
+          />
+        </div>
       </div>
     </Page>
   );

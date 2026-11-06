@@ -1,9 +1,10 @@
 import { Link } from 'react-router';
 import AuthorLink from '../components/AuthorLink';
-import { accentStyle, Avatar, Cover, Panel } from '../components/kit/basics';
-import { ReleaseTimeline } from '../components/kit/live';
+import { accentStyle, Avatar, Button, Cover, Panel } from '../components/kit/basics';
+import { Fact, PageHeader } from '../components/kit/page';
 import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
 import { WindowBar } from '../components/kit/projects';
+import { ReleaseHistory } from '../components/kit/releases';
 import ProjectTile from '../components/ProjectTile';
 import Section from '../components/Section';
 import { Page } from '../components/Shell';
@@ -12,7 +13,8 @@ import TagList from '../components/TagList';
 import type { Hub } from '../context';
 import { day, shortTag } from '../format';
 import { useHub, useRoot } from '../hub';
-import type { Project } from '../types';
+import { changelogPath } from '../model';
+import type { Deploy, Project } from '../types';
 
 export const PROJECT_TOPICS = ['deploys', 'releases', 'projects', 'uptime'];
 
@@ -31,6 +33,18 @@ export function loadProject({ reads, directory, viewer }: Hub, project: Project)
   };
 }
 
+function groupDeploys(deploys: Deploy[]) {
+  return deploys.reduce<(Deploy & { count: number })[]>((rows, deploy) => {
+    const last = rows.at(-1);
+    if (last && last.tag === deploy.tag && last.ok === deploy.ok) {
+      last.count += 1;
+    } else {
+      rows.push({ ...deploy, count: 1 });
+    }
+    return rows;
+  }, []);
+}
+
 export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof loadProject> }) {
   const hub = useHub();
   const settings = useRoot()!.settings;
@@ -42,19 +56,12 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
   const releases = hub.releasesForProject(project);
   const authors = project.authors.flatMap((login) => memberByGithub(login) ?? []);
   const accent = project.accent ?? owner?.accent ?? '';
+  const deploys = groupDeploys(loaderData.deploys);
 
   return (
     <Page
       rail={
         <>
-          {loaderData.editable && owner && (
-            <Link
-              to={`${owner.path}/edit?project=${project.slug}`}
-              className="btn primary justify-center"
-            >
-              edit this project
-            </Link>
-          )}
           {loaderData.running.length > 0 && <RunningPanel running={loaderData.running} />}
           <ChangelogPanel
             releases={releases.slice(0, settings['rail.changelog.count'] + 1)}
@@ -78,170 +85,214 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
         </>
       }
     >
-      <section className="page-hero">
-        <p className="mono-sm mb-3 text-faint">
-          /
-          {parent && (
-            <>
-              <Link to={parent.path} className="hover:text-ink hover:underline">
-                {parent.slug}
-              </Link>
-              /
-            </>
-          )}
-          {project.slug}
-        </p>
-        {project.layout === 'window' ? (
-          <div className="window mt-2" style={accentStyle(accent)}>
-            <WindowBar project={project} />
-            <Cover name={project.name} accent={accent} image={project.coverUrl} />
-          </div>
-        ) : (
-          project.coverUrl && <img className="member-cover mt-2" src={project.coverUrl} alt="" />
-        )}
-        <div className="mt-6 flex flex-wrap items-baseline justify-between gap-4">
-          <h1>{project.name}</h1>
-          <Status status={project.status} />
-        </div>
-        <p className="lede">{project.summary}</p>
-        <TagList tags={project.tags} className="mt-4.5" />
-      </section>
-
-      {(project.feature.note || project.feature.screenshotUrl) && (
-        <Section label="feature">
-          <div className="feature" style={accentStyle(accent)}>
-            {project.feature.screenshotUrl && (
-              <img src={project.feature.screenshotUrl} alt="" loading="lazy" />
-            )}
-            {project.feature.note && (
-              <p className="whitespace-pre-line text-muted">{project.feature.note}</p>
-            )}
-          </div>
-        </Section>
-      )}
-
-      {releases.length > 0 && (
-        <Section label="releases">
-          <ReleaseTimeline
-            releases={releases}
-            accentOf={() => owner?.accent ?? 'var(--color-muted)'}
-            nameOf={(release) => projectBySlug(release.project)?.name ?? release.project}
-            today={loaderData.today}
-            days={settings['home.timeline.days']}
-          />
-        </Section>
-      )}
-
-      {loaderData.deploys.length > 0 && (
-        <Section label="deploys">
-          <div className="running">
-            {loaderData.deploys.map((deploy) => (
-              <div key={deploy.at} className="row">
-                <span className="font-mono">sha-{shortTag(deploy.tag)}</span>
-                <Status status={deploy.ok ? 'live' : 'archived'} />
-                <span className="meta">
-                  {day(deploy.at)} · {Math.round(deploy.durationMs / 1000)} s
-                  {deploy.healthStatus ? ` · health ${deploy.healthStatus}` : ''}
-                </span>
+      <div className="profile" style={accentStyle(accent)}>
+        <PageHeader
+          banner={
+            project.layout === 'window' ? (
+              <div className="window">
+                <WindowBar project={project} />
+                <Cover
+                  name={project.name}
+                  seed={project.slug}
+                  accent={accent}
+                  image={project.coverUrl}
+                />
               </div>
-            ))}
-          </div>
-          {loaderData.running[0] && (
-            <span className="week">
-              {loaderData.running[0].week.map((state, index) => (
-                <i key={index} className={state === 'none' ? '' : state} />
-              ))}
-            </span>
-          )}
-        </Section>
-      )}
-
-      {project.showcase && (
-        <Section label="case study">
-          <div className="grid gap-7 md:grid-cols-3">
-            <div>
-              <h3 className="mono-sm m-0 mb-2 font-normal text-faint">problem</h3>
-              <p className="m-0 text-muted">{project.showcase.problem}</p>
-            </div>
-            <div>
-              <h3 className="mono-sm m-0 mb-2 font-normal text-faint">approach</h3>
-              <p className="m-0 text-muted">{project.showcase.approach}</p>
-            </div>
-            <div>
-              <h3 className="mono-sm m-0 mb-2 font-normal text-faint">outcome</h3>
-              <p className="m-0 text-muted">{project.showcase.outcome}</p>
-            </div>
-          </div>
-        </Section>
-      )}
-
-      {children.length > 0 && (
-        <Section label="projects">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {children.map((child) => (
-              <ProjectTile key={child.path} project={child} />
-            ))}
-          </div>
-        </Section>
-      )}
-
-      <Section label="details">
-        <dl className="mono-sm grid grid-cols-[auto_minmax(0,1fr)] gap-x-8 gap-y-3">
-          <dt className="text-faint">built by</dt>
-          <dd className="m-0">
-            {project.authors.map((author, index) => (
-              <span key={author}>
-                {index > 0 && <span className="mx-1.5 text-faint">·</span>}
-                <AuthorLink github={author} className="text-ink hover:underline" />
-              </span>
-            ))}
-          </dd>
-
-          <dt className="text-faint">maintained by</dt>
-          <dd className="m-0">
-            {owner ? (
-              <Link to={owner.path} className="text-ink hover:underline">
-                {owner.name}
-              </Link>
             ) : (
-              project.owner
-            )}
-          </dd>
-
-          {project.url && (
+              project.coverUrl && <img className="member-cover" src={project.coverUrl} alt="" />
+            )
+          }
+          path={
             <>
-              <dt className="text-faint">running at</dt>
-              <dd className="m-0">
-                <a href={project.url} className="text-ink hover:underline">
-                  {project.url.replace('https://', '')} ↗
+              /
+              {parent && (
+                <>
+                  <Link to={parent.path} className="hover:text-ink hover:underline">
+                    {parent.slug}
+                  </Link>
+                  /
+                </>
+              )}
+              {project.slug}
+            </>
+          }
+          title={project.name}
+          aside={<Status status={project.status} />}
+          actions={
+            <>
+              {loaderData.editable && owner && (
+                <Button to={`${owner.path}/edit?project=${project.slug}`} primary>
+                  edit
+                </Button>
+              )}
+              {project.url && <Button to={project.url}>visit ↗</Button>}
+              <Button to={project.repoUrl}>source ↗</Button>
+            </>
+          }
+          facts={
+            <>
+              {releases[0] && <Fact label="latest" value={`v${releases[0].version}`} />}
+              <Fact value={releases.length} label="releases" />
+              {releases[0] && <Fact label="released" value={day(releases[0].date)} />}
+            </>
+          }
+        >
+          <p className="lede">{project.summary}</p>
+          <TagList tags={project.tags} className="mt-4.5" />
+        </PageHeader>
+
+        {(project.feature.note || project.feature.screenshotUrl) && (
+          <Section label="feature">
+            <div className="feature">
+              {project.feature.screenshotUrl && (
+                <img src={project.feature.screenshotUrl} alt="" loading="lazy" />
+              )}
+              {project.feature.note && (
+                <p className="whitespace-pre-line text-muted">{project.feature.note}</p>
+              )}
+            </div>
+          </Section>
+        )}
+
+        {releases.length > 0 && (
+          <Section
+            label="releases"
+            action={
+              <Link to={changelogPath(project)} className="rule-link mono-sm">
+                changelog
+              </Link>
+            }
+          >
+            <ReleaseHistory
+              releases={releases}
+              projectOf={(release) => projectBySlug(release.project)}
+              accentOf={() => accent || 'var(--color-muted)'}
+              today={loaderData.today}
+              days={settings['home.timeline.days']}
+              showProject={children.length > 0}
+            />
+          </Section>
+        )}
+
+        {deploys.length > 0 && (
+          <Section
+            label="deploys"
+            action={
+              loaderData.running[0] && (
+                <span className="week" aria-hidden="true">
+                  {loaderData.running[0].week.map((state, index) => (
+                    <i key={index} className={state === 'none' ? '' : state} />
+                  ))}
+                </span>
+              )
+            }
+          >
+            <ol className="deploys">
+              {deploys.map((deploy) => (
+                <li key={deploy.at}>
+                  <span className="tag">sha-{shortTag(deploy.tag)}</span>
+                  <Status status={deploy.ok ? 'live' : 'archived'} />
+                  <span className="when">{day(deploy.at)}</span>
+                  <span className="meta">
+                    {Math.round(deploy.durationMs / 1000)} s
+                    {deploy.healthStatus ? ` · health ${deploy.healthStatus}` : ''}
+                  </span>
+                  {deploy.count > 1 && <span className="tag">×{deploy.count}</span>}
+                </li>
+              ))}
+            </ol>
+          </Section>
+        )}
+
+        {project.showcase && (
+          <Section label="case study">
+            <div className="study">
+              <div>
+                <h3>problem</h3>
+                <p>{project.showcase.problem}</p>
+              </div>
+              <div>
+                <h3>approach</h3>
+                <p>{project.showcase.approach}</p>
+              </div>
+              <div>
+                <h3>outcome</h3>
+                <p>{project.showcase.outcome}</p>
+              </div>
+            </div>
+          </Section>
+        )}
+
+        {children.length > 0 && (
+          <Section label="projects">
+            <div className="nodes">
+              {children.map((child) => (
+                <ProjectTile key={child.path} project={child} />
+              ))}
+            </div>
+          </Section>
+        )}
+
+        <Section label="details">
+          <dl className="details">
+            <div>
+              <dt>maintained by</dt>
+              <dd>
+                {owner ? (
+                  <Link to={owner.path} className="hover:underline">
+                    {owner.name}
+                  </Link>
+                ) : (
+                  project.owner
+                )}
+              </dd>
+            </div>
+            {project.url && (
+              <div>
+                <dt>running at</dt>
+                <dd>
+                  <a href={project.url} className="hover:underline">
+                    {project.url.replace('https://', '')} ↗
+                  </a>
+                </dd>
+              </div>
+            )}
+            <div>
+              <dt>source</dt>
+              <dd>
+                <a href={project.repoUrl} className="hover:underline">
+                  {project.repo} ↗
                 </a>
               </dd>
-            </>
-          )}
-
-          <dt className="text-faint">source</dt>
-          <dd className="m-0">
-            <a href={project.repoUrl} className="text-ink hover:underline">
-              {project.repo} ↗
-            </a>
-          </dd>
-        </dl>
-      </Section>
-
-      {project.showcase && (
-        <Section label="contributions">
-          <div className="grid gap-5">
-            {project.showcase.contributions.map((contribution) => (
-              <article key={contribution.github} className="max-w-[56ch]">
-                <h3 className="m-0 text-base font-semibold">
-                  <AuthorLink github={contribution.github} className="text-ink hover:underline" />
-                </h3>
-                <p className="mt-2 mb-0 text-muted">{contribution.summary}</p>
-              </article>
-            ))}
-          </div>
+            </div>
+            {parent && (
+              <div>
+                <dt>part of</dt>
+                <dd>
+                  <Link to={parent.path} className="hover:underline">
+                    {parent.name}
+                  </Link>
+                </dd>
+              </div>
+            )}
+          </dl>
         </Section>
-      )}
+
+        {project.showcase && (
+          <Section label="contributions">
+            <div className="grid gap-5">
+              {project.showcase.contributions.map((contribution) => (
+                <article key={contribution.github} className="max-w-[56ch]">
+                  <h3 className="m-0 text-base font-semibold">
+                    <AuthorLink github={contribution.github} className="text-ink hover:underline" />
+                  </h3>
+                  <p className="mt-2 mb-0 text-muted">{contribution.summary}</p>
+                </article>
+              ))}
+            </div>
+          </Section>
+        )}
+      </div>
     </Page>
   );
 }
