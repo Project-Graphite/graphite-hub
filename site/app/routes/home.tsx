@@ -13,7 +13,7 @@ import {
 import { AccentCard, Window } from '../components/kit/projects';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
-import { useHub, useRoot } from '../hub';
+import { modelFrom, useHub, useRoot } from '../hub';
 import { Field, Mark } from '../motion/canvases';
 import { visible } from '../settings';
 
@@ -26,7 +26,7 @@ export function loader({ context }: Route.LoaderArgs) {
   const running = reads.running(directory);
   return {
     running,
-    counts: reads.counts(directory, running),
+    counts: reads.counts(modelFrom(context), running),
     lines: reads.consoleLines(settings['rail.console.lines']),
     ticker: reads
       .consoleLines(settings['home.ticker.count'], settings['home.ticker.kinds'])

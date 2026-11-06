@@ -7,6 +7,7 @@ import type {
   ProjectUptime,
   Running,
 } from '../app/types.ts';
+import type { Model } from '../app/model.ts';
 import { toPublicEvent } from './console/public.ts';
 import { json, type Database } from './db.ts';
 import { percentile } from './uptime.ts';
@@ -148,13 +149,13 @@ export function createReads(db: Database) {
       return result;
     },
 
-    counts(directory: Directory, running: Running[], now = Date.now()): Counts {
+    counts(model: Model, running: Running[], now = Date.now()): Counts {
       const up = new Set(upNow());
       return {
-        members: directory.members.length,
-        projects: directory.projects.length,
+        members: model.members.length,
+        projects: model.rootProjects.length,
         live: running.filter((project) => up.has(project.slug)).length,
-        releases: directory.releases.length,
+        releases: model.releases.length,
         deploys: db
           .prepare('SELECT count(*) AS count FROM deploys WHERE finished_at >= ?')
           .get(new Date(now - 7 * DAY_MS).toISOString())!.count as number,

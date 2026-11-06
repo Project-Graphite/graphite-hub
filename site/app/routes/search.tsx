@@ -79,6 +79,7 @@ function Browse() {
 
 export default function Search({ loaderData }: Route.ComponentProps) {
   const directory = useRoot()!.directory;
+  const hub = useHub();
   const navigate = useNavigate();
   const [query, setQuery] = useState(loaderData.query);
   const [kind, setKind] = useState('all');
@@ -135,9 +136,10 @@ export default function Search({ loaderData }: Route.ComponentProps) {
             <Fact value={hits.length} label={hits.length === 1 ? 'match' : 'matches'} />
           ) : (
             <>
-              <Fact value={directory.members.length} label="members" />
-              <Fact value={directory.projects.length} label="projects" />
-              <Fact value={directory.releases.length} label="releases" />
+              <Fact value={hub.members.length} label="members" />
+              <Fact value={hub.rootProjects.length} label="projects" />
+              <Fact value={hub.epics.length} label={hub.epics.length === 1 ? 'epic' : 'epics'} />
+              <Fact value={hub.releases.length} label="releases" />
             </>
           )
         }

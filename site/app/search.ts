@@ -17,7 +17,7 @@ export function search(directory: Directory, query: string, limit = 20): Hit[] {
   const matches = (...fields: (string | null | undefined)[]) =>
     fields.some((field) => field?.toLowerCase().includes(needle));
   return [
-    ...directory.members
+    ...model.members
       .filter((member) => matches(member.name, member.github, member.headline))
       .map((member): Hit => ({
         kind: 'member',

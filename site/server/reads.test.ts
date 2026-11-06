@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { createModel } from '../app/model.ts';
+import type { Directory } from '../app/types.ts';
 import { createReads } from './reads.ts';
 import { memoryDatabase } from './testing.ts';
 
@@ -28,5 +30,29 @@ describe('reads', () => {
     );
     assert.equal(createReads(db).consoleLines(8).length, 8);
     assert.deepEqual(createReads(db).consoleLines(8, []), []);
+  });
+
+  it('counts listed members, the projects /projects lists and every release', () => {
+    const model = createModel({
+      members: [
+        { handle: 'amr', listed: true },
+        { handle: 'ghost', listed: false },
+      ],
+      projects: [
+        { slug: 'strata', parent: null, kind: 'project' },
+        { slug: 'windhawk-mods', parent: null, kind: 'epic' },
+        { slug: 'tasktune', parent: 'windhawk-mods', kind: 'project' },
+      ],
+      releases: [
+        { id: '1', project: 'strata' },
+        { id: '2', project: 'windhawk-mods' },
+        { id: '3', project: 'tasktune' },
+      ],
+    } as unknown as Directory);
+
+    const counts = createReads(memoryDatabase()).counts(model, []);
+    assert.equal(counts.members, 1);
+    assert.equal(counts.projects, 1);
+    assert.equal(counts.releases, 3);
   });
 });
