@@ -125,7 +125,7 @@ export default function Post({ loaderData }: Route.ComponentProps) {
           )}
           {more.length > 0 && (
             <Panel
-              title={`more by ${author.name}`}
+              title={`more by ${author.name.split(' ')[0]}`}
               link={{ to: `${author.path}/blog`, label: 'all' }}
             >
               <div className="post-rows">
