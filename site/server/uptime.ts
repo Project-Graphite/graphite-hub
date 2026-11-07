@@ -4,7 +4,7 @@ import { storedEntries } from './registry.ts';
 
 export function liveHosts(db: Database) {
   return storedEntries(db).flatMap((entry) =>
-    entry.status === 'live' && entry.deploy.kind !== 'none'
+    entry.status === 'live' && entry.listed !== false && entry.deploy.kind !== 'none'
       ? [{ project: entry.slug, host: entry.deploy.host }]
       : [],
   );
@@ -57,7 +57,11 @@ export function percentile(values: number[], fraction: number) {
 
 export async function recordUptimeSummary(db: Database, bus: Bus) {
   const since = new Date(Date.now() - 3_600_000).toISOString().slice(0, 16);
-  const rows = db.prepare('SELECT project, ok, ms FROM uptime WHERE minute >= ?').all(since);
+  const rows = db
+    .prepare(
+      'SELECT project, ok, ms FROM uptime WHERE minute >= ? AND project IN (SELECT value FROM json_each(?))',
+    )
+    .all(since, JSON.stringify(liveHosts(db).map((entry) => entry.project)));
   if (rows.length === 0) {
     return;
   }
