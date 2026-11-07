@@ -108,7 +108,6 @@
 }
 .setting-state[data-state='saving'] i {
   background: var(--color-wip);
-  animation: state-pulse 0.9s ease-in-out infinite;
 }
 .setting-state[data-state='saved'] {
   color: var(--color-live);
@@ -712,7 +711,6 @@
   height: 6px;
   border-radius: 50%;
   background: var(--color-live);
-  animation: state-pulse 2s ease-in-out infinite;
 }
 .stage-body {
   padding: 0.5rem 2rem 2.5rem;

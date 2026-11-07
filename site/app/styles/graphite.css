@@ -97,7 +97,6 @@
 }
 .live-pulse[data-state='reconnecting'] i {
   background: var(--color-wip);
-  animation: state-pulse 1.2s ease-in-out infinite;
 }
 .badge {
   display: inline-flex;
@@ -601,7 +600,20 @@ textarea.field {
 .chip-button[data-armed] {
   color: var(--color-danger);
   border-color: var(--color-danger);
-  animation: state-pulse 1.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .live-pulse[data-state='reconnecting'] i,
+  .chip-button[data-armed] {
+    animation: state-pulse 1.2s ease-in-out infinite;
+  }
+  .setting-state[data-state='saving'] i,
+  .editor .facts .live[data-connection='connecting'] i {
+    animation: state-pulse 0.9s ease-in-out infinite;
+  }
+  .stage > .bar .live::before,
+  .editor .facts .live[data-connection='online'] i {
+    animation: state-pulse 2s ease-in-out infinite;
+  }
 }
 @keyframes state-pulse {
   50% {
