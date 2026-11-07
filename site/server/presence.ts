@@ -156,9 +156,17 @@ export function createPresence(redis: Redis, bus: Bus, now = () => Date.now()) {
 
     sweep,
 
-    start() {
+    async start() {
+      let cursor = '0';
+      do {
+        const [next, keys] = await redis.scan(cursor, 'MATCH', 'presence:*', 'COUNT', 200);
+        cursor = next;
+        if (keys.length > 0) {
+          await redis.del(...keys);
+        }
+      } while (cursor !== '0');
       sweeper = setInterval(() => void sweep().catch(() => undefined), SWEEP_MS);
-      return sweep();
+      await sweep();
     },
 
     stop() {

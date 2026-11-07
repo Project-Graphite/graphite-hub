@@ -66,6 +66,18 @@ describe('presence', () => {
     assert.deepEqual(last(published, 'map'), { country: 'EG', count: 0 });
   });
 
+  it("forgets the previous process's tabs on start and keeps the map fading", async () => {
+    const { presence, redis } = setup();
+    await presence.join('t1', { reading: 'post-1', handle: 'amrmscll', country: 'DE' });
+    const restarted = createPresence(redis, recordingBus().bus, () => 1_762_500_005_000);
+    await restarted.start();
+    restarted.stop();
+    assert.deepEqual(restarted.current(), { here: 0, online: [] });
+    assert.equal(restarted.reading('post-1'), 0);
+    assert.deepEqual(restarted.countries(), [{ code: 'DE', count: 1 }]);
+    assert.deepEqual(redis.keys(), ['map:countries']);
+  });
+
   it('keeps nothing but counters in Redis', async () => {
     const { presence, redis } = setup();
     await presence.join('t1', { reading: 'post-1', handle: 'amrmscll', country: 'DE' });

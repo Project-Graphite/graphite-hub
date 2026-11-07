@@ -54,7 +54,19 @@ export function fakeRedis() {
     async get(key: string) {
       return strings.get(key) ?? null;
     },
-    keys: () => [...sorted.keys(), ...sets.keys(), ...strings.keys()],
+    async scan(_cursor: string, _match: string, pattern: string) {
+      const prefix = pattern.replace(/\*$/, '');
+      return ['0', fake.keys().filter((key) => key.startsWith(prefix))];
+    },
+    async del(...keys: string[]) {
+      return keys.filter((key) => sorted.delete(key) || sets.delete(key) || strings.delete(key))
+        .length;
+    },
+    keys: () => [
+      ...[...sorted].filter(([, members]) => members.size > 0).map(([key]) => key),
+      ...sets.keys(),
+      ...strings.keys(),
+    ],
   };
   return fake as unknown as Redis & { keys(): string[] };
 }
