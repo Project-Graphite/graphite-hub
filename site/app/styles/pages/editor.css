@@ -45,11 +45,9 @@
 }
 .editor .facts .live[data-connection='online'] i {
   background: var(--color-live);
-  animation: state-pulse 2s ease-in-out infinite;
 }
 .editor .facts .live[data-connection='connecting'] i {
   background: var(--color-wip);
-  animation: state-pulse 0.9s ease-in-out infinite;
 }
 .editor .facts .live[data-connection='offline'] i {
   background: var(--color-wip);

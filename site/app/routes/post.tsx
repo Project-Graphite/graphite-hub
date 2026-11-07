@@ -93,7 +93,7 @@ export default function Post({ loaderData }: Route.ComponentProps) {
         <>
           {headings.length > 1 && (
             <Panel title="on this page">
-              <ol className="mono-sm grid gap-1.5 outline">
+              <ol className="mono-sm grid gap-1.5 headings">
                 {headings.map((heading) => (
                   <li key={heading.id} data-level={heading.level}>
                     <a href={`#${heading.id}`} className="text-muted hover:text-ink">
@@ -125,7 +125,7 @@ export default function Post({ loaderData }: Route.ComponentProps) {
           )}
           {more.length > 0 && (
             <Panel
-              title={`more by ${author.name}`}
+              title={`more by ${author.name.split(' ')[0]}`}
               link={{ to: `${author.path}/blog`, label: 'all' }}
             >
               <div className="post-rows">

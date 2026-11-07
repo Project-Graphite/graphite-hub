@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { createJobs } from './jobs.ts';
+import { createJobs, retryAt } from './jobs.ts';
 import { memoryDatabase } from './testing.ts';
 
+const MINUTE = 60_000;
+
 describe('jobs', () => {
-  it('runs what is due, keeps retrying failures and gives up after five attempts', async () => {
+  it('runs what is due, retries failures with a growing wait and gives up after eight attempts', async () => {
     const db = memoryDatabase();
     const ran: string[] = [];
     const errors: unknown[] = [];
@@ -29,13 +31,42 @@ describe('jobs', () => {
     assert.deepEqual(ran, ['a']);
     assert.equal(errors.length, 1);
     assert.equal(jobs.pending('ok', 'later'), true);
-    for (let attempt = 0; attempt < 6; attempt += 1) {
-      await jobs.runDue(now);
+    const row = () => db.prepare("SELECT due_at, last_error FROM jobs WHERE ref = 'b'").get()!;
+    assert.deepEqual({ ...row() }, { due_at: retryAt(1, now), last_error: 'nope' });
+    assert.equal(retryAt(1, now), new Date(now + MINUTE).toISOString());
+    assert.equal(retryAt(4, now), new Date(now + 8 * MINUTE).toISOString());
+    assert.equal(retryAt(7, now), new Date(now + 60 * MINUTE).toISOString());
+    await jobs.runDue(now + MINUTE - 1);
+    assert.equal(errors.length, 1);
+    for (let attempt = 2; attempt <= 9; attempt += 1) {
+      await jobs.runDue(Date.parse(row().due_at as string));
     }
-    assert.equal(errors.length, 5);
-    assert.equal(
-      db.prepare("SELECT last_error FROM jobs WHERE ref = 'b'").get()!.last_error,
-      'nope',
+    assert.equal(errors.length, 8);
+    assert.equal(jobs.pending('bad', 'b'), true);
+    jobs.stop();
+  });
+
+  it('keeps the row of a job that cancels itself while it runs, so the outcome is recorded', async () => {
+    const db = memoryDatabase();
+    const jobs = createJobs(
+      db,
+      {
+        publish: async (ref) => {
+          jobs.cancel('publish', ref);
+          throw new Error('the bus is down');
+        },
+      },
+      () => {},
+    );
+    jobs.add('publish', 'p1', '2026-01-01T00:00:00.000Z');
+    const now = Date.parse('2026-01-01T00:00:01.000Z');
+    await jobs.runDue(now);
+    assert.deepEqual(
+      db
+        .prepare('SELECT attempts, due_at, last_error FROM jobs')
+        .all()
+        .map((row) => ({ ...row })),
+      [{ attempts: 1, due_at: retryAt(1, now), last_error: 'the bus is down' }],
     );
     jobs.stop();
   });

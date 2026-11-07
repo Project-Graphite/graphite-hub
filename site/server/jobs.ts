@@ -1,7 +1,12 @@
 import type { Database } from './db.ts';
 
 const MINUTE = 60_000;
-const MAX_ATTEMPTS = 5;
+const HOUR = 60 * MINUTE;
+const MAX_ATTEMPTS = 8;
+
+export function retryAt(attempts: number, now: number) {
+  return new Date(now + Math.min(HOUR, MINUTE * 2 ** (attempts - 1))).toISOString();
+}
 
 export type JobHandlers = Record<string, (ref: string) => Promise<void>>;
 
@@ -30,13 +35,14 @@ export function createJobs(
   async function runDue(now = Date.now()) {
     const due = db
       .prepare(
-        'SELECT id, kind, ref FROM jobs WHERE done_at IS NULL AND attempts < ? AND due_at <= ? ORDER BY due_at, id',
+        'SELECT id, kind, ref, attempts FROM jobs WHERE done_at IS NULL AND attempts < ? AND due_at <= ? ORDER BY due_at, id',
       )
       .all(MAX_ATTEMPTS, new Date(now).toISOString());
     const ran: string[] = [];
     for (const job of due) {
       const id = job.id as number;
-      db.prepare('UPDATE jobs SET attempts = attempts + 1 WHERE id = ?').run(id);
+      const attempts = (job.attempts as number) + 1;
+      db.prepare('UPDATE jobs SET attempts = ? WHERE id = ?').run(attempts, id);
       active.add(id);
       try {
         await handlers[job.kind as string]?.(job.ref as string);
@@ -46,8 +52,9 @@ export function createJobs(
         );
         ran.push(`${job.kind as string}:${job.ref as string}`);
       } catch (error) {
-        db.prepare('UPDATE jobs SET last_error = ? WHERE id = ?').run(
+        db.prepare('UPDATE jobs SET last_error = ?, due_at = ? WHERE id = ?').run(
           error instanceof Error ? error.message : String(error),
+          retryAt(attempts, now),
           id,
         );
         capture(error, { route: `job:${job.kind as string}` });
@@ -71,16 +78,20 @@ export function createJobs(
     }
   }
 
+  function clear(kind: string, ref: string) {
+    db.prepare(
+      'DELETE FROM jobs WHERE kind = ? AND ref = ? AND done_at IS NULL AND id NOT IN (SELECT value FROM json_each(?))',
+    ).run(kind, ref, JSON.stringify([...active]));
+  }
+
   return {
     add(kind: string, ref: string, dueAt: string) {
-      db.prepare(
-        'DELETE FROM jobs WHERE kind = ? AND ref = ? AND done_at IS NULL AND id NOT IN (SELECT value FROM json_each(?))',
-      ).run(kind, ref, JSON.stringify([...active]));
+      clear(kind, ref);
       db.prepare('INSERT INTO jobs (kind, ref, due_at) VALUES (?, ?, ?)').run(kind, ref, dueAt);
       arm();
     },
     cancel(kind: string, ref: string) {
-      db.prepare('DELETE FROM jobs WHERE kind = ? AND ref = ? AND done_at IS NULL').run(kind, ref);
+      clear(kind, ref);
       arm();
     },
     pending(kind: string, ref: string) {

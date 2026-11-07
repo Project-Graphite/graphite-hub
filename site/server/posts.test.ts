@@ -8,7 +8,7 @@ import { memoryDatabase, recordingBus } from './testing.ts';
 
 function setup() {
   const db = memoryDatabase();
-  const { bus, recorded, published } = recordingBus();
+  const { bus, recorded, published, link } = recordingBus();
   for (const [handle, login] of [
     ['amrmscll', 'AmrMsCLL'],
     ['omar', 'Omar-Mohamed24'],
@@ -24,8 +24,9 @@ function setup() {
     "INSERT INTO uploads (id, owner, kind, mime, bytes, width, height, at) VALUES ('img1', 'amrmscll', 'cover', 'image/webp', 1, 1, 1, '2026-01-01')",
   ).run();
   const jobs = createJobs(db, {}, () => {});
-  const posts = createPosts(db, bus, jobs);
-  return { db, jobs, posts, recorded, published };
+  const announced: string[] = [];
+  const posts = createPosts(db, bus, jobs, (post) => announced.push(post.id));
+  return { db, jobs, posts, recorded, published, link, announced };
 }
 
 const fields = {
@@ -101,6 +102,30 @@ describe('posts', () => {
       readPublished(db, () => '/amr').map((summary) => summary.path),
       ['/amr/blog/hello-world'],
     );
+  });
+
+  it('leaves a scheduled post untouched while the bus is down, so the job publishes it later', async () => {
+    const { db, posts, link, announced, recorded } = setup();
+    const id = await posts.create('amrmscll', 'amrmscll', null);
+    await posts.save(id, fields, 'amrmscll');
+    await posts.schedule(id, new Date(Date.now() + 60_000).toISOString(), 'amrmscll');
+    link.down = true;
+    await assert.rejects(posts.publish(id, 'amrmscll'), Refused);
+    const errors: unknown[] = [];
+    const fresh = createJobs(db, { publish: (ref) => posts.publishDue(ref) }, (error) =>
+      errors.push(error),
+    );
+    const due = Date.now() + 61_000;
+    assert.deepEqual(await fresh.runDue(due), []);
+    assert.equal(posts.read(id)?.status, 'scheduled');
+    assert.equal(errors.length, 1);
+    assert.equal(fresh.pending('publish', id), true);
+    link.down = false;
+    assert.deepEqual(await fresh.runDue(due + 60_000), [`publish:${id}`]);
+    assert.equal(posts.read(id)?.status, 'published');
+    assert.deepEqual(announced, [id]);
+    assert.equal(recorded.filter((event) => event.kind === 'post').length, 1);
+    fresh.stop();
   });
 
   it('schedules through the jobs table and publishes when due', async () => {

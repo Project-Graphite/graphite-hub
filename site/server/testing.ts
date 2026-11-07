@@ -75,8 +75,10 @@ export function recordingBus() {
   const recorded: HubEvent[] = [];
   const published: HubEvent[] = [];
   const listeners = new Set<(delivery: { event: HubEvent }) => void>();
+  const link = { down: false };
   const bus = {
     ready: Promise.resolve(),
+    alive: async () => !link.down,
     record: async (event: HubEvent) => {
       recorded.push(event);
       return `${Date.now()}-${recorded.length}`;
@@ -93,5 +95,5 @@ export function recordingBus() {
       return () => listeners.delete(listener);
     },
   } as unknown as Bus;
-  return { bus, recorded, published };
+  return { bus, recorded, published, link };
 }

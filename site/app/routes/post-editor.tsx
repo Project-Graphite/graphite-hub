@@ -148,6 +148,7 @@ export default function PostEditorRoute({ loaderData }: Route.ComponentProps) {
   const act = useFetcher<Result>();
   const [tab, setTab] = useState<(typeof TABS)[number][0]>('post');
   const [draft, setDraft] = useState<PostFields>(post);
+  const [tagText, setTagText] = useState(post.tags.join(', '));
   const [slugTouched, setSlugTouched] = useState(
     post.slug !== slugify(post.title) && post.title !== '',
   );
@@ -162,6 +163,7 @@ export default function PostEditorRoute({ loaderData }: Route.ComponentProps) {
   const [label, setLabel] = useState('');
   const [templateName, setTemplateName] = useState('');
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const cover = useRef<HTMLInputElement>(null);
   const hydrated = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -255,9 +257,10 @@ export default function PostEditorRoute({ loaderData }: Route.ComponentProps) {
                 <Row label="tags">
                   <input
                     className="field"
-                    value={draft.tags.join(', ')}
+                    value={tagText}
                     placeholder="comma, separated"
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      setTagText(event.target.value);
                       change({
                         ...draft,
                         tags: [
@@ -268,8 +271,8 @@ export default function PostEditorRoute({ loaderData }: Route.ComponentProps) {
                               .filter(Boolean),
                           ),
                         ].slice(0, POST_LIMITS.tags),
-                      })
-                    }
+                      });
+                    }}
                   />
                 </Row>
                 <Row label="about a project">
@@ -299,21 +302,26 @@ export default function PostEditorRoute({ loaderData }: Route.ComponentProps) {
                     ) : (
                       <span className="thumb empty" />
                     )}
-                    <label className="chip-button">
+                    <button
+                      type="button"
+                      className="chip-button"
+                      onClick={() => cover.current?.click()}
+                    >
                       upload
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif"
-                        hidden
-                        onChange={(event) => {
-                          const file = event.target.files?.[0];
-                          if (file) {
-                            void uploadCover(file);
-                          }
-                          event.target.value = '';
-                        }}
-                      />
-                    </label>
+                    </button>
+                    <input
+                      ref={cover}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      hidden
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) {
+                          void uploadCover(file);
+                        }
+                        event.target.value = '';
+                      }}
+                    />
                     {draft.coverUpload && (
                       <button
                         type="button"

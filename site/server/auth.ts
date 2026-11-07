@@ -4,6 +4,7 @@ import express, { type Request, type Response } from 'express';
 import { clientAddress } from './address.ts';
 import { config } from './config.ts';
 import { GitHubError, request as asUser } from './github.ts';
+import { log } from './log.ts';
 import { slidingLimit, type Redis } from './redis.ts';
 import { sameSecret, type Session, type Sessions } from './sessions.ts';
 
@@ -53,7 +54,10 @@ async function membership(token: string) {
 export function createAuth(sessions: Sessions, redis: Redis) {
   async function current(request: IncomingMessage, response: ServerResponse) {
     const id = cookies(request)[SESSION_COOKIE];
-    const session = await sessions.read(id);
+    const session = await sessions.read(id).catch((error: unknown) => {
+      log.warn({ err: error }, 'session store unreachable; serving as a visitor');
+      return undefined;
+    });
     if (!id || !session) {
       return undefined;
     }

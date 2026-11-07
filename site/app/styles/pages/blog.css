@@ -595,7 +595,7 @@
   }
 }
 
-.outline li[data-level='3'] {
+.headings li[data-level='3'] {
   padding-left: 0.9rem;
 }
 .post-rows {
