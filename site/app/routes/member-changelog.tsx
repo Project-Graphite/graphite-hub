@@ -5,6 +5,7 @@ import { Page } from '../components/Shell';
 import { Link } from 'react-router';
 import type { Route } from './+types/member-changelog';
 import Timeline from '../components/Timeline';
+import { plural } from '../format';
 import { found, modelFrom, useHub } from '../hub';
 import { changelogPath } from '../model';
 import { topicsFor } from '../topics';
@@ -38,8 +39,8 @@ export default function MemberChangelog({ loaderData }: Route.ComponentProps) {
           actions={<Button to={member.path}>profile</Button>}
           facts={
             <>
-              <Fact value={releases.length} label="releases" />
-              <Fact value={owned.length} label="projects" />
+              <Fact value={releases.length} label={plural(releases.length, 'release')} />
+              <Fact value={owned.length} label={plural(owned.length, 'project')} />
               {releases[0] && <Fact label="latest" value={`v${releases[0].version}`} />}
             </>
           }

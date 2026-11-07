@@ -10,6 +10,7 @@ import { PostCard, WritingStrip } from '../components/kit/posts';
 import { SubscribePanel } from '../components/kit/subscribe';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
+import { plural } from '../format';
 import { useHub, useRoot } from '../hub';
 import { viewerHandle } from '../pages/blog';
 import { topicsFor } from '../topics';
@@ -132,8 +133,8 @@ export default function Blog({ loaderData }: Route.ComponentProps) {
           }
           facts={
             <>
-              <Fact value={hub.posts.length} label="posts" />
-              <Fact value={writers.length} label="writers" />
+              <Fact value={hub.posts.length} label={plural(hub.posts.length, 'post')} />
+              <Fact value={writers.length} label={plural(writers.length, 'writer')} />
               {month > 0 && <Fact value={month} label="this month" />}
             </>
           }

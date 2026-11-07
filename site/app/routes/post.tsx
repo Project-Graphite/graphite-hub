@@ -9,7 +9,7 @@ import { SubscribePanel } from '../components/kit/subscribe';
 import { Page } from '../components/Shell';
 import TagList from '../components/TagList';
 import { hubContext } from '../context';
-import { day } from '../format';
+import { day, plural } from '../format';
 import { useHub, useRoot } from '../hub';
 import { useView, useViews } from '../live';
 import { createModel } from '../model';
@@ -203,7 +203,7 @@ export default function Post({ loaderData }: Route.ComponentProps) {
                 />
               )}
               <Fact value={post.readingMinutes} label="min read" />
-              {views > 0 && <Fact value={views} label={views === 1 ? 'view' : 'views'} />}
+              {views > 0 && <Fact value={views} label={plural(views, 'view')} />}
             </>
           }
         >

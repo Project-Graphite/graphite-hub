@@ -6,6 +6,7 @@ import { ChangelogPanel } from '../components/kit/panels';
 import { PostCard } from '../components/kit/posts';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
+import { plural } from '../format';
 import { useHub, useRoot } from '../hub';
 import { authorFrom, viewerHandle } from '../pages/blog';
 import { topicsFor } from '../topics';
@@ -102,7 +103,7 @@ export default function Author({ loaderData }: Route.ComponentProps) {
           }
           facts={
             <>
-              <Fact value={posts.length} label={posts.length === 1 ? 'post' : 'posts'} />
+              <Fact value={posts.length} label={plural(posts.length, 'post')} />
               {words > 0 && <Fact value={words} label="minutes of reading" />}
               {posts[0] && <Fact label="latest" value={posts[0].publishedAt.slice(0, 10)} />}
             </>

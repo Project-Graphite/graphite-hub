@@ -14,7 +14,7 @@ import { Page } from '../components/Shell';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
 import type { Hub } from '../context';
-import { day, shortTag } from '../format';
+import { day, plural, shortTag } from '../format';
 import { useHub, useRoot } from '../hub';
 import { useView, useViews } from '../live';
 import { changelogPath } from '../model';
@@ -148,9 +148,9 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
           facts={
             <>
               {releases[0] && <Fact label="latest" value={`v${releases[0].version}`} />}
-              <Fact value={releases.length} label="releases" />
+              <Fact value={releases.length} label={plural(releases.length, 'release')} />
               {releases[0] && <Fact label="released" value={day(releases[0].date)} />}
-              {views > 0 && <Fact value={views} label={views === 1 ? 'view' : 'views'} />}
+              {views > 0 && <Fact value={views} label={plural(views, 'view')} />}
             </>
           }
         >
@@ -183,7 +183,7 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
             label={settings['blog.project.title']}
             action={
               <Link to={`/blog?project=${project.slug}`} className="rule-link mono-sm">
-                {writing.length} {writing.length === 1 ? 'post' : 'posts'}
+                {writing.length} {plural(writing.length, 'post')}
               </Link>
             }
           >

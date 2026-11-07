@@ -8,6 +8,7 @@ import { PostRow } from '../components/kit/posts';
 import { Chooser, SubscribeForm } from '../components/kit/subscribe';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
+import { plural } from '../format';
 import { useHub } from '../hub';
 import { isCadence, knownScope, parseScope, type Cadence, type Scope } from '../subscribe';
 import { topicsFor } from '../topics';
@@ -88,9 +89,11 @@ export default function Subscribe({ loaderData }: Route.ComponentProps) {
           }
           facts={
             <>
-              <Fact value={loaderData.readers} label="by email" />
-              <Fact value={hub.posts.length} label="posts" />
-              <Fact value={writers} label="writers" />
+              {loaderData.readers > 0 && <Fact value={loaderData.readers} label="by email" />}
+              {hub.posts.length > 0 && (
+                <Fact value={hub.posts.length} label={plural(hub.posts.length, 'post')} />
+              )}
+              {writers > 0 && <Fact value={writers} label={plural(writers, 'writer')} />}
             </>
           }
         />

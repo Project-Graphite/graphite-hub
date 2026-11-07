@@ -73,6 +73,7 @@ export function Palette() {
         <input
           autoFocus
           autoComplete="off"
+          aria-label="Search"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);

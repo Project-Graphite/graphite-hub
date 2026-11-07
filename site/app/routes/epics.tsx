@@ -8,7 +8,7 @@ import Status from '../components/Status';
 import TagList from '../components/TagList';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
-import { day } from '../format';
+import { day, plural } from '../format';
 import { useHub } from '../hub';
 import { useSpotlight } from '../motion/motion';
 import { topicsFor } from '../topics';
@@ -44,8 +44,8 @@ function Epic({ epic, today }: { epic: Project; today: string }) {
         <p className="summary">{epic.summary}</p>
         <div className="meta">
           <span className="facts">
-            <Fact value={children.length} label={children.length === 1 ? 'project' : 'projects'} />
-            <Fact value={releases.length} label={releases.length === 1 ? 'release' : 'releases'} />
+            <Fact value={children.length} label={plural(children.length, 'project')} />
+            <Fact value={releases.length} label={plural(releases.length, 'release')} />
             {latest && <Fact label="latest" value={`v${latest.version} · ${day(latest.date)}`} />}
           </span>
           <TagList tags={epic.tags} />
@@ -108,9 +108,9 @@ export default function Epics({ loaderData }: Route.ComponentProps) {
         title="Epics"
         facts={
           <>
-            <Fact value={hub.epics.length} label={hub.epics.length === 1 ? 'epic' : 'epics'} />
-            <Fact value={inside} label="projects inside" />
-            <Fact value={released} label="releases" />
+            <Fact value={hub.epics.length} label={plural(hub.epics.length, 'epic')} />
+            <Fact value={inside} label={`${plural(inside, 'project')} inside`} />
+            <Fact value={released} label={plural(released, 'release')} />
           </>
         }
       />

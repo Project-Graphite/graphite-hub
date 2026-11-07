@@ -7,6 +7,7 @@ import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
 import { SubscribePanel } from '../components/kit/subscribe';
 import { Page } from '../components/Shell';
 import type { Hub } from '../context';
+import { plural } from '../format';
 import { useHub, useRoot } from '../hub';
 import { createModel } from '../model';
 import type { Member } from '../types';
@@ -38,6 +39,8 @@ export function MemberHero({ member, actions }: { member: Member; actions?: Reac
   const hub = useHub();
   const live = hub.projectsOwnedBy(member).filter((project) => project.status === 'live').length;
   const posts = hub.postsBy(member).length;
+  const projects = hub.projectsForMember(member).length + hub.epicsForMember(member).length;
+  const releases = hub.releasesOwnedBy(member).length;
   return (
     <PageHeader
       banner={member.coverUrl && <img className="member-cover" src={member.coverUrl} alt="" />}
@@ -48,15 +51,12 @@ export function MemberHero({ member, actions }: { member: Member; actions?: Reac
       actions={actions}
       facts={
         <>
-          <Fact
-            value={hub.projectsForMember(member).length + hub.epicsForMember(member).length}
-            label="projects"
-          />
+          <Fact value={projects} label={plural(projects, 'project')} />
           {live > 0 && <Fact value={live} label="live" />}
-          <Fact value={hub.releasesOwnedBy(member).length} label="releases" />
+          <Fact value={releases} label={plural(releases, 'release')} />
           {posts > 0 && (
             <Link to={`${member.path}/blog`}>
-              <Fact value={posts} label={posts === 1 ? 'post' : 'posts'} />
+              <Fact value={posts} label={plural(posts, 'post')} />
             </Link>
           )}
           {member.joined && <Fact label="on GitHub since" value={member.joined} />}

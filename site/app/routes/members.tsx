@@ -6,6 +6,7 @@ import { Fact, loadRail, PageHeader, StandardRail } from '../components/kit/page
 import { Page } from '../components/Shell';
 import TagList from '../components/TagList';
 import { hubContext } from '../context';
+import { plural } from '../format';
 import { useHub } from '../hub';
 import { useOnline } from '../live';
 import { useSpotlight, useTilt } from '../motion/motion';
@@ -61,14 +62,14 @@ function Card({
         {member.bio && <p className="bio">{member.bio}</p>}
         <div className="facts">
           <span>
-            <b>{projects}</b> {projects === 1 ? 'project' : 'projects'}
+            <b>{projects}</b> {plural(projects, 'project')}
           </span>
           <span>
-            <b>{releases}</b> {releases === 1 ? 'release' : 'releases'}
+            <b>{releases}</b> {plural(releases, 'release')}
           </span>
           {member.followers !== null && (
             <span>
-              <b>{member.followers}</b> followers
+              <b>{member.followers}</b> {plural(member.followers, 'follower')}
             </span>
           )}
           {member.joined && (
@@ -112,10 +113,13 @@ export default function Members({ loaderData }: Route.ComponentProps) {
         title="Members"
         facts={
           <>
-            <Fact value={hub.members.length} label="members" />
-            <Fact value={hub.rootProjects.length} label="projects" />
-            <Fact value={hub.epics.length} label={hub.epics.length === 1 ? 'epic' : 'epics'} />
-            <Fact value={hub.releases.length} label="releases" />
+            <Fact value={hub.members.length} label={plural(hub.members.length, 'member')} />
+            <Fact
+              value={hub.rootProjects.length}
+              label={plural(hub.rootProjects.length, 'project')}
+            />
+            <Fact value={hub.epics.length} label={plural(hub.epics.length, 'epic')} />
+            <Fact value={hub.releases.length} label={plural(hub.releases.length, 'release')} />
           </>
         }
       />

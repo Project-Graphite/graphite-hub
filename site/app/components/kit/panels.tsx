@@ -43,9 +43,7 @@ export function RunningPanel({ running }: { running: Running[] }) {
             </Link>
             <Status status="live" />
             <span className="meta">
-              {project.deploy
-                ? `sha-${shortTag(project.deploy.tag)} · ${day(project.deploy.at)}`
-                : 'no deploy recorded yet'}
+              {project.deploy && `sha-${shortTag(project.deploy.tag)} · ${day(project.deploy.at)}`}
               <span className="week">
                 {project.week.map((state, index) => (
                   <i

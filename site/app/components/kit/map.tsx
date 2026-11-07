@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { plural } from '../../format';
 import { useLiveMessages } from '../../live';
 import type { Country } from '../../types';
 import Status from '../Status';
@@ -40,8 +41,8 @@ export function VisitorMap({ initial }: { initial: Country[] }) {
       <div className="head">
         <Status status="live" />
         <span>
-          <b>{tabs}</b> {tabs === 1 ? 'tab' : 'tabs'} from <b>{countries.length}</b>{' '}
-          {countries.length === 1 ? 'country' : 'countries'}
+          <b>{tabs}</b> {plural(tabs, 'tab')} from <b>{countries.length}</b>{' '}
+          {plural(countries.length, 'country', 'countries')}
         </span>
         <span className="end">last 10 minutes</span>
       </div>
