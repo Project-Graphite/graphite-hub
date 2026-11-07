@@ -1,10 +1,13 @@
+import { randomBytes } from 'node:crypto';
 import type { Request, Response } from 'express';
+import { MAX_TOPICS, PATCHED, type Topic } from '../app/topics.ts';
 import type { Auth } from './auth.ts';
 import type { Bus, Delivery, HubEvent } from './bus.ts';
 import { toPublicEvent } from './console/public.ts';
+import type { Presence } from './presence.ts';
 
-const MAX_TOPICS = 12;
 const TOPIC = /^[a-z]+(?::[a-z0-9-]+)?$/;
+const KEY = /^[a-z0-9-]{1,80}$/;
 const HEARTBEAT_MS = 25_000;
 const COALESCE_MS = 100;
 
@@ -21,6 +24,10 @@ export function parseTopics(value: unknown) {
     topics.every((topic) => TOPIC.test(topic))
     ? topics
     : undefined;
+}
+
+export function parseKey(value: unknown) {
+  return typeof value === 'string' && KEY.test(value) ? value : undefined;
 }
 
 export function matches(topics: string[], event: HubEvent) {
@@ -42,6 +49,7 @@ export function payload(event: HubEvent, member: boolean) {
     key: event.key,
     kind: event.kind,
     console: toPublicEvent(event),
+    ...(PATCHED.has(event.topic as Topic) ? { data: event.detail } : {}),
   };
   return member ? { ...shared, event } : shared;
 }
@@ -57,11 +65,21 @@ export function createClient(
   const pending = new Map<string, Delivery>();
 
   function flush() {
+    clearTimeout(timer);
     timer = undefined;
     for (const { id, event } of pending.values()) {
       write(`${id ? `id: ${id}\n` : ''}data: ${JSON.stringify(payload(event, member))}\n\n`);
     }
     pending.clear();
+  }
+
+  function queue(delivery: Delivery) {
+    const { id, event } = delivery;
+    if (id) {
+      last = id;
+    }
+    pending.set(`${event.topic}:${event.key ?? ''}:${event.kind}`, delivery);
+    timer ??= setTimeout(flush, COALESCE_MS);
   }
 
   return {
@@ -70,23 +88,55 @@ export function createClient(
       if (!matches(topics, event) || (!event.public && !member) || (id && !newer(id, last))) {
         return;
       }
-      if (id) {
-        last = id;
-      }
-      pending.set(`${event.topic}:${event.key ?? ''}:${event.kind}`, delivery);
-      timer ??= setTimeout(flush, COALESCE_MS);
+      queue(delivery);
     },
+    push: queue,
+    flush,
     close() {
       clearTimeout(timer);
     },
   };
 }
 
-export function createLive(bus: Bus, auth: Auth) {
-  const clients = new Set<Pick<ReturnType<typeof createClient>, 'offer'>>();
+interface Stream {
+  offer(delivery: Delivery): void;
+  push(delivery: Delivery): void;
+  member: boolean;
+  login?: string;
+  end(): void;
+}
+
+export function signedOut(stream: Pick<Stream, 'member' | 'login'>, event: HubEvent) {
+  return (
+    event.topic === 'sessions' &&
+    stream.member &&
+    (!event.key || stream.login?.toLowerCase() === event.key)
+  );
+}
+
+export function createLive(
+  bus: Bus,
+  auth: Auth,
+  presence: Presence,
+  deps: {
+    handleOf: (login: string) => string | undefined;
+    countryOf: (request: Request) => string | undefined;
+  },
+) {
+  const streams = new Set<Stream>();
+
+  function deliver(stream: Stream, delivery: Delivery) {
+    if (signedOut(stream, delivery.event)) {
+      stream.push(delivery);
+      stream.end();
+    } else {
+      stream.offer(delivery);
+    }
+  }
+
   bus.listen((delivery) => {
-    for (const client of clients) {
-      client.offer(delivery);
+    for (const stream of streams) {
+      deliver(stream, delivery);
     }
   });
 
@@ -96,7 +146,7 @@ export function createLive(bus: Bus, auth: Auth) {
       response.status(400).type('text').send(`Ask for 1 to ${MAX_TOPICS} topics.`);
       return;
     }
-    const member = Boolean(await auth.current(request, response));
+    const signedIn = await auth.current(request, response);
     const header = String(request.headers['last-event-id'] ?? '');
     const lastId = /^\d+-\d+$/.test(header) ? header : undefined;
     response.writeHead(200, {
@@ -106,33 +156,58 @@ export function createLive(bus: Bus, auth: Auth) {
       'X-Accel-Buffering': 'no',
     });
     response.write('retry: 3000\n\n');
+    const tab = randomBytes(6).toString('base64url');
     const held: Delivery[] = [];
-    const holder = { offer: (delivery: Delivery) => held.push(delivery) };
-    const client = createClient((chunk) => response.write(chunk), topics, member, lastId);
-    const heartbeat = setInterval(() => response.write(': ping\n\n'), HEARTBEAT_MS);
+    const client = createClient(
+      (chunk) => response.write(chunk),
+      topics,
+      Boolean(signedIn),
+      lastId,
+    );
+    const stream: Stream = {
+      offer: client.offer,
+      push: client.push,
+      member: Boolean(signedIn),
+      login: signedIn?.session.login,
+      end() {
+        client.flush();
+        response.end();
+      },
+    };
+    const holder: Stream = { ...stream, offer: (delivery) => held.push(delivery) };
+    const heartbeat = setInterval(() => {
+      response.write(': ping\n\n');
+      void presence.touch(tab);
+    }, HEARTBEAT_MS);
     let open = true;
     request.on('close', () => {
       open = false;
       clearInterval(heartbeat);
       client.close();
-      clients.delete(holder);
-      clients.delete(client);
+      streams.delete(holder);
+      streams.delete(stream);
+      void presence.leave(tab);
     });
-    clients.add(holder);
+    streams.add(holder);
     const replay = lastId ? await bus.since(lastId) : [];
-    clients.delete(holder);
+    streams.delete(holder);
     if (open) {
       for (const delivery of [...replay, ...held]) {
-        client.offer(delivery);
+        deliver(stream, delivery);
       }
-      clients.add(client);
+      streams.add(stream);
+      await presence.join(tab, {
+        reading: parseKey(request.query.reading),
+        handle: signedIn && deps.handleOf(signedIn.session.login),
+        country: deps.countryOf(request),
+      });
     }
   }
 
   return {
     handler,
     get connections() {
-      return clients.size;
+      return streams.size;
     },
   };
 }

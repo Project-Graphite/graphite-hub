@@ -2,10 +2,16 @@ import { data } from 'react-router';
 import type { Route } from './+types/resolved';
 import { hubContext } from '../context';
 import { modelFrom } from '../hub';
-import { loadMember, MEMBER_TOPICS, MemberPage } from '../pages/member-page';
-import { loadProject, PROJECT_TOPICS, ProjectPage } from '../pages/project-page';
+import { loadMember, MemberPage } from '../pages/member-page';
+import { loadProject, ProjectPage } from '../pages/project-page';
+import { topicsFor } from '../topics';
 
-export const handle = { topics: [...new Set([...PROJECT_TOPICS, ...MEMBER_TOPICS])] };
+export const handle = topicsFor('resolved', {
+  reading: ({ loaderData }) => {
+    const loaded = loaderData as { page?: string; slug?: string } | undefined;
+    return loaded?.page === 'project' ? loaded.slug : undefined;
+  },
+});
 
 export function loader({ context, params }: Route.LoaderArgs) {
   const hub = context.get(hubContext);

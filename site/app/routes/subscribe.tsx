@@ -10,8 +10,9 @@ import { Page } from '../components/Shell';
 import { hubContext } from '../context';
 import { useHub } from '../hub';
 import { isCadence, knownScope, parseScope, type Cadence, type Scope } from '../subscribe';
+import { topicsFor } from '../topics';
 
-export const handle = { topics: ['posts', 'members', 'projects'] };
+export const handle = topicsFor('subscribe');
 
 export function loader({ context }: Route.LoaderArgs) {
   const hub = context.get(hubContext);

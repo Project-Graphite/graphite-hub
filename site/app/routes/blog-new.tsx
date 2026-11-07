@@ -7,8 +7,9 @@ import { hubContext } from '../context';
 import { useRoot } from '../hub';
 import { checkedForm, EDITOR_PATH, member } from '../pages/blog';
 import { isRefused } from '../profile';
+import { topicsFor } from '../topics';
 
-export const handle = { topics: ['posts'] };
+export const handle = topicsFor('blog-new');
 
 export function loader({ context }: Route.LoaderArgs) {
   const hub = context.get(hubContext);

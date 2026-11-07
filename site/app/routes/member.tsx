@@ -2,9 +2,10 @@ import { redirect } from 'react-router';
 import type { Route } from './+types/member';
 import { hubContext } from '../context';
 import { found, modelFrom } from '../hub';
-import { loadMember, MEMBER_TOPICS, MemberPage } from '../pages/member-page';
+import { loadMember, MemberPage } from '../pages/member-page';
+import { topicsFor } from '../topics';
 
-export const handle = { topics: MEMBER_TOPICS };
+export const handle = topicsFor('member');
 
 export function loader({ context, params }: Route.LoaderArgs) {
   const member = found(modelFrom(context).memberByHandle(params.handle));

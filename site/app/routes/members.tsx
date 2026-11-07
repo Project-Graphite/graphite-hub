@@ -2,15 +2,17 @@ import { useCallback, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
 import type { Route } from './+types/members';
 import { accentStyle, Avatar, Band } from '../components/kit/basics';
-import { Fact, loadRail, PageHeader, RAIL_TOPICS, StandardRail } from '../components/kit/page';
+import { Fact, loadRail, PageHeader, StandardRail } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import TagList from '../components/TagList';
 import { hubContext } from '../context';
 import { useHub } from '../hub';
+import { useOnline } from '../live';
 import { useSpotlight, useTilt } from '../motion/motion';
+import { topicsFor } from '../topics';
 import type { Member } from '../types';
 
-export const handle = { topics: RAIL_TOPICS };
+export const handle = topicsFor('members');
 
 export function loader({ context }: Route.LoaderArgs) {
   return loadRail(context.get(hubContext));
@@ -21,11 +23,13 @@ function Card({
   projects,
   releases,
   index,
+  online,
 }: {
   member: Member;
   projects: number;
   releases: number;
   index: number;
+  online: boolean;
 }) {
   const tilt = useTilt<HTMLElement>();
   const spot = useSpotlight<HTMLElement>();
@@ -47,7 +51,7 @@ function Card({
         {member.coverUrl && <img src={member.coverUrl} alt="" loading="lazy" />}
       </div>
       <Link to={member.path} className="face" tabIndex={-1} aria-hidden="true">
-        <Avatar member={member} size="lg" />
+        <Avatar member={member} size="lg" online={online} />
       </Link>
       <div className="body">
         <h3>
@@ -100,6 +104,7 @@ export default function Members({ loaderData }: Route.ComponentProps) {
   const columns = hub.projects.filter((project) =>
     hub.members.some((member) => hub.isCredited(project, member)),
   );
+  const online = useOnline();
   return (
     <Page rail={<StandardRail {...loaderData} />}>
       <PageHeader
@@ -123,6 +128,7 @@ export default function Members({ loaderData }: Route.ComponentProps) {
               projects={creditsOf(member).length}
               releases={releasesOf(member)}
               index={index}
+              online={online.has(member.handle)}
             />
           ))}
         </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { data, Link, useFetcher } from 'react-router';
+import { data, Link, redirect, useFetcher } from 'react-router';
 import type { Route } from './+types/admin';
 import { Avatar, Band, Button, Panel } from '../components/kit/basics';
 import { Confirm, Segmented, Sortable, Switch } from '../components/kit/controls';
@@ -22,8 +22,9 @@ import {
   type TextSetting,
 } from '../settings';
 import { describeScope, parseScope, validEmail } from '../subscribe';
+import { topicsFor } from '../topics';
 
-export const handle = { topics: ['settings', 'errors', 'subscribers'] };
+export const handle = topicsFor('admin');
 
 function owner(hub: Hub) {
   if (!hub.viewer?.owner) {
@@ -69,7 +70,8 @@ export async function action({ context, request }: Route.ActionArgs) {
         await hub.admin.resolveError(String(form.get('fingerprint')), viewer.login);
         break;
       case 'sign-out-everyone':
-        return { ok: `${await hub.admin.signOutEveryone(viewer.login)} sessions ended.` };
+        await hub.admin.signOutEveryone(viewer.login);
+        throw redirect('/');
       case 'test-email': {
         const to = String(form.get('to') ?? '')
           .trim()
@@ -83,6 +85,9 @@ export async function action({ context, request }: Route.ActionArgs) {
       }
     }
   } catch (error) {
+    if (error instanceof Response) {
+      throw error;
+    }
     return data(
       { error: error instanceof Error ? error.message : String(error), key },
       { status: 400 },
@@ -575,17 +580,12 @@ function Sessions({ csrf }: { csrf: string }) {
   const signOut = useFetcher<typeof action>();
   return (
     <Panel title="sessions">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Confirm
-          label="sign everyone out"
-          sure="sure? everyone, you included"
-          disabled={signOut.state !== 'idle'}
-          act={() => signOut.submit({ csrf, intent: 'sign-out-everyone' }, { method: 'post' })}
-        />
-        {signOut.data && 'ok' in signOut.data && (
-          <span className="mono-sm text-live">{signOut.data.ok}</span>
-        )}
-      </div>
+      <Confirm
+        label="sign everyone out"
+        sure="sure? everyone, you included"
+        disabled={signOut.state !== 'idle'}
+        act={() => signOut.submit({ csrf, intent: 'sign-out-everyone' }, { method: 'post' })}
+      />
     </Panel>
   );
 }

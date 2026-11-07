@@ -21,8 +21,9 @@ import { Field } from '../motion/canvases';
 import { checkedForm, editablePost, viewerHandle } from '../pages/blog';
 import { POST_LIMITS, postPath, slugify, STATUS_LABEL, type PostFields } from '../posts';
 import { isRefused, uploadUrl } from '../profile';
+import { topicsFor } from '../topics';
 
-export const handle = { topics: ['posts', 'members', 'projects'] };
+export const handle = topicsFor('post-editor');
 
 const PostEditor = lazy(() => import('../editor/PostEditor'));
 

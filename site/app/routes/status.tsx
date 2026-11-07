@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import type { Route } from './+types/status';
 import { Console } from '../components/kit/live';
+import { VisitorMap } from '../components/kit/map';
 import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import Status from '../components/Status';
@@ -9,21 +10,23 @@ import { hubContext } from '../context';
 import { day, shortTag } from '../format';
 import { useRoot } from '../hub';
 import { useLiveMessages } from '../live';
+import { topicsFor } from '../topics';
 import type { Day } from '../types';
 
 const DAYS = 30;
 const DAY_MS = 86_400_000;
 
-export const handle = { topics: ['deploys', 'uptime', 'ping', 'releases', 'projects'] };
+export const handle = topicsFor('status');
 
 export function loader({ context }: Route.LoaderArgs) {
-  const { reads, directory, settings } = context.get(hubContext);
+  const { reads, directory, settings, presence } = context.get(hubContext);
   return {
     running: reads.running(directory),
     up: reads.upNow(),
     uptime: reads.uptime(DAYS),
     lines: reads.consoleLines(settings['rail.console.lines'] * 3),
     today: new Date().toISOString().slice(0, 10),
+    countries: presence.countries(),
   };
 }
 
@@ -50,7 +53,7 @@ function Strip({ days, today }: { days: Day[]; today: string }) {
 }
 
 export default function StatusPage({ loaderData }: Route.ComponentProps) {
-  const { running, up, uptime, lines, today } = loaderData;
+  const { running, up, uptime, lines, today, countries } = loaderData;
   const limit = useRoot()!.settings['rail.console.lines'] * 3;
   const live = running.filter((project) => up.includes(project.slug)).length;
   const [pinged, setPinged] = useState<Record<string, string>>({});
@@ -130,6 +133,7 @@ export default function StatusPage({ loaderData }: Route.ComponentProps) {
           })}
         </div>
         <Console initial={lines} limit={limit} tall />
+        <VisitorMap initial={countries} />
       </section>
     </Page>
   );

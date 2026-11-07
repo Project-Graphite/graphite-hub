@@ -11,8 +11,6 @@ import { useHub, useRoot } from '../hub';
 import { createModel } from '../model';
 import type { Member } from '../types';
 
-export const MEMBER_TOPICS = ['deploys', 'releases', 'projects', 'uptime', 'profiles', 'posts'];
-
 export function loadMember({ reads, directory, profiles, viewer }: Hub, member: Member) {
   const owned = new Set(
     createModel(directory)

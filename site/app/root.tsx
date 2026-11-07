@@ -15,17 +15,23 @@ import { useLive } from './live';
 import { metaFor, metaTags } from './meta';
 import { createModel } from './model';
 import { shareCard, sharePath } from './share';
+import { ROOT_TOPICS, type LiveHandle } from './topics';
 import './styles/global.css';
 
 import.meta.glob('./styles/pages/*.css', { eager: true });
 
-export const handle = {
-  topics: ['members', 'profiles', 'projects', 'releases', 'settings', 'posts'],
-};
+export const handle: LiveHandle = { topics: ROOT_TOPICS };
 
 export function loader({ context }: Route.LoaderArgs) {
-  const { directory, settings, viewer, csrf } = context.get(hubContext);
-  return { directory, settings, viewer, csrf };
+  const { directory, settings, viewer, csrf, presence, views } = context.get(hubContext);
+  return {
+    directory,
+    settings,
+    viewer,
+    csrf,
+    presence: presence.current(),
+    views: views.totals(),
+  };
 }
 
 export function meta({ loaderData, location }: Route.MetaArgs) {

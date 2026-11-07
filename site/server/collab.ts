@@ -3,6 +3,7 @@ import type { Duplex } from 'node:stream';
 import { Server } from '@hocuspocus/server';
 import * as Y from 'yjs';
 import { cookies } from './auth.ts';
+import type { Bus } from './bus.ts';
 import { config } from './config.ts';
 import type { Database } from './db.ts';
 import { log } from './log.ts';
@@ -20,10 +21,62 @@ export interface Collaborator {
   color: string;
 }
 
-export function createCollab(db: Database, posts: Posts, sessions: Sessions) {
+export function createCollab(db: Database, posts: Posts, sessions: Sessions, bus: Bus) {
   const member = db.prepare(
     `SELECT m.handle, m.name, p.accent FROM members m LEFT JOIN profiles p USING (handle) WHERE m.login = ? COLLATE NOCASE`,
   );
+  const announced = new Map<string, string>();
+
+  function editing(id: string) {
+    const document = server.hocuspocus.documents.get(id);
+    const seen = new Map<string, Collaborator>();
+    for (const state of document?.awareness.getStates().values() ?? []) {
+      const user = (state as { user?: Collaborator }).user;
+      if (user?.handle) {
+        seen.set(user.handle, user);
+      }
+    }
+    return [...seen.values()];
+  }
+
+  async function announce(id: string) {
+    const editors = editing(id).map(({ handle, name, color }) => ({ handle, name, color }));
+    const signature = editors.map((editor) => editor.handle).join(',');
+    if ((announced.get(id) ?? '') === signature) {
+      return;
+    }
+    if (signature) {
+      announced.set(id, signature);
+    } else {
+      announced.delete(id);
+    }
+    await bus.publish({
+      topic: 'editing',
+      key: id,
+      kind: 'editing',
+      public: true,
+      summary: `${editors.length} editing ${id}`,
+      detail: { id, editors },
+      at: new Date().toISOString(),
+    });
+  }
+
+  bus.listen(({ event }) => {
+    if (event.topic !== 'sessions') {
+      return;
+    }
+    if (!event.key) {
+      server.hocuspocus.closeConnections();
+      return;
+    }
+    for (const document of server.hocuspocus.documents.values()) {
+      for (const connection of document.getConnections()) {
+        if ((connection.context as Collaborator).login.toLowerCase() === event.key) {
+          connection.close();
+        }
+      }
+    }
+  });
 
   const server = new Server<Collaborator>({
     quiet: true,
@@ -88,6 +141,12 @@ export function createCollab(db: Database, posts: Posts, sessions: Sessions) {
         }
       }
     },
+    async onAwarenessUpdate({ documentName }) {
+      await announce(documentName);
+    },
+    async onDisconnect({ documentName }) {
+      await announce(documentName);
+    },
   });
 
   const upgrades = server as unknown as {
@@ -118,17 +177,7 @@ export function createCollab(db: Database, posts: Posts, sessions: Sessions) {
         await connection.disconnect();
       }
     },
-    editing(id: string) {
-      const document = server.hocuspocus.documents.get(id);
-      const seen = new Map<string, Collaborator>();
-      for (const state of document?.awareness.getStates().values() ?? []) {
-        const user = (state as { user?: Collaborator }).user;
-        if (user?.handle) {
-          seen.set(user.handle, user);
-        }
-      }
-      return [...seen.values()];
-    },
+    editing,
     destroy() {
       server.hocuspocus.closeConnections();
     },

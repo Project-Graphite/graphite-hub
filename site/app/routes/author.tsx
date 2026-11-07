@@ -8,8 +8,9 @@ import { Page } from '../components/Shell';
 import { hubContext } from '../context';
 import { useHub, useRoot } from '../hub';
 import { authorFrom, viewerHandle } from '../pages/blog';
+import { topicsFor } from '../topics';
 
-export const handle = { topics: ['posts', 'members', 'projects', 'releases'] };
+export const handle = topicsFor('author');
 
 export function loader({ context, params }: Route.LoaderArgs) {
   const hub = context.get(hubContext);

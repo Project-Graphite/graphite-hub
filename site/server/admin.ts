@@ -57,6 +57,7 @@ export function createAdmin(db: Database, bus: Bus, settings: Settings, sessions
 
     async signOutEveryone(by: string) {
       const removed = await sessions.revokeEveryone();
+      const at = new Date().toISOString();
       await bus.record({
         topic: 'console',
         kind: 'sessions',
@@ -64,7 +65,16 @@ export function createAdmin(db: Database, bus: Bus, settings: Settings, sessions
         actor: by,
         summary: `Everyone signed out: ${removed} sessions ended`,
         detail: { removed },
-        at: new Date().toISOString(),
+        at,
+      });
+      await bus.publish({
+        topic: 'sessions',
+        kind: 'revoked',
+        public: false,
+        actor: by,
+        summary: 'Every session ended',
+        detail: { removed },
+        at,
       });
       return removed;
     },

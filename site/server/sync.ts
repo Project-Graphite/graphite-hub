@@ -27,7 +27,16 @@ export function changedFiles(push: Push) {
 export function createSync(db: Database, bus: Bus, sessions: Sessions, writeback: Writeback) {
   async function members() {
     for (const login of await syncMembers(db, bus)) {
-      await sessions.revoke(login);
+      const removed = await sessions.revoke(login);
+      await bus.publish({
+        topic: 'sessions',
+        key: login.toLowerCase(),
+        kind: 'revoked',
+        public: false,
+        summary: `${login} left the organisation`,
+        detail: { removed },
+        at: new Date().toISOString(),
+      });
     }
   }
 

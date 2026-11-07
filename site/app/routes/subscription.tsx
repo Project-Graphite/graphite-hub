@@ -10,8 +10,9 @@ import { hubContext, type Hub } from '../context';
 import { day } from '../format';
 import { useHub } from '../hub';
 import { describeChoice, parseScope, scopeKey, type Cadence, type Scope } from '../subscribe';
+import { topicsFor } from '../topics';
 
-export const handle = { topics: ['members', 'projects'] };
+export const handle = topicsFor('subscription');
 
 function verified(hub: Hub, params: Route.LoaderArgs['params']) {
   const subscriber = hub.subscribers.verify(params.purpose, params.id, params.sig);
