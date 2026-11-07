@@ -10,6 +10,9 @@ import Timeline from '../components/Timeline';
 import { day } from '../format';
 import { found, modelFrom, useHub } from '../hub';
 import { changelogPath } from '../model';
+import { topicsFor } from '../topics';
+
+export const handle = topicsFor('project-changelog');
 
 export function loader({ context, params }: Route.LoaderArgs) {
   const project = found(modelFrom(context).projectByRoute(params.parentSlug, params.slug));

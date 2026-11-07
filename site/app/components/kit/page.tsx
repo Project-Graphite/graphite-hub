@@ -87,5 +87,3 @@ export function StandardRail({ running, lines }: { running: Running[]; lines: Co
     </>
   );
 }
-
-export const RAIL_TOPICS = ['deploys', 'releases', 'projects', 'uptime'];

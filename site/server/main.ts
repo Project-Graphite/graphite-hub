@@ -1,7 +1,7 @@
 import path from 'node:path';
 import type { RequestHandler } from 'express';
 import type { ServerBuild } from 'react-router';
-import { refreshCloudflareRanges } from './address.ts';
+import { countryOf, refreshCloudflareRanges } from './address.ts';
 import { createAdmin } from './admin.ts';
 import { createApp } from './app.ts';
 import { createMessages } from './messages.ts';
@@ -22,6 +22,7 @@ import { createMetrics } from './metrics.ts';
 import { connectRedis, slidingLimit } from './redis.ts';
 import { createSessions } from './sessions.ts';
 import { github } from './github.ts';
+import { createPresence } from './presence.ts';
 import { createPresentations } from './presentation.ts';
 import { createProfiles } from './profiles.ts';
 import { createWriteback } from './writeback.ts';
@@ -32,6 +33,7 @@ import { createSnapshot } from './snapshot.ts';
 import { createSubscribers } from './subscribers.ts';
 import { createSync } from './sync.ts';
 import { pingAll } from './uptime.ts';
+import { createViews } from './views.ts';
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
@@ -45,11 +47,24 @@ await bus.ready;
 const capture = createErrors(db, bus, alertOwner);
 const sessions = createSessions(redis, config.sessionSecret);
 const auth = createAuth(sessions, redis);
-const live = createLive(bus, auth);
+const presence = createPresence(redis, bus);
+const live = createLive(bus, auth, presence, {
+  handleOf: (login) =>
+    db.prepare('SELECT handle FROM members WHERE login = ? COLLATE NOCASE').get(login)?.handle as
+      string | undefined,
+  countryOf: (request) => (config.dev ? countryOf(request, true) : countryOf(request)),
+});
 const writeback = createWriteback(db, bus, github);
 const sync = createSync(db, bus, sessions, writeback);
 const settings = createSettings(db, bus);
 const snapshot = createSnapshot(db, bus, settings);
+const views = createViews(db, redis, bus, {
+  exists: (kind, key) =>
+    kind === 'post'
+      ? snapshot.get().posts.some((post) => post.id === key)
+      : snapshot.get().projects.some((project) => project.slug === key),
+  allow: (address) => slidingLimit(redis, `views:${address}`, 30, MINUTE),
+});
 const jobs = createJobs(
   db,
   {
@@ -75,7 +90,7 @@ const subscribers = createSubscribers(db, jobs, bus, {
   testAddress: config.alertsEmail,
 });
 const posts = createPosts(db, bus, jobs, subscribers.queuePost);
-const collab = createCollab(db, posts, sessions);
+const collab = createCollab(db, posts, sessions, bus);
 
 process.on('unhandledRejection', (reason) => capture(reason, { route: 'process' }));
 process.on('uncaughtExceptionMonitor', (error) => capture(error, { route: 'process' }));
@@ -120,6 +135,8 @@ const app = createApp(
     posts,
     subscribers,
     collab,
+    presence,
+    views,
     auth,
     live,
     sync,
@@ -134,6 +151,7 @@ const server = app.listen(config.port, () => log.info({ port: config.port }, 'li
 server.on('upgrade', collab.upgrade);
 subscribers.start();
 jobs.start();
+presence.start().catch((error: unknown) => capture(error, { route: 'presence' }));
 
 function every(name: string, ms: number, job: () => Promise<unknown>) {
   const run = () => job().catch((error: unknown) => capture(error, { route: `job:${name}` }));
@@ -164,6 +182,7 @@ process.on('SIGTERM', () => {
   log.info('shutting down');
   timers.forEach(clearTimeout);
   jobs.stop();
+  presence.stop();
   collab.destroy();
   server.close();
   server.closeAllConnections();

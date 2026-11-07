@@ -1,5 +1,8 @@
 import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
+import { topicsFor } from '../topics';
+
+export const handle = topicsFor('privacy');
 
 const KEPT = [
   {
@@ -9,7 +12,22 @@ const KEPT = [
   },
   {
     what: 'Addresses',
-    how: 'Used only to limit how often a sign-in can be tried.',
+    how: 'Used only to limit how often a sign-in, a message, a subscription or a view can be sent.',
+    kept: 'up to 1 hour',
+  },
+  {
+    what: 'Views',
+    how: 'A count per post and project, one a day per visitor. The visitor is a hash of the address, the browser and a daily random value; the hash is never stored and cannot be reversed.',
+    kept: 'the counts for ever, the daily check for 2 days',
+  },
+  {
+    what: 'Reading now',
+    how: 'How many open tabs are on the site and on each post or project, counted by a random tab id, never by address.',
+    kept: '90 seconds after a tab closes',
+  },
+  {
+    what: 'Visitor map',
+    how: 'The country a page was opened from, as a count per country from the edge, for the map on /status. Never an address or a city.',
     kept: '10 minutes',
   },
   {

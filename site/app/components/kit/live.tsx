@@ -2,13 +2,81 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router';
 import { useFolded } from '../../folds';
 import { clock, day, describe } from '../../format';
-import { useLiveMessages } from '../../live';
+import { useRoot } from '../../hub';
+import {
+  useConnection,
+  useEditing,
+  useLiveMessages,
+  usePresence,
+  useReading,
+  useViews,
+  type Editor,
+} from '../../live';
 import { releaseLine } from '../../model';
 import { useCountUp, useCycle } from '../../motion/motion';
 import type { COUNTERS } from '../../settings';
 import type { ConsoleLine, Counts, Release } from '../../types';
 import Status from '../Status';
-import { Fold } from './basics';
+import { accentStyle, Fold } from './basics';
+
+export function LivePulse() {
+  const root = useRoot()!;
+  const { here } = usePresence(root.presence);
+  const connection = useConnection();
+  return (
+    <span className="live-pulse" data-state={connection} role="status">
+      <i key={`${connection}${here}`} />
+      {connection === 'live' ? (
+        <>
+          <b>{here}</b> here
+        </>
+      ) : (
+        'reconnecting'
+      )}
+    </span>
+  );
+}
+
+export function ReadingBadge({ id, initial }: { id: string; initial: number }) {
+  const count = useReading(id, initial);
+  return count > 1 ? (
+    <span key={count} className="badge reading">
+      <i />
+      {count} reading now
+    </span>
+  ) : null;
+}
+
+function names(editors: Editor[]) {
+  const first = editors.map((editor) => editor.name.split(' ')[0]);
+  return first.length === 1
+    ? `${first[0]} is editing`
+    : `${first.slice(0, -1).join(', ')} and ${first.at(-1)} are editing`;
+}
+
+export function EditingBadge({ id, initial }: { id: string; initial: Editor[] }) {
+  const editors = useEditing(id, initial);
+  return editors.length > 0 ? (
+    <span className="badge editing">
+      <span className="pens" aria-hidden="true">
+        {editors.map((editor) => (
+          <i key={editor.handle} style={accentStyle(editor.color)} />
+        ))}
+      </span>
+      {names(editors)}
+    </span>
+  ) : null;
+}
+
+export function Views({ kind, id }: { kind: 'post' | 'project'; id: string }) {
+  const count = useViews(useRoot()!.views)(kind, id);
+  const shown = useCountUp(count);
+  return count > 0 ? (
+    <span className="views">
+      {shown} {count === 1 ? 'view' : 'views'}
+    </span>
+  ) : null;
+}
 
 const COUNTER_LABEL: Record<(typeof COUNTERS)[number], string> = {
   members: 'members',

@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import AuthorLink from '../components/AuthorLink';
 import { accentStyle, Avatar, Button, Cover, Panel } from '../components/kit/basics';
+import { ReadingBadge } from '../components/kit/live';
 import { Fact, PageHeader } from '../components/kit/page';
 import { ChangelogPanel, RunningPanel } from '../components/kit/panels';
 import { PostCard, WritingStrip } from '../components/kit/posts';
@@ -15,15 +16,15 @@ import TagList from '../components/TagList';
 import type { Hub } from '../context';
 import { day, shortTag } from '../format';
 import { useHub, useRoot } from '../hub';
+import { useView, useViews } from '../live';
 import { changelogPath } from '../model';
 import type { Deploy, Project } from '../types';
 
-export const PROJECT_TOPICS = ['deploys', 'releases', 'projects', 'uptime', 'posts'];
-
-export function loadProject({ reads, directory, viewer }: Hub, project: Project) {
+export function loadProject({ reads, directory, viewer, presence }: Hub, project: Project) {
   const owner = directory.members.find((member) => member.handle === project.owner);
   return {
     page: 'project' as const,
+    reading: presence.reading(project.slug),
     editable: Boolean(
       viewer && (viewer.owner || viewer.login.toLowerCase() === owner?.github.toLowerCase()),
     ),
@@ -61,6 +62,8 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
   const deploys = groupDeploys(loaderData.deploys);
   const linked = project.feature.posts.flatMap((id) => hub.postById(id) ?? []);
   const writing = hub.postsAbout(project);
+  const views = useViews(useRoot()!.views)('project', project.slug);
+  useView('project', project.slug);
 
   return (
     <Page
@@ -125,7 +128,12 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
             </>
           }
           title={project.name}
-          aside={<Status status={project.status} />}
+          aside={
+            <>
+              <Status status={project.status} />
+              <ReadingBadge id={project.slug} initial={loaderData.reading} />
+            </>
+          }
           actions={
             <>
               {loaderData.editable && owner && (
@@ -142,6 +150,7 @@ export function ProjectPage({ data: loaderData }: { data: ReturnType<typeof load
               {releases[0] && <Fact label="latest" value={`v${releases[0].version}`} />}
               <Fact value={releases.length} label="releases" />
               {releases[0] && <Fact label="released" value={day(releases[0].date)} />}
+              {views > 0 && <Fact value={views} label={views === 1 ? 'view' : 'views'} />}
             </>
           }
         >

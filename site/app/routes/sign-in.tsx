@@ -4,6 +4,9 @@ import { Page } from '../components/Shell';
 import { useRoot } from '../hub';
 import { Field, Mark } from '../motion/canvases';
 import { useMagnetic } from '../motion/motion';
+import { topicsFor } from '../topics';
+
+export const handle = topicsFor('sign-in');
 
 export default function SignIn() {
   const root = useRoot();

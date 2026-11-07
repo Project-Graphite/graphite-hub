@@ -6,6 +6,7 @@ import { useMotion, useSpotlight, useTilt } from '../../motion/motion';
 import type { PostSummary } from '../../posts';
 import TagList from '../TagList';
 import { accentStyle, Avatar, Cover } from './basics';
+import { Views } from './live';
 
 export function PostCard({ post, compact = false }: { post: PostSummary; compact?: boolean }) {
   const hub = useHub();
@@ -38,6 +39,7 @@ export function PostCard({ post, compact = false }: { post: PostSummary; compact
         <p className="meta">
           <time dateTime={post.publishedAt}>{day(post.publishedAt)}</time>
           <span>{post.readingMinutes} min read</span>
+          <Views kind="post" id={post.id} />
           {project && (
             <Link to={project.path} className="about">
               {project.name}

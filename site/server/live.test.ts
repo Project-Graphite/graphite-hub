@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
 import type { HubEvent } from './bus.ts';
-import { createClient, matches, newer, parseTopics } from './live.ts';
+import { createClient, matches, newer, parseKey, parseTopics, payload, signedOut } from './live.ts';
 
 const event = (topic: string, key?: string, isPublic = true): HubEvent => ({
   topic,
@@ -98,5 +98,50 @@ describe('createClient', () => {
     assert.equal(visitor.frames.length, 1);
     assert.ok(!visitor.frames[0].includes('host'));
     assert.equal(member.frames.length, 2);
+  });
+
+  it('pushes a frame past the topic filter and flushes it at once', () => {
+    mock.timers.enable({ apis: ['setTimeout'] });
+    const { frames, client: live } = client(false);
+    live.push({ event: { ...event('sessions'), public: false } });
+    assert.equal(frames.length, 0);
+    live.flush();
+    assert.equal(frames.length, 1);
+    mock.timers.tick(100);
+    mock.timers.reset();
+    assert.equal(frames.length, 1);
+  });
+});
+
+describe('payload', () => {
+  it('carries the detail of patched topics to everyone and keeps the rest to members', () => {
+    const presence = { ...event('presence'), detail: { here: 3, online: ['amrmscll'] } };
+    assert.deepEqual(payload(presence, false).data, { here: 3, online: ['amrmscll'] });
+    const release = { ...event('releases'), detail: { project: 'strata', host: 'x' } };
+    assert.ok(!('data' in payload(release, false)));
+    assert.ok(!('event' in payload(release, false)));
+    assert.deepEqual((payload(release, true) as { event?: HubEvent }).event, release);
+  });
+});
+
+describe('signedOut', () => {
+  it('ends every member stream, or only that login, and never a visitor', () => {
+    const everyone = { ...event('sessions'), key: undefined, public: false };
+    const one = { ...event('sessions'), key: 'amrmscll', public: false };
+    assert.ok(signedOut({ member: true, login: 'AmrMsCLL' }, everyone));
+    assert.ok(signedOut({ member: true, login: 'AmrMsCLL' }, one));
+    assert.ok(!signedOut({ member: true, login: 'Omar-Mohamed24' }, one));
+    assert.ok(!signedOut({ member: false }, everyone));
+    assert.ok(!signedOut({ member: true, login: 'AmrMsCLL' }, event('releases')));
+  });
+});
+
+describe('parseKey', () => {
+  it('accepts a slug or id and refuses anything else', () => {
+    assert.equal(parseKey('strata'), 'strata');
+    assert.equal(parseKey('0a1b2c3d4e5f6a7b'), '0a1b2c3d4e5f6a7b');
+    assert.equal(parseKey('Strata'), undefined);
+    assert.equal(parseKey(['a']), undefined);
+    assert.equal(parseKey(''), undefined);
   });
 });

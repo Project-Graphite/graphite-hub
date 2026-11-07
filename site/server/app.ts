@@ -18,9 +18,11 @@ import type { createMetrics } from './metrics.ts';
 import { slidingLimit, type Redis } from './redis.ts';
 import { clientAddress } from './address.ts';
 import type { Admin } from './admin.ts';
+import { sameOrigin } from './auth.ts';
 import type { Messages } from './messages.ts';
 import type { Collab } from './collab.ts';
 import type { Posts } from './posts.ts';
+import type { Presence } from './presence.ts';
 import type { Presentations } from './presentation.ts';
 import type { Profiles } from './profiles.ts';
 import type { Writeback } from './writeback.ts';
@@ -31,6 +33,7 @@ import type { Settings } from './settings.ts';
 import type { Snapshot } from './snapshot.ts';
 import type { Subscribers } from './subscribers.ts';
 import type { Sync } from './sync.ts';
+import type { Views } from './views.ts';
 
 export interface Services {
   db: Database;
@@ -49,6 +52,8 @@ export interface Services {
   posts: Posts;
   subscribers: Subscribers;
   collab: Collab;
+  presence: Presence;
+  views: Views;
   auth: Auth;
   live: Live;
   sync: Sync;
@@ -202,6 +207,17 @@ export function createApp(
 
   app.use(auth.router);
   app.get('/live', live.handler);
+  app.post('/views/:kind/:key', async (request, response) => {
+    if (sameOrigin(request)) {
+      await services.views.count({
+        kind: request.params.kind,
+        key: request.params.key,
+        address: clientAddress(request),
+        userAgent: String(request.headers['user-agent'] ?? ''),
+      });
+    }
+    response.status(204).end();
+  });
   app.get('/admin/email', async (request, response) => {
     const signedIn = await auth.current(request, response);
     const kind = String(request.query.kind ?? '');
@@ -268,6 +284,8 @@ export function createApp(
             posts: services.posts,
             subscribers: services.subscribers,
             collab: services.collab,
+            presence: services.presence,
+            views: services.views,
             address: clientAddress(request),
             origin: new URL(config.appUrl).origin,
             viewer: signedIn

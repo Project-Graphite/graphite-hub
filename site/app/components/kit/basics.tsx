@@ -10,12 +10,18 @@ export const accentStyle = (accent: string | undefined) =>
 interface AvatarProps {
   member: { name: string; avatarUrl: string; accent: string };
   size?: 'xs' | 'sm' | 'md' | 'lg';
+  online?: boolean;
 }
 
-export function Avatar({ member, size }: AvatarProps) {
+export function Avatar({ member, size, online = false }: AvatarProps) {
   const pixels = size ? { xs: 20, sm: 32, md: 40, lg: 64 }[size] : 48;
   return (
-    <span className={`avatar ${size ?? ''}`} style={accentStyle(member.accent)} aria-hidden="true">
+    <span
+      className={`avatar ${size ?? ''}`}
+      style={accentStyle(member.accent)}
+      data-online={online || undefined}
+      aria-hidden="true"
+    >
       <img src={member.avatarUrl} alt="" width={pixels} height={pixels} loading="lazy" />
     </span>
   );

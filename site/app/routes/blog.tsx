@@ -12,8 +12,9 @@ import { Page } from '../components/Shell';
 import { hubContext } from '../context';
 import { useHub, useRoot } from '../hub';
 import { viewerHandle } from '../pages/blog';
+import { topicsFor } from '../topics';
 
-export const handle = { topics: ['posts', 'members', 'projects'] };
+export const handle = topicsFor('blog');
 
 export function loader({ context }: Route.LoaderArgs) {
   const hub = context.get(hubContext);

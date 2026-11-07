@@ -11,6 +11,9 @@ import { day } from '../format';
 import { useHub, useRoot } from '../hub';
 import { changelogPath } from '../model';
 import { search, type Hit } from '../search';
+import { topicsFor } from '../topics';
+
+export const handle = topicsFor('search');
 
 const KINDS: Hit['kind'][] = ['member', 'project', 'release'];
 

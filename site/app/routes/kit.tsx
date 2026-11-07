@@ -13,7 +13,10 @@ import Status from '../components/Status';
 import { useHub, useRoot } from '../hub';
 import { Field, Mark } from '../motion/canvases';
 import { COUNTERS, MOTION } from '../settings';
+import { topicsFor } from '../topics';
 import type { ConsoleLine } from '../types';
+
+export const handle = topicsFor('kit');
 
 export function loader() {
   if (!import.meta.env.DEV) {

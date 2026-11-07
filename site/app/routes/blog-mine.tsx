@@ -11,8 +11,9 @@ import { useHub, useRoot } from '../hub';
 import { checkedForm, EDITOR_PATH, member, viewerHandle } from '../pages/blog';
 import { postPath, STATUS_LABEL, type PostStatus } from '../posts';
 import { isRefused } from '../profile';
+import { topicsFor } from '../topics';
 
-export const handle = { topics: ['posts'] };
+export const handle = topicsFor('blog-mine');
 
 export function loader({ context }: Route.LoaderArgs) {
   const hub = context.get(hubContext);

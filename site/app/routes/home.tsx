@@ -17,10 +17,9 @@ import { hubContext } from '../context';
 import { modelFrom, useHub, useRoot } from '../hub';
 import { Field, Mark } from '../motion/canvases';
 import { visible } from '../settings';
+import { topicsFor } from '../topics';
 
-export const handle = {
-  topics: ['deploys', 'releases', 'projects', 'members', 'stats', 'uptime', 'messages', 'posts'],
-};
+export const handle = topicsFor('home');
 
 export function loader({ context }: Route.LoaderArgs) {
   const { directory, reads, settings, messages } = context.get(hubContext);

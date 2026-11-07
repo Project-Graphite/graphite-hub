@@ -24,9 +24,10 @@ import {
   type ShortLink,
   type UploadKind,
 } from '../profile';
+import { topicsFor } from '../topics';
 import type { Member } from '../types';
 
-export const handle = { topics: ['profiles', 'members', 'projects'] };
+export const handle = topicsFor('editor');
 
 const SINGLE: BlockType[] = [
   'bio',

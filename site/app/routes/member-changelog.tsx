@@ -7,6 +7,9 @@ import type { Route } from './+types/member-changelog';
 import Timeline from '../components/Timeline';
 import { found, modelFrom, useHub } from '../hub';
 import { changelogPath } from '../model';
+import { topicsFor } from '../topics';
+
+export const handle = topicsFor('member-changelog');
 
 export function loader({ context, params }: Route.LoaderArgs) {
   return { handle: found(modelFrom(context).memberByHandle(params.handle)).handle };

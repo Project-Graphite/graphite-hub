@@ -154,3 +154,13 @@ export interface Viewer {
   avatarUrl: string;
   owner: boolean;
 }
+
+export interface Presence {
+  here: number;
+  online: string[];
+}
+
+export interface Country {
+  code: string;
+  count: number;
+}

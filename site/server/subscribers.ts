@@ -231,13 +231,13 @@ export function createSubscribers(
     deliver: deps.deliver,
     compose,
     perHour: () => deps.settings()['email.hourly'],
-    bounced(id, reason, at) {
+    async bounced(id, reason, at) {
       db.prepare(
         'UPDATE subscribers SET suppressed_at = ?, suppressed_reason = ?, updated_at = ? WHERE id = ?',
       ).run(at, reason, at, id);
       const subscriber = read(id);
       if (subscriber) {
-        changed('bounced', subscriber, 'An address bounced and was suppressed', at).catch(() => {});
+        await changed('bounced', subscriber, 'An address bounced and was suppressed', at);
       }
     },
   });

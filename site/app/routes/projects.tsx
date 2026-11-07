@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import type { Route } from './+types/projects';
 import { accentStyle, Avatar, Cover } from '../components/kit/basics';
 import { Chips, Pulse } from '../components/kit/directory';
-import { Fact, loadRail, PageHeader, RAIL_TOPICS, StandardRail } from '../components/kit/page';
+import { Fact, loadRail, PageHeader, StandardRail } from '../components/kit/page';
 import Status from '../components/Status';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
@@ -11,9 +11,10 @@ import { day } from '../format';
 import { useHub } from '../hub';
 import { STATUS_LABEL } from '../model';
 import { useSpotlight, useTilt } from '../motion/motion';
+import { topicsFor } from '../topics';
 import type { Member, Project, ProjectStatus, Release } from '../types';
 
-export const handle = { topics: RAIL_TOPICS };
+export const handle = topicsFor('projects');
 
 export function loader({ context }: Route.LoaderArgs) {
   return { ...loadRail(context.get(hubContext)), today: new Date().toISOString().slice(0, 10) };

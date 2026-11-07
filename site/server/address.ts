@@ -38,11 +38,25 @@ export function viaEdge(request: IncomingMessage) {
   return request.headers['x-forwarded-for'] !== undefined;
 }
 
-export function clientAddress(request: IncomingMessage, ranges = cloudflare) {
+function peerOf(request: IncomingMessage) {
   const forwarded = (request.headers['x-forwarded-for'] as string | undefined)
     ?.split(',')
     .map((part) => part.trim());
-  const peer = plain(forwarded?.at(-1) ?? request.socket.remoteAddress ?? '');
+  return { forwarded, peer: plain(forwarded?.at(-1) ?? request.socket.remoteAddress ?? '') };
+}
+
+export function fromCloudflare(request: IncomingMessage, ranges = cloudflare) {
+  const { forwarded, peer } = peerOf(request);
+  return forwarded !== undefined && inRanges(ranges, peer);
+}
+
+export function clientAddress(request: IncomingMessage, ranges = cloudflare) {
+  const { peer } = peerOf(request);
   const original = request.headers['cf-connecting-ip'] as string | undefined;
-  return forwarded && original && inRanges(ranges, peer) ? plain(original) : peer;
+  return original && fromCloudflare(request, ranges) ? plain(original) : peer;
+}
+
+export function countryOf(request: IncomingMessage, trusted = fromCloudflare(request)) {
+  const code = String(request.headers['cf-ipcountry'] ?? '').toUpperCase();
+  return trusted && /^[A-Z]{2}$/.test(code) && !['XX', 'T1'].includes(code) ? code : undefined;
 }

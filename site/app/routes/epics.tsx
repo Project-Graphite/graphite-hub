@@ -3,7 +3,7 @@ import type { Route } from './+types/epics';
 import { accentStyle, Avatar } from '../components/kit/basics';
 import { ProjectNode } from '../components/kit/directory';
 import { ReleaseTimeline } from '../components/kit/live';
-import { Fact, loadRail, PageHeader, RAIL_TOPICS, StandardRail } from '../components/kit/page';
+import { Fact, loadRail, PageHeader, StandardRail } from '../components/kit/page';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
 import { Page } from '../components/Shell';
@@ -11,9 +11,10 @@ import { hubContext } from '../context';
 import { day } from '../format';
 import { useHub } from '../hub';
 import { useSpotlight } from '../motion/motion';
+import { topicsFor } from '../topics';
 import type { Project } from '../types';
 
-export const handle = { topics: RAIL_TOPICS };
+export const handle = topicsFor('epics');
 
 const WINDOW_DAYS = 180;
 

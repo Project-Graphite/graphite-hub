@@ -1,6 +1,7 @@
 import { data, Link, redirect } from 'react-router';
 import type { Route } from './+types/post';
 import { accentStyle, Avatar, Button, Cover, Panel } from '../components/kit/basics';
+import { EditingBadge, ReadingBadge } from '../components/kit/live';
 import { Fact, PageHeader } from '../components/kit/page';
 import { PostRow } from '../components/kit/posts';
 import { WindowBar } from '../components/kit/projects';
@@ -9,12 +10,17 @@ import { Page } from '../components/Shell';
 import TagList from '../components/TagList';
 import { hubContext } from '../context';
 import { day } from '../format';
-import { useHub } from '../hub';
+import { useHub, useRoot } from '../hub';
+import { useView, useViews } from '../live';
 import { createModel } from '../model';
 import { accessTo, authorFrom, EDITOR_PATH } from '../pages/blog';
 import { uploadUrl } from '../profile';
+import { topicsFor, type KeyedMatch } from '../topics';
 
-export const handle = { topics: ['posts', 'members', 'projects'] };
+const postId = ({ loaderData }: KeyedMatch) =>
+  (loaderData as { post?: { id: string } } | undefined)?.post?.id;
+
+export const handle = topicsFor('post', { reading: postId, editing: postId });
 
 const HEADING = /<h([23]) id="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/g;
 
@@ -35,6 +41,10 @@ export function loader({ context, params }: Route.LoaderArgs) {
   const mine = model.postsBy(author);
   const index = mine.findIndex((entry) => entry.id === post.id);
   return {
+    reading: hub.presence.reading(post.id),
+    editing: hub.collab
+      .editing(post.id)
+      .map(({ handle, name, color }) => ({ handle, name, color })),
     post: {
       id: post.id,
       slug: post.slug,
@@ -74,6 +84,8 @@ export default function Post({ loaderData }: Route.ComponentProps) {
   const owner = project ? hub.memberByHandle(project.owner) : undefined;
   const more = hub.postsBy(author).filter((entry) => entry.id !== post.id);
   const draft = post.status !== 'published';
+  const views = useViews(useRoot()!.views)('post', post.id);
+  useView('post', post.id);
 
   return (
     <Page
@@ -94,23 +106,21 @@ export default function Post({ loaderData }: Route.ComponentProps) {
           )}
           {project && (
             <Panel title="about">
-              <Link
-                to={project.path}
-                className="window mini"
-                style={accentStyle(project.accent ?? owner?.accent)}
-              >
+              <div className="window mini" style={accentStyle(project.accent ?? owner?.accent)}>
                 <WindowBar project={project} />
-                <Cover
-                  name={project.name}
-                  seed={project.slug}
-                  accent={project.accent ?? owner?.accent ?? ''}
-                  image={project.coverUrl}
-                />
-                <span className="body">
-                  <strong>{project.name}</strong>
-                  <span>{project.summary}</span>
-                </span>
-              </Link>
+                <Link to={project.path} className="face">
+                  <Cover
+                    name={project.name}
+                    seed={project.slug}
+                    accent={project.accent ?? owner?.accent ?? ''}
+                    image={project.coverUrl}
+                  />
+                  <span className="body">
+                    <strong>{project.name}</strong>
+                    <span>{project.summary}</span>
+                  </span>
+                </Link>
+              </div>
             </Panel>
           )}
           {more.length > 0 && (
@@ -156,6 +166,12 @@ export default function Post({ loaderData }: Route.ComponentProps) {
             </Link>
           }
           title={post.title}
+          aside={
+            <>
+              <ReadingBadge id={post.id} initial={loaderData.reading} />
+              <EditingBadge id={post.id} initial={loaderData.editing} />
+            </>
+          }
           subtitle={post.summary}
           actions={
             editable && (
@@ -187,6 +203,7 @@ export default function Post({ loaderData }: Route.ComponentProps) {
                 />
               )}
               <Fact value={post.readingMinutes} label="min read" />
+              {views > 0 && <Fact value={views} label={views === 1 ? 'view' : 'views'} />}
             </>
           }
         >

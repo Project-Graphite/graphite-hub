@@ -8,9 +8,10 @@ import { hubContext } from '../context';
 import { day } from '../format';
 import { useRoot } from '../hub';
 import { useSpotlight } from '../motion/motion';
+import { topicsFor } from '../topics';
 import type { Message } from '../types';
 
-export const handle = { topics: ['messages'] };
+export const handle = topicsFor('messages');
 
 const LIMIT = 1000;
 

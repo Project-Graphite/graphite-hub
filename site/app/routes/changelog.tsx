@@ -5,6 +5,9 @@ import { Page } from '../components/Shell';
 import Timeline from '../components/Timeline';
 import { day } from '../format';
 import { useHub } from '../hub';
+import { topicsFor } from '../topics';
+
+export const handle = topicsFor('changelog');
 
 export default function Changelog() {
   const { rootProjects, epics, releases } = useHub();

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { IncomingMessage } from 'node:http';
 import { describe, it } from 'node:test';
-import { clientAddress, cloudflareRanges } from './address.ts';
+import { clientAddress, cloudflareRanges, countryOf, fromCloudflare } from './address.ts';
 import { cookies, safeReturn, sameOrigin } from './auth.ts';
 import { createVerifier, sign } from './internal.ts';
 import type { Redis } from './redis.ts';
@@ -97,6 +97,19 @@ describe('clientAddress', () => {
       clientAddress(request({ 'cf-connecting-ip': '198.51.100.4' }, '::ffff:172.18.0.9'), ranges),
       '172.18.0.9',
     );
+  });
+
+  it('reads the country only from Cloudflare, and never an unknown code', () => {
+    const edge = { 'x-forwarded-for': '173.245.48.10', 'cf-ipcountry': 'de' };
+    assert.ok(fromCloudflare(request(edge), ranges));
+    assert.equal(countryOf(request(edge), fromCloudflare(request(edge), ranges)), 'DE');
+    assert.equal(
+      countryOf(request({ 'x-forwarded-for': '203.0.113.9', 'cf-ipcountry': 'DE' })),
+      undefined,
+    );
+    assert.equal(countryOf(request({ ...edge, 'cf-ipcountry': 'XX' }), true), undefined);
+    assert.equal(countryOf(request({ ...edge, 'cf-ipcountry': 'T1' }), true), undefined);
+    assert.equal(countryOf(request({ 'x-forwarded-for': '173.245.48.10' }), true), undefined);
   });
 });
 
