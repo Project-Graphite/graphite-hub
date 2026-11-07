@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { day, shortTag } from '../../format';
+import { useOnline } from '../../live';
 import { changelogPath, releaseLine } from '../../model';
 import type { Member, Message, Project, Release, Running } from '../../types';
 import Status from '../Status';
@@ -12,12 +13,13 @@ export function MembersPanel({
   members: Member[];
   projectsOf: (member: Member) => number;
 }) {
+  const online = useOnline();
   return (
     <Panel title="members" link={{ to: '/members', label: 'view all' }}>
       <div className="panel-list">
         {members.map((member) => (
           <Link key={member.handle} to={member.path}>
-            <Avatar member={member} size="md" />
+            <Avatar member={member} size="md" online={online.has(member.handle)} />
             <span>
               <strong>{member.name}</strong>
               <span className="headline">{member.headline ?? `@${member.github}`}</span>

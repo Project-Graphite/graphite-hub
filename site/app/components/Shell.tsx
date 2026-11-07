@@ -6,6 +6,7 @@ import { MotionContext } from '../motion/motion';
 import { defaults, visible, type NAV } from '../settings';
 import AccountMenu from './AccountMenu';
 import { Editable, useEditing } from './kit/Editable';
+import { LivePulse } from './kit/live';
 import { openSearch, Palette } from './kit/Palette';
 import { SubscribeForm, SubscribeLink } from './kit/subscribe';
 
@@ -70,6 +71,7 @@ export default function Shell({ children }: { children: ReactNode }) {
               search
               <span className="kbd">/</span>
             </button>
+            {root && <LivePulse />}
             <AccountMenu />
           </nav>
         </div>

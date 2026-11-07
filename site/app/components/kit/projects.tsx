@@ -7,6 +7,7 @@ import type { Member, Project } from '../../types';
 import Status from '../Status';
 import TagList from '../TagList';
 import { accentStyle, Avatar, Cover } from './basics';
+import { Views } from './live';
 
 interface Props {
   project: Project;
@@ -65,12 +66,15 @@ export function Window({ project, owner }: Props) {
           <Status status={project.status} />
         </div>
         <p>{project.summary}</p>
-        {owner && (
-          <span className="by">
-            <Avatar member={owner} size="xs" />
-            {owner.name}
-          </span>
-        )}
+        <span className="who">
+          {owner && (
+            <span className="by">
+              <Avatar member={owner} size="xs" />
+              {owner.name}
+            </span>
+          )}
+          <Views kind="project" id={project.slug} />
+        </span>
         <TagList tags={project.tags.slice(0, 3)} />
       </div>
     </article>
