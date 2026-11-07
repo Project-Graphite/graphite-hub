@@ -8,7 +8,7 @@ import type { Bus } from './bus.ts';
 import { config } from './config.ts';
 import type { Database } from './db.ts';
 import { recordDeploy, validReport } from './deploys.ts';
-import type { Capture } from './errors.ts';
+import { clientError, describe, httpStatus, type Capture } from './errors.ts';
 import { validSignature } from './github.ts';
 import { contentSecurityPolicy, securityHeaders } from './headers.ts';
 import { createVerifier } from './internal.ts';
@@ -307,12 +307,17 @@ export function createApp(
 
   app.use((error: unknown, request: Request, response: Response, _next: NextFunction) => {
     capture(error, { route: request.path, requestId: response.locals.requestId });
-    if (!response.headersSent) {
-      response
-        .status(500)
-        .type('text')
-        .send(`Something went wrong. Request ${response.locals.requestId}.`);
+    if (response.headersSent) {
+      return;
     }
+    if (clientError(error)) {
+      response.status(httpStatus(error)!).type('text').send(describe(error).message);
+      return;
+    }
+    response
+      .status(500)
+      .type('text')
+      .send(`Something went wrong. Request ${response.locals.requestId}.`);
   });
 
   return app;

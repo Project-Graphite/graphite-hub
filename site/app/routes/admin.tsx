@@ -6,6 +6,7 @@ import { Confirm, Segmented, Sortable, Switch } from '../components/kit/controls
 import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import { hubContext, type Hub } from '../context';
+import { plural } from '../format';
 import { useRoot } from '../hub';
 import { useSpotlight } from '../motion/motion';
 import {
@@ -668,9 +669,15 @@ export default function AdminPage({ loaderData }: Route.ComponentProps) {
           facts={
             <>
               <Fact value={loaderData.waiting} label="waiting" />
-              <Fact value={open.length} label="open errors" />
-              <Fact value={root.directory.members.length} label="members" />
-              <Fact value={loaderData.email.confirmed} label="subscribers" />
+              <Fact value={open.length} label={`open ${plural(open.length, 'error')}`} />
+              <Fact
+                value={root.directory.members.length}
+                label={plural(root.directory.members.length, 'member')}
+              />
+              <Fact
+                value={loaderData.email.confirmed}
+                label={plural(loaderData.email.confirmed, 'subscriber')}
+              />
             </>
           }
         >

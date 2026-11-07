@@ -7,7 +7,7 @@ import type { Route } from './+types/project-changelog';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
 import Timeline from '../components/Timeline';
-import { day } from '../format';
+import { day, plural } from '../format';
 import { found, modelFrom, useHub } from '../hub';
 import { changelogPath } from '../model';
 import { topicsFor } from '../topics';
@@ -63,7 +63,7 @@ export default function ProjectChangelog({ loaderData }: Route.ComponentProps) {
           }
           facts={
             <>
-              <Fact value={releases.length} label="releases" />
+              <Fact value={releases.length} label={plural(releases.length, 'release')} />
               {releases[0] && <Fact label="latest" value={`v${releases[0].version}`} />}
               {first && releases.length > 1 && <Fact label="since" value={day(first.date)} />}
               {owner && (

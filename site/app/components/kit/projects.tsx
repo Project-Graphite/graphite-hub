@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Link } from 'react-router';
 import { day } from '../../format';
 import { useHub } from '../../hub';
+import { STATUS_LABEL } from '../../model';
 import { useSpotlight, useTilt } from '../../motion/motion';
 import type { Member, Project } from '../../types';
 import Status from '../Status';
@@ -33,7 +34,9 @@ export function WindowBar({ project }: { project: Project }) {
       <i />
       <i />
       <a href={project.url ?? project.repoUrl}>
-        {project.url ? new URL(project.url).host : `${project.slug} · source only`}
+        {project.url
+          ? new URL(project.url).host
+          : `${project.slug} · ${STATUS_LABEL[project.status]}`}
       </a>
     </div>
   );

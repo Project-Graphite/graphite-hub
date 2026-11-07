@@ -9,6 +9,10 @@ export function day(iso: string) {
   return `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}`;
 }
 
+export function plural(count: number, noun: string, many = `${noun}s`) {
+  return count === 1 ? noun : many;
+}
+
 export function shortTag(tag: unknown) {
   return typeof tag === 'string' ? tag.replace(/^sha-/, '').slice(0, 7) : '';
 }

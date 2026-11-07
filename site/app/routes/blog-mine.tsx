@@ -6,7 +6,7 @@ import { Confirm, Segmented } from '../components/kit/controls';
 import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
-import { day } from '../format';
+import { day, plural } from '../format';
 import { useHub, useRoot } from '../hub';
 import { checkedForm, EDITOR_PATH, member, viewerHandle } from '../pages/blog';
 import { postPath, STATUS_LABEL, type PostStatus } from '../posts';
@@ -106,7 +106,7 @@ export default function BlogMine({ loaderData }: Route.ComponentProps) {
           }
           facts={
             <>
-              <Fact value={count('draft')} label="drafts" />
+              <Fact value={count('draft')} label={plural(count('draft'), 'draft')} />
               <Fact value={count('scheduled')} label="scheduled" />
               <Fact value={count('published')} label="published" />
             </>

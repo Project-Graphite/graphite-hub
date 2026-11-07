@@ -10,10 +10,28 @@ export interface Where {
 
 const DAY_MS = 86_400_000;
 
+export function httpStatus(error: unknown) {
+  if (error instanceof Response) {
+    return error.status;
+  }
+  if (typeof error === 'object' && error !== null) {
+    const { status, statusCode } = error as { status?: unknown; statusCode?: unknown };
+    return [status, statusCode].find((value) => typeof value === 'number') as number | undefined;
+  }
+  return undefined;
+}
+
+export function clientError(error: unknown) {
+  const status = httpStatus(error);
+  return status !== undefined && status >= 400 && status < 500;
+}
+
 export function describe(error: unknown) {
-  return error instanceof Error
-    ? { message: error.message, stack: error.stack ?? null }
-    : { message: String(error), stack: null };
+  if (error instanceof Error) {
+    return { message: error.message, stack: error.stack ?? null };
+  }
+  const status = httpStatus(error);
+  return { message: status === undefined ? String(error) : `HTTP ${status}`, stack: null };
 }
 
 export function fingerprint(message: string, stack: string | null) {
@@ -70,6 +88,9 @@ export function createErrors(
   }
 
   return function capture(error: unknown, where: Where = {}) {
+    if (clientError(error)) {
+      return;
+    }
     const { message, stack } = describe(error);
     const key = fingerprint(message, stack);
     const now = new Date().toISOString();

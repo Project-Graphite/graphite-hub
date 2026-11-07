@@ -1,4 +1,4 @@
-import type { Model } from './model';
+import { STATUS_LABEL, type Model } from './model.ts';
 
 export interface ShareCard {
   label: string;
@@ -15,6 +15,9 @@ const FIXED: Record<string, { label: string; title: string }> = {
   '/status': { label: 'status', title: 'What is running right now' },
   '/messages': { label: 'messages', title: 'Leave a message for the members' },
   '/blog': { label: 'blog', title: 'Writing by the members' },
+  '/subscribe': { label: 'subscribe', title: 'New writing, by email' },
+  '/search': { label: 'search', title: 'Members, projects, posts and releases' },
+  '/privacy': { label: 'privacy', title: 'What this site keeps' },
 };
 
 export function shareCard(
@@ -28,7 +31,7 @@ export function shareCard(
     return {
       label: 'project-graphite.com',
       title: headline,
-      subtitle: `${model.members.length} members · ${model.projects.length} projects`,
+      subtitle: `${model.members.length} members · ${model.rootProjects.length} projects`,
       accent: accents[0],
     };
   }
@@ -66,7 +69,8 @@ export function shareCard(
   }
   if (project) {
     return {
-      label: project.url?.replace('https://', '') ?? `${project.slug} · source only`,
+      label:
+        project.url?.replace('https://', '') ?? `${project.slug} · ${STATUS_LABEL[project.status]}`,
       title: project.name,
       subtitle: project.summary,
       accent: model.memberByHandle(project.owner)?.accent ?? accents[0],

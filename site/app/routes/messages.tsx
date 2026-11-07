@@ -100,13 +100,20 @@ function Leave() {
       ) : (
         <leave.Form method="post" className="leave">
           <input type="hidden" name="intent" value="leave" />
-          <input name="name" maxLength={60} placeholder="name" className="field" />
+          <input
+            name="name"
+            maxLength={60}
+            placeholder="name"
+            aria-label="Name"
+            className="field"
+          />
           <textarea
             name="body"
             required
             maxLength={LIMIT}
             rows={4}
             placeholder="message"
+            aria-label="Message"
             className="field"
           />
           <input
@@ -176,12 +183,15 @@ export default function Messages({ loaderData }: Route.ComponentProps) {
           </div>
         </section>
       )}
-      <section className="notes wall-notes">
-        {wall.length === 0 && <p className="mono-sm text-faint">nothing on the wall yet</p>}
-        {wall.map((message) => (
-          <Note key={message.id} message={message} accent={accentOf(message)} csrf={csrf} />
-        ))}
-      </section>
+      {wall.length === 0 ? (
+        <p className="none">nothing on the wall yet</p>
+      ) : (
+        <section className="notes wall-notes">
+          {wall.map((message) => (
+            <Note key={message.id} message={message} accent={accentOf(message)} csrf={csrf} />
+          ))}
+        </section>
+      )}
     </Page>
   );
 }

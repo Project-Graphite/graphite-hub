@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { useFolded } from '../../folds';
-import { clock, day, describe } from '../../format';
+import { clock, day, describe, plural } from '../../format';
 import { useRoot } from '../../hub';
 import {
   useConnection,
@@ -73,7 +73,7 @@ export function Views({ kind, id }: { kind: 'post' | 'project'; id: string }) {
   const shown = useCountUp(count);
   return count > 0 ? (
     <span className="views">
-      {shown} {count === 1 ? 'view' : 'views'}
+      {shown} {plural(count, 'view')}
     </span>
   ) : null;
 }

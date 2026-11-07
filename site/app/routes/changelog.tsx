@@ -3,7 +3,7 @@ import { Panel } from '../components/kit/basics';
 import { Fact, PageHeader } from '../components/kit/page';
 import { Page } from '../components/Shell';
 import Timeline from '../components/Timeline';
-import { day } from '../format';
+import { day, plural } from '../format';
 import { useHub } from '../hub';
 import { topicsFor } from '../topics';
 
@@ -24,9 +24,9 @@ export default function Changelog() {
         title="Changelog"
         facts={
           <>
-            <Fact value={releases.length} label="releases" />
-            <Fact value={rootProjects.length} label="projects" />
-            <Fact value={epics.length} label={epics.length === 1 ? 'epic' : 'epics'} />
+            <Fact value={releases.length} label={plural(releases.length, 'release')} />
+            <Fact value={rootProjects.length} label={plural(rootProjects.length, 'project')} />
+            <Fact value={epics.length} label={plural(epics.length, 'epic')} />
             {releases[0] && <Fact label="latest" value={day(releases[0].date)} />}
           </>
         }

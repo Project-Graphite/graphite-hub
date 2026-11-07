@@ -7,7 +7,7 @@ import { Fact, PageHeader } from '../components/kit/page';
 import Status from '../components/Status';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
-import { day } from '../format';
+import { day, plural } from '../format';
 import { useHub, useRoot } from '../hub';
 import { changelogPath } from '../model';
 import { search, type Hit } from '../search';
@@ -136,13 +136,16 @@ export default function Search({ loaderData }: Route.ComponentProps) {
         }
         facts={
           query.trim() ? (
-            <Fact value={hits.length} label={hits.length === 1 ? 'match' : 'matches'} />
+            <Fact value={hits.length} label={plural(hits.length, 'match', 'matches')} />
           ) : (
             <>
-              <Fact value={hub.members.length} label="members" />
-              <Fact value={hub.rootProjects.length} label="projects" />
-              <Fact value={hub.epics.length} label={hub.epics.length === 1 ? 'epic' : 'epics'} />
-              <Fact value={hub.releases.length} label="releases" />
+              <Fact value={hub.members.length} label={plural(hub.members.length, 'member')} />
+              <Fact
+                value={hub.rootProjects.length}
+                label={plural(hub.rootProjects.length, 'project')}
+              />
+              <Fact value={hub.epics.length} label={plural(hub.epics.length, 'epic')} />
+              <Fact value={hub.releases.length} label={plural(hub.releases.length, 'release')} />
             </>
           )
         }

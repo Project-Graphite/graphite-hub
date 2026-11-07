@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { createErrors, fingerprint } from './errors.ts';
+import { createErrors, describe as describeError, fingerprint } from './errors.ts';
 import { memoryDatabase, recordingBus } from './testing.ts';
 
 const stack = (line: number) =>
@@ -70,5 +70,23 @@ describe('capture', () => {
     capture(new Error('boom'));
     await settle();
     assert.equal(alerts.length, 2);
+  });
+
+  it('ignores client errors: thrown 4xx responses and route errors with a status', async () => {
+    const { db, alerts, capture } = await setup();
+    capture(new Response(null, { status: 404 }), { route: '/nope' });
+    capture({ status: 405, statusText: 'Method Not Allowed', data: null }, { route: '/' });
+    capture(Object.assign(new Error('Forbidden'), { status: 403 }), { route: '/uploads/.env' });
+    await settle();
+    assert.equal(db.prepare('SELECT count(*) AS count FROM errors').get()!.count, 0);
+    assert.equal(alerts.length, 0);
+  });
+
+  it('records a failed response under its status', async () => {
+    const { db, capture } = await setup();
+    capture(new Response(null, { status: 503 }), { route: '/live' });
+    await settle();
+    assert.equal(db.prepare('SELECT message FROM errors').get()!.message, 'HTTP 503');
+    assert.equal(describeError({ status: 500 }).message, 'HTTP 500');
   });
 });

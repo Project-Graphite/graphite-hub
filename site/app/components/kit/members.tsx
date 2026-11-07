@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router';
+import { plural } from '../../format';
 import { useOnline } from '../../live';
-import { useSpotlight } from '../../motion/motion';
+import { useMotion, useSpotlight } from '../../motion/motion';
 import type { Member } from '../../types';
 import { accentStyle, Avatar } from './basics';
 
@@ -22,7 +23,7 @@ function MemberRow({
         <strong>{member.name}</strong>
         <span className="headline">{member.headline ?? `@${member.github}`}</span>
       </span>
-      <span className="count" aria-label={`${projects} projects`}>
+      <span className="count" aria-label={`${projects} ${plural(projects, 'project')}`}>
         {projects}
       </span>
     </Link>
@@ -61,8 +62,9 @@ export function Orbit({
   label: string;
 }) {
   const online = useOnline();
+  const spinning = useMotion('orbit');
   return (
-    <div className="orbit">
+    <div className="orbit" data-still={spinning ? undefined : ''}>
       <div className="ring">
         {members.map((member, index) => (
           <div

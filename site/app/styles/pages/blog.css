@@ -39,9 +39,6 @@
 .post-card:hover .cover::before {
   transform: translateX(70%);
 }
-.post-card .cover span {
-  font-size: clamp(1.4rem, 3vw, 2.2rem);
-}
 .post-card .body {
   flex: 1;
   display: flex;

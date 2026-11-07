@@ -7,7 +7,7 @@ import { Fact, loadRail, PageHeader, StandardRail } from '../components/kit/page
 import Status from '../components/Status';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
-import { day } from '../format';
+import { day, plural } from '../format';
 import { useHub } from '../hub';
 import { STATUS_LABEL } from '../model';
 import { useSpotlight, useTilt } from '../motion/motion';
@@ -89,7 +89,7 @@ function Entry({
               <>
                 <b>v{latest.version}</b> {day(latest.date)}
                 <span className="n">
-                  {releases.length} {releases.length === 1 ? 'release' : 'releases'}
+                  {releases.length} {plural(releases.length, 'release')}
                 </span>
               </>
             ) : (
@@ -147,7 +147,7 @@ export default function Projects({ loaderData }: Route.ComponentProps) {
           a.name.localeCompare(b.name),
     );
   const slugs = new Set(all.map((project) => project.slug));
-  const latest = hub.releases.find((release) => slugs.has(release.project));
+  const released = hub.releases.filter((release) => slugs.has(release.project));
   const pickTag = (item: string) => setTag((current) => (current === item ? null : item));
 
   return (
@@ -168,12 +168,9 @@ export default function Projects({ loaderData }: Route.ComponentProps) {
         }
         facts={
           <>
-            <Fact value={all.length} label="projects" />
-            <Fact
-              value={hub.releases.filter((r) => slugs.has(r.project)).length}
-              label="releases"
-            />
-            {latest && <Fact label="last release" value={day(latest.date)} />}
+            <Fact value={all.length} label={plural(all.length, 'project')} />
+            <Fact value={released.length} label={plural(released.length, 'release')} />
+            {released[0] && <Fact label="last release" value={day(released[0].date)} />}
             {tag && (
               <button type="button" className="fact pick" onClick={() => setTag(null)}>
                 <b>{tag}</b> ×

@@ -1054,13 +1054,6 @@ textarea.field {
   position: relative;
   overflow: hidden;
 }
-.cover span {
-  font-family: var(--font-mono);
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 600;
-  letter-spacing: -0.05em;
-  color: color-mix(in srgb, var(--accent, #8b8b95) 55%, var(--color-ink));
-}
 
 .spot {
   position: relative;
@@ -1359,98 +1352,6 @@ textarea.field {
   .orbit {
     --radius: 8rem;
     width: 16rem;
-  }
-}
-
-.film-wrap {
-  position: relative;
-}
-.film {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(22rem, 27rem);
-  gap: 1rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 0.5rem;
-  scrollbar-width: none;
-  margin-top: 1.75rem;
-}
-.film::-webkit-scrollbar {
-  display: none;
-}
-.film > * {
-  scroll-snap-align: start;
-}
-.film-wrap .chevron {
-  position: absolute;
-  top: 38%;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 50%;
-  border: 1px solid var(--color-line);
-  background: rgba(19, 19, 22, 0.78);
-  backdrop-filter: blur(8px);
-  color: var(--color-ink);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  opacity: 0;
-  transition:
-    opacity 0.2s,
-    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 0.2s;
-  z-index: 2;
-}
-.film-wrap:hover .chevron,
-.film-wrap:focus-within .chevron,
-.film-wrap .chevron:focus-visible {
-  opacity: 1;
-}
-.film-wrap .chevron:disabled {
-  opacity: 0.2;
-  pointer-events: none;
-}
-.film-wrap .chevron.prev {
-  left: -1.375rem;
-}
-.film-wrap .chevron.next {
-  right: -1.375rem;
-}
-.film-wrap .chevron svg {
-  width: 1.1rem;
-  height: 1.1rem;
-}
-.film-bar {
-  height: 2px;
-  background: var(--color-line-soft);
-  margin-top: 0.75rem;
-  position: relative;
-  overflow: hidden;
-  border-radius: 2px;
-}
-.film-bar i {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  width: 20%;
-  background: var(--color-ink);
-  border-radius: 2px;
-}
-.film-hint {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--color-faint);
-  margin-top: 0.5rem;
-}
-@media (max-width: 1000px) {
-  .film-wrap .chevron.prev {
-    left: 0.25rem;
-  }
-  .film-wrap .chevron.next {
-    right: 0.25rem;
   }
 }
 
@@ -1763,6 +1664,10 @@ textarea.field {
   .orbit:hover .ring,
   .orbit:hover .pin {
     animation-play-state: paused;
+  }
+  .orbit[data-still] .ring,
+  .orbit[data-still] .pin {
+    animation: none;
   }
   .orbit .orb:hover .avatar,
   .people > a:hover .avatar,
