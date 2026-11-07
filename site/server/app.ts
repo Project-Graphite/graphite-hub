@@ -114,9 +114,8 @@ export function createApp(
   app.get('/health/ready', async (_request, response) => {
     try {
       db.prepare('SELECT 1').get();
-      await redis.ping();
       snapshot.get();
-      response.type('text').send('ready');
+      response.type('text').send((await bus.alive()) ? 'ready' : 'ready; the live bus is down');
     } catch (error) {
       log.warn({ err: error }, 'not ready');
       response.status(503).type('text').send('not ready');

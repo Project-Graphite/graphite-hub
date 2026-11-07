@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import type { IncomingMessage } from 'node:http';
 import { describe, it } from 'node:test';
 import { clientAddress, cloudflareRanges, countryOf, fromCloudflare } from './address.ts';
-import { cookies, safeReturn, sameOrigin } from './auth.ts';
+import { cookies, createAuth, safeReturn, sameOrigin } from './auth.ts';
 import { createVerifier, sign } from './internal.ts';
 import type { Redis } from './redis.ts';
-import { createSealer, createSessions, type Session } from './sessions.ts';
+import { createSealer, createSessions, type Session, type Sessions } from './sessions.ts';
 
 function request(headers: Record<string, string>, remoteAddress = '172.18.0.5') {
   return { headers, socket: { remoteAddress } } as unknown as IncomingMessage;
@@ -42,6 +42,24 @@ describe('a session after SESSION_SECRET changes', () => {
     const redis = {} as Redis;
     assert.equal(createSessions(redis, 'old-secret').githubToken(session), 'gho_token');
     assert.equal(createSessions(redis, 'new-secret').githubToken(session), undefined);
+  });
+});
+
+describe('the current session', () => {
+  it('serves a member as a visitor while the session store is unreachable', async () => {
+    const sessions = {
+      read: async () => {
+        throw new Error('Reached the max retries per request limit');
+      },
+    } as unknown as Sessions;
+    const headers: string[] = [];
+    const response = { appendHeader: (_name: string, value: string) => headers.push(value) };
+    const { current } = createAuth(sessions, {} as Redis);
+    assert.equal(
+      await current(request({ cookie: 'hub_session=abc' }), response as never),
+      undefined,
+    );
+    assert.deepEqual(headers, []);
   });
 });
 

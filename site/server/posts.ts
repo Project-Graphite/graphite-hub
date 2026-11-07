@@ -195,6 +195,9 @@ export function createPosts(
     if (problem) {
       throw new Refused(problem);
     }
+    if (!(await bus.alive())) {
+      throw new Refused('The live stream is unreachable; try again in a moment.');
+    }
     const at = new Date().toISOString();
     const rendered = render(state(id));
     transaction(db, () => {
@@ -203,6 +206,7 @@ export function createPosts(
     });
     jobs.cancel(PUBLISH_JOB, id);
     const published = must(id);
+    onPublished(published);
     await bus.record({
       topic: 'posts',
       key: id,
@@ -219,7 +223,6 @@ export function createPosts(
       },
       at,
     });
-    onPublished(published);
     return published;
   }
 

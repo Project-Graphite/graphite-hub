@@ -41,6 +41,11 @@ export function createBus(db: Database, redis: Redis, subscriber: Redis) {
 
   return {
     ready,
+    alive: () =>
+      redis.ping().then(
+        () => true,
+        () => false,
+      ),
     async record(event: HubEvent) {
       const { lastInsertRowid } = insert.run(
         event.kind,
