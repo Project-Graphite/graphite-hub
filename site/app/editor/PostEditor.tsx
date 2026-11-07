@@ -4,7 +4,16 @@ import Collaboration from '@tiptap/extension-collaboration';
 import { CollaborationCaret } from '@tiptap/extension-collaboration-caret';
 import { Placeholder } from '@tiptap/extensions';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
-import { useEffect, useState, type FormEvent } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type FormEvent,
+  type KeyboardEvent,
+} from 'react';
 import { readingMinutes } from '../posts';
 import { CALLOUT_TINTS, columnsOf, postExtensions } from './extensions';
 import { holdSession, openSession } from './session';
@@ -52,6 +61,8 @@ function selection(user: Record<string, string>) {
 
 type Ask = { kind: 'link' | 'video'; value: string } | null;
 
+const StopContext = createContext<(label: string) => 0 | -1>(() => 0);
+
 function Mark({
   on,
   label,
@@ -65,6 +76,7 @@ function Mark({
   act: () => void;
   className?: string;
 }) {
+  const stop = useContext(StopContext);
   return (
     <button
       type="button"
@@ -72,12 +84,42 @@ function Mark({
       aria-label={label}
       title={label}
       aria-pressed={on}
+      tabIndex={stop(label)}
       onMouseDown={(event) => event.preventDefault()}
       onClick={act}
     >
       {glyph}
     </button>
   );
+}
+
+const STEP: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1 };
+
+function useRovingFocus(shape: string) {
+  const box = useRef<HTMLDivElement>(null);
+  const [current, setCurrent] = useState('Undo');
+  useEffect(() => {
+    if (!box.current?.querySelector('[tabindex="0"]')) {
+      setCurrent('Undo');
+    }
+  }, [shape]);
+  const stops = () => [...(box.current?.querySelectorAll<HTMLElement>('button, select') ?? [])];
+  return {
+    box,
+    stop: (label: string): 0 | -1 => (label === current ? 0 : -1),
+    onFocus: (event: FocusEvent<HTMLDivElement>) =>
+      setCurrent(event.target.getAttribute('aria-label') ?? current),
+    onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+      const all = stops();
+      const index = all.indexOf(event.target as HTMLElement);
+      const next = { Home: 0, End: all.length - 1 }[event.key] ?? index + STEP[event.key];
+      if (index < 0 || Number.isNaN(next)) {
+        return;
+      }
+      event.preventDefault();
+      all[(next + all.length) % all.length].focus();
+    },
+  };
 }
 
 function Toolbar({
@@ -120,6 +162,7 @@ function Toolbar({
       canRedo: current.can().redo(),
     }),
   });
+  const { box, stop, onFocus, onKeyDown } = useRovingFocus(`${state.block}:${state.inTable}`);
   const chain = () => editor.chain().focus();
   const turn = (block: string) => {
     const base = chain().clearNodes();
@@ -143,127 +186,138 @@ function Toolbar({
     }
   };
   return (
-    <div className="toolbar" role="toolbar" aria-label="Formatting">
-      <div className="set">
-        <Mark label="Undo" glyph="↶" act={() => chain().undo().run()} />
-        <Mark label="Redo" glyph="↷" act={() => chain().redo().run()} />
-      </div>
-      <select
-        aria-label="Block style"
-        value={state.block}
-        onChange={(event) => turn(event.target.value)}
-        onMouseDown={(event) => event.stopPropagation()}
+    <StopContext value={stop}>
+      <div
+        ref={box}
+        className="toolbar"
+        role="toolbar"
+        aria-label="Formatting"
+        onFocus={onFocus}
+        onKeyDown={onKeyDown}
       >
-        <option value="text">text</option>
-        <option value="heading2">heading</option>
-        <option value="heading3">subheading</option>
-        <option value="heading4">small heading</option>
-        <option value="quote">quote</option>
-        <option value="callout">callout</option>
-        <option value="code">code block</option>
-      </select>
-      <div className="set">
-        <Mark
-          on={state.bold}
-          label="Bold"
-          glyph="B"
-          className="b"
-          act={() => chain().toggleBold().run()}
-        />
-        <Mark
-          on={state.italic}
-          label="Italic"
-          glyph="I"
-          className="i"
-          act={() => chain().toggleItalic().run()}
-        />
-        <Mark
-          on={state.strike}
-          label="Strikethrough"
-          glyph="S"
-          className="s"
-          act={() => chain().toggleStrike().run()}
-        />
-        <Mark
-          on={state.code}
-          label="Inline code"
-          glyph="</>"
-          className="mono"
-          act={() => chain().toggleCode().run()}
-        />
-        <Mark
-          on={state.highlight}
-          label="Highlight"
-          glyph="◐"
-          act={() => chain().toggleHighlight().run()}
-        />
-        <Mark
-          on={state.link}
-          label="Link"
-          glyph="⤷"
-          act={() => (state.link ? chain().unsetLink().run() : ask('link'))}
-        />
-      </div>
-      <div className="set">
-        <Mark
-          on={state.bullets}
-          label="Bulleted list"
-          glyph="•≡"
-          act={() => chain().toggleBulletList().run()}
-        />
-        <Mark
-          on={state.numbers}
-          label="Numbered list"
-          glyph="1≡"
-          act={() => chain().toggleOrderedList().run()}
-        />
-        <Mark
-          on={state.checklist}
-          label="Checklist"
-          glyph="☑"
-          act={() => chain().toggleTaskList().run()}
-        />
-      </div>
-      <div className="set">
-        <Mark label="Image" glyph="▣" act={pickImage} />
-        <Mark label="Video" glyph="▶" act={() => ask('video')} />
-        <Mark
-          label="Table"
-          glyph="▦"
-          act={() => chain().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-        />
-        <Mark
-          label="Two columns"
-          glyph="▯▯"
-          act={() => chain().insertContent(columnsOf(2)).run()}
-        />
-        <Mark label="Divider" glyph="—" act={() => chain().setHorizontalRule().run()} />
-      </div>
-      {state.block === 'callout' && (
-        <div className="set tints" role="group" aria-label="Callout tint">
-          {CALLOUT_TINTS.map((tint) => (
-            <button
-              key={tint}
-              type="button"
-              data-tint={tint}
-              aria-label={tint}
-              aria-pressed={state.tint === tint}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => chain().updateAttributes('callout', { tint }).run()}
-            />
-          ))}
-        </div>
-      )}
-      {state.inTable && (
         <div className="set">
-          <Mark label="Add row" glyph="+row" act={() => chain().addRowAfter().run()} />
-          <Mark label="Add column" glyph="+col" act={() => chain().addColumnAfter().run()} />
-          <Mark label="Delete row" glyph="−row" act={() => chain().deleteRow().run()} />
-          <Mark label="Delete column" glyph="−col" act={() => chain().deleteColumn().run()} />
-          <Mark label="Delete table" glyph="×" act={() => chain().deleteTable().run()} />
+          <Mark label="Undo" glyph="↶" act={() => chain().undo().run()} />
+          <Mark label="Redo" glyph="↷" act={() => chain().redo().run()} />
         </div>
-      )}
-    </div>
+        <select
+          aria-label="Block style"
+          tabIndex={stop('Block style')}
+          value={state.block}
+          onChange={(event) => turn(event.target.value)}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <option value="text">text</option>
+          <option value="heading2">heading</option>
+          <option value="heading3">subheading</option>
+          <option value="heading4">small heading</option>
+          <option value="quote">quote</option>
+          <option value="callout">callout</option>
+          <option value="code">code block</option>
+        </select>
+        <div className="set">
+          <Mark
+            on={state.bold}
+            label="Bold"
+            glyph="B"
+            className="b"
+            act={() => chain().toggleBold().run()}
+          />
+          <Mark
+            on={state.italic}
+            label="Italic"
+            glyph="I"
+            className="i"
+            act={() => chain().toggleItalic().run()}
+          />
+          <Mark
+            on={state.strike}
+            label="Strikethrough"
+            glyph="S"
+            className="s"
+            act={() => chain().toggleStrike().run()}
+          />
+          <Mark
+            on={state.code}
+            label="Inline code"
+            glyph="</>"
+            className="mono"
+            act={() => chain().toggleCode().run()}
+          />
+          <Mark
+            on={state.highlight}
+            label="Highlight"
+            glyph="◐"
+            act={() => chain().toggleHighlight().run()}
+          />
+          <Mark
+            on={state.link}
+            label="Link"
+            glyph="⤷"
+            act={() => (state.link ? chain().unsetLink().run() : ask('link'))}
+          />
+        </div>
+        <div className="set">
+          <Mark
+            on={state.bullets}
+            label="Bulleted list"
+            glyph="•≡"
+            act={() => chain().toggleBulletList().run()}
+          />
+          <Mark
+            on={state.numbers}
+            label="Numbered list"
+            glyph="1≡"
+            act={() => chain().toggleOrderedList().run()}
+          />
+          <Mark
+            on={state.checklist}
+            label="Checklist"
+            glyph="☑"
+            act={() => chain().toggleTaskList().run()}
+          />
+        </div>
+        <div className="set">
+          <Mark label="Image" glyph="▣" act={pickImage} />
+          <Mark label="Video" glyph="▶" act={() => ask('video')} />
+          <Mark
+            label="Table"
+            glyph="▦"
+            act={() => chain().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+          />
+          <Mark
+            label="Two columns"
+            glyph="▯▯"
+            act={() => chain().insertContent(columnsOf(2)).run()}
+          />
+          <Mark label="Divider" glyph="—" act={() => chain().setHorizontalRule().run()} />
+        </div>
+        {state.block === 'callout' && (
+          <div className="set tints" role="group" aria-label="Callout tint">
+            {CALLOUT_TINTS.map((tint) => (
+              <button
+                key={tint}
+                type="button"
+                data-tint={tint}
+                aria-label={tint}
+                aria-pressed={state.tint === tint}
+                tabIndex={stop(tint)}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => chain().updateAttributes('callout', { tint }).run()}
+              />
+            ))}
+          </div>
+        )}
+        {state.inTable && (
+          <div className="set">
+            <Mark label="Add row" glyph="+row" act={() => chain().addRowAfter().run()} />
+            <Mark label="Add column" glyph="+col" act={() => chain().addColumnAfter().run()} />
+            <Mark label="Delete row" glyph="−row" act={() => chain().deleteRow().run()} />
+            <Mark label="Delete column" glyph="−col" act={() => chain().deleteColumn().run()} />
+            <Mark label="Delete table" glyph="×" act={() => chain().deleteTable().run()} />
+          </div>
+        )}
+      </div>
+    </StopContext>
   );
 }
 
