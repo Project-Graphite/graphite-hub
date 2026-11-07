@@ -67,6 +67,14 @@ Message Lab's purpose was to prove the deploy path. Its repository is untouched;
 
 One shared backup service for every project. Every archive is reopened and checked after it is written, and a failed check raises an alert; the console's Backups page downloads, runs and imports archives. Scheduled restore drills were declined; the built-in verification and the import action are the guarantee instead.
 
+### 2026-11-07 Scheduled work is a SQLite row and a timer; Redis executes nothing
+
+Narrows the storage decision as built. Publishing, email and the digest are `jobs` and `sends` rows driven by a timer armed to the next due row; BullMQ, the Redis queues and the page cache from the plan were not needed and were not built. A Redis loss cannot delay a scheduled publish beyond the next tick.
+
+### 2026-11-07 Releases come from GitHub Releases; Message Lab's entry is archived
+
+The `Changelog` workflow in `actions` tags the next version and publishes a GitHub Release, which the hub records from the organisation webhook; nothing writes release YAML into this repository. Message Lab's `.graphite.yml` is `archived` with `deploy: none`, so the hub stops probing a host that no longer exists; its code stays untouched.
+
 ### 2026-11-04 Declined
 
 Trending lists, particle cursors, a second replica, a staging host, a threat model document, a dependency pinning bot, an accessibility gate in CI, passkey step-up for revealing secrets, restore drills on a schedule. Each was considered and not wanted now.
@@ -133,7 +141,7 @@ Run the spec files that cover the change, never the whole suite. Every route mus
 
 ## Off limits
 
-- The Message Lab repository: do not touch it.
+- The Message Lab repository: its code is untouched; its registry entry is archived with no deploy.
 - Comments, mentions, trending, particle cursors, a second replica, staging: do not add them without a new decision record.
-- The `releases/` folder and `src/data/registry.json`: being removed; do not add to them.
+- Release YAML, a committed registry file or a prerender step: they were removed with the static site; releases come from GitHub Releases and the registry from `platform/projects` at runtime.
 - Any address, token or secret value in this file, the README, or the docs: the organisation's repositories are public.
