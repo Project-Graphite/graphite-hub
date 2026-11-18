@@ -12,6 +12,7 @@ import { checkedForm, EDITOR_PATH, member, viewerHandle } from '../pages/blog';
 import { postPath, STATUS_LABEL, type PostStatus } from '../posts';
 import { isRefused } from '../profile';
 import { topicsFor } from '../topics';
+import '../styles/member.css';
 
 export const handle = topicsFor('blog-mine');
 

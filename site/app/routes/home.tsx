@@ -11,11 +11,11 @@ import {
   RunningPanel,
 } from '../components/kit/panels';
 import { WritingStrip } from '../components/kit/posts';
-import { AccentCard, Window } from '../components/kit/projects';
+import { ProjectRow, Window } from '../components/kit/projects';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
 import { modelFrom, useHub, useRoot } from '../hub';
-import { Field, Mark } from '../motion/canvases';
+import { Mark } from '../motion/canvases';
 import { visible } from '../settings';
 import { topicsFor } from '../topics';
 
@@ -74,9 +74,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const sections: Record<string, ReactNode> = {
     hero: (
       <section className="hero">
-        <Field />
         <div>
-          <Editable as="p" className="mono-sm mb-4 text-faint" setting="home.hero.eyebrow" />
+          <Editable as="p" className="path" setting="home.hero.eyebrow" />
           <h1>
             <Editable setting="home.hero.headline" />
           </h1>
@@ -85,7 +84,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
             <Button to="/projects" primary arrow>
               {settings['home.hero.primary']}
             </Button>
-            <Button to="https://github.com/project-graphite">github ↗</Button>
+            <Button to="https://github.com/project-graphite" arrow>
+              github
+            </Button>
           </div>
           <Counters counts={counts} shown={visible(settings['home.counters'])} />
         </div>
@@ -100,7 +101,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           <Ticker lines={ticker} />
           {shownSections.includes('timeline') && (
             <span className="window-count">
-              <b>{recent}</b> releases · {days} days
+              <b>{recent}</b> releases in {days} days
             </span>
           )}
         </div>
@@ -142,9 +143,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     ),
     more: more.length > 0 && (
       <Band title={<Editable setting="home.more.title" />}>
-        <div className="band-grid">
+        <div className="rows">
           {more.map((project) => (
-            <AccentCard key={project.slug} project={project} owner={ownerOf(project.owner)} />
+            <ProjectRow key={project.slug} project={project} owner={ownerOf(project.owner)} />
           ))}
         </div>
       </Band>

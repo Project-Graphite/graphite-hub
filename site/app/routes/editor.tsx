@@ -27,6 +27,7 @@ import {
 } from '../profile';
 import { topicsFor } from '../topics';
 import type { Member } from '../types';
+import '../styles/member.css';
 
 export const handle = topicsFor('editor');
 

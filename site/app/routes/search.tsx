@@ -4,6 +4,7 @@ import type { Route } from './+types/search';
 import { Avatar } from '../components/kit/basics';
 import { Chips, hitKeys, HitRow } from '../components/kit/directory';
 import { Fact, PageHeader } from '../components/kit/page';
+import { Icon } from '../components/kit/icons';
 import Status from '../components/Status';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
@@ -127,7 +128,7 @@ export default function Search({ loaderData }: Route.ComponentProps) {
             />
             {query && (
               <button type="button" aria-label="Clear" onClick={() => setQuery('')}>
-                ×
+                <Icon name="close" />
               </button>
             )}
           </Form>

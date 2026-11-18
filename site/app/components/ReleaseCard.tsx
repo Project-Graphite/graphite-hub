@@ -6,6 +6,7 @@ import { changelogPath, compareUrl, releaseTitle } from '../model';
 import { useSpotlight } from '../motion/motion';
 import type { Release, ReleaseGroup } from '../types';
 import { accentStyle } from './kit/basics';
+import { Icon } from './kit/icons';
 import { CHANGE_COLOR, ChangeMix } from './kit/releases';
 
 interface Props {
@@ -59,7 +60,7 @@ export default function ReleaseCard({ release, groups, showProject }: Props) {
           </p>
         ))}
         {groups.map((group) => (
-          <section key={group.type} className="group">
+          <section key={group.type} className="changes">
             <h4>
               <i style={{ '--c': CHANGE_COLOR[group.type] } as CSSProperties} />
               {group.type}
@@ -72,13 +73,8 @@ export default function ReleaseCard({ release, groups, showProject }: Props) {
                     {change.commit && (
                       <a href={`${project.repoUrl}/commit/${change.commit}`}>{change.commit}</a>
                     )}
-                    {change.pr && (
-                      <>
-                        {change.commit && ' · '}
-                        <a href={`${project.repoUrl}/pull/${change.pr}`}>#{change.pr}</a>
-                      </>
-                    )}
-                    {change.author && ` · ${change.author}`}
+                    {change.pr && <a href={`${project.repoUrl}/pull/${change.pr}`}>#{change.pr}</a>}
+                    {change.author && <span>{change.author}</span>}
                   </span>
                 </li>
               ))}
@@ -91,7 +87,8 @@ export default function ReleaseCard({ release, groups, showProject }: Props) {
           </span>
           <span className="links">
             <a href={compareUrl(project, release)} className="rule-link">
-              {release.previous ? 'compare' : 'commits'} ↗
+              {release.previous ? 'compare' : 'commits'}
+              <Icon name="external" />
             </a>
             <Link to={project.path} className="rule-link">
               project
