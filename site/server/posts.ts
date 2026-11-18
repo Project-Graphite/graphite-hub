@@ -262,7 +262,7 @@ export function createPosts(
       return id;
     },
 
-    async save(id: string, fields: PostFields, by: string) {
+    async save(id: string, fields: PostFields, by: string, access: Access) {
       const post = must(id);
       const next: PostFields = {
         title: String(fields.title ?? '').trim(),
@@ -271,7 +271,7 @@ export function createPosts(
         tags: fields.tags,
         project: fields.project,
         coverUpload: fields.coverUpload,
-        editors: fields.editors,
+        editors: access.manage ? fields.editors : post.editors,
       };
       const problem = postProblem(next, known);
       if (problem) {

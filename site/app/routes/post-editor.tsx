@@ -55,7 +55,7 @@ export async function action({ context, params, request }: Route.ActionArgs) {
   try {
     switch (intent) {
       case 'save':
-        await posts.save(post.id, JSON.parse(String(form.get('fields'))), by);
+        await posts.save(post.id, JSON.parse(String(form.get('fields'))), by, access);
         break;
       case 'publish':
         await posts.publish(post.id, by);
