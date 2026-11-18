@@ -179,15 +179,6 @@
 .account-button[aria-expanded='true'] {
   box-shadow: 0 0 0 var(--ring-bold) var(--color-line-strong);
 }
-.avatar.guest {
-  border: 1px solid var(--color-line-strong);
-  color: var(--color-muted);
-  background: var(--color-surface);
-}
-.avatar.guest svg {
-  width: 14px;
-  height: 14px;
-}
 .menu {
   position: absolute;
   top: calc(100% + 0.65rem);

@@ -543,15 +543,6 @@
 .hero.gate {
   padding-block: clamp(var(--space-12), 8vh, 4.5rem) clamp(var(--space-6), 4vh, 4rem);
 }
-.hero.gate .whom {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.6rem;
-  margin-top: 1.25rem;
-  font-size: var(--text-lede);
-  color: var(--color-muted);
-}
 .hero.gate .actions .btn {
   cursor: pointer;
 }
