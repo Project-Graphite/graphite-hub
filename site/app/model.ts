@@ -40,12 +40,18 @@ export function releaseTitle(release: Release, projectName: string) {
 }
 
 export function releaseLine(release: Release, projectName: string) {
-  return (
-    releaseTitle(release, projectName) ??
-    release.summary ??
-    release.groups[0]?.changes[0]?.text ??
-    null
-  );
+  return releaseTitle(release, projectName) ?? release.summary ?? release.firstChange;
+}
+
+export function publicDirectory(directory: Directory): Directory {
+  const members = directory.members.filter((member) => member.listed);
+  return {
+    ...directory,
+    members,
+    posts: directory.posts.filter((post) =>
+      members.some((member) => member.handle === post.author),
+    ),
+  };
 }
 
 export function createModel({ members, projects, releases, posts }: Directory) {
@@ -105,6 +111,18 @@ export function createModel({ members, projects, releases, posts }: Directory) {
       const scoped = members.find((entry) => entry.alias !== null && entry.alias === alias);
       const owned = slug && !extra ? projectByRoute(undefined, slug) : undefined;
       return scoped && owned && isCredited(owned, scoped) ? { project: owned } : {};
+    },
+    changelogOf: (path: string): Project | Member | undefined => {
+      const [root, section, slug, childSlug] = path.split('/').filter(Boolean);
+      if (root !== 'changelog' || !slug) {
+        return undefined;
+      }
+      if (section === 'members') {
+        return childSlug ? undefined : memberByHandle(slug);
+      }
+      return section === 'projects' || section === 'epics'
+        ? projectByRoute(childSlug ? slug : undefined, childSlug ?? slug)
+        : undefined;
     },
     projectBySlug,
     projectByRoute,

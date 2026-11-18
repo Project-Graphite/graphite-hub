@@ -11,10 +11,12 @@ import type { Route } from './+types/root';
 import NotFound from './components/NotFound';
 import Shell from './components/Shell';
 import { hubContext, NonceContext } from './context';
-import { useLive } from './live';
-import { metaFor, metaTags } from './meta';
+import { shouldRevalidateRoot, useLive } from './live';
+import { absolute, broken, metaFor, metaTags, notFound } from './meta';
 import { createModel } from './model';
+import { publicSettings } from './settings';
 import { shareCard, sharePath } from './share';
+import { structuredData } from './structured-data';
 import { ROOT_TOPICS, type LiveHandle } from './topics';
 import './styles/global.css';
 
@@ -22,11 +24,13 @@ import.meta.glob('./styles/pages/*.css', { eager: true });
 
 export const handle: LiveHandle = { topics: ROOT_TOPICS };
 
+export const shouldRevalidate = shouldRevalidateRoot;
+
 export function loader({ context }: Route.LoaderArgs) {
   const { directory, settings, viewer, csrf, presence, views } = context.get(hubContext);
   return {
     directory,
-    settings,
+    settings: publicSettings(settings),
     viewer,
     csrf,
     presence: presence.current(),
@@ -34,18 +38,34 @@ export function loader({ context }: Route.LoaderArgs) {
   };
 }
 
-export function meta({ loaderData, location }: Route.MetaArgs) {
-  const model = loaderData && createModel(loaderData.directory);
+export const links: Route.LinksFunction = () => [
+  { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+  { rel: 'manifest', href: '/manifest.webmanifest' },
+  { rel: 'alternate', type: 'application/rss+xml', title: 'RSS', href: '/blog/feed.xml' },
+  { rel: 'alternate', type: 'application/atom+xml', title: 'Atom', href: '/blog/atom.xml' },
+];
+
+export function meta({ loaderData, location, error }: Route.MetaArgs) {
   const path = location.pathname.replace(/(.)\/$/, '$1');
-  const card =
-    model &&
-    shareCard(
-      model,
-      path,
-      loaderData.settings['home.hero.headline'],
-      loaderData.settings['site.accents'],
-    );
-  return metaTags(metaFor(model, path), card && sharePath(path, card));
+  if (isRouteErrorResponse(error) && error.status === 404) {
+    return metaTags(notFound(path), undefined);
+  }
+  if (error || !loaderData) {
+    return metaTags(broken(path), undefined);
+  }
+  const model = createModel(loaderData.directory);
+  const page = metaFor(model, path, loaderData.settings['home.hero.headline']);
+  const card = page.noindex
+    ? undefined
+    : shareCard(
+        model,
+        path,
+        loaderData.settings['home.hero.headline'],
+        loaderData.settings['site.accents'],
+      );
+  const image = card && { path: sharePath(path, card), alt: `${card.title}. ${card.subtitle}` };
+  const data = structuredData(model, page, image && absolute(image.path));
+  return [...metaTags(page, image), ...(data ? [{ 'script:ld+json': data }] : [])];
 }
 
 export function Layout({ children }: { children: ReactNode }) {

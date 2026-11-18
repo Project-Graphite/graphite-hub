@@ -6,6 +6,7 @@ import type {
   Deploy,
   Directory,
   ProjectUptime,
+  ReleaseGroup,
   Running,
 } from '../app/types.ts';
 import type { Model } from '../app/model.ts';
@@ -190,6 +191,33 @@ export function createReads(db: Database, bus?: Pick<Bus, 'listen'>) {
           healthStatus: row.health_status as number | null,
           durationMs: Date.parse(row.finished_at as string) - Date.parse(row.started_at as string),
         }));
+    },
+
+    releaseGroups(ids: string[]): Record<string, ReleaseGroup[]> {
+      return Object.fromEntries(
+        db
+          .prepare('SELECT id, groups FROM releases WHERE id IN (SELECT value FROM json_each(?))')
+          .all(JSON.stringify(ids))
+          .map((row) => [row.id as string, json<ReleaseGroup[]>(row.groups)]),
+      );
+    },
+
+    edited() {
+      const stamps = (query: string): Record<string, string> =>
+        Object.fromEntries(
+          db
+            .prepare(query)
+            .all()
+            .map((row) => [row.key as string, row.at as string]),
+        );
+      return {
+        members: stamps(
+          'SELECT m.handle AS key, coalesce(p.updated_at, m.joined_at) AS at FROM members m LEFT JOIN profiles p USING (handle)',
+        ),
+        projects: stamps(
+          'SELECT slug AS key, edited_at AS at FROM projects WHERE edited_at IS NOT NULL',
+        ),
+      };
     },
 
     uptime(days: number, now = Date.now()): Record<string, ProjectUptime> {

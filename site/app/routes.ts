@@ -17,7 +17,6 @@ export default [
   route('subscribe', 'routes/subscribe.tsx'),
   route('subscribe/:purpose/:id/:sig', 'routes/subscription.tsx'),
   route('privacy', 'routes/privacy.tsx'),
-  route('sign-in', 'routes/sign-in.tsx'),
   route('changelog/members/:handle', 'routes/member-changelog.tsx'),
   route('changelog/epics/:parentSlug/:slug', 'routes/project-changelog.tsx', {
     id: 'epic-project-changelog',
@@ -27,7 +26,7 @@ export default [
   route('sitemap.xml', 'routes/sitemap.ts'),
   route('share/*', 'routes/share.ts'),
   route('llms.txt', 'routes/llms.ts'),
-  route('kit', 'routes/kit.tsx'),
+  ...(import.meta.env.MODE === 'production' ? [] : [route('kit', 'routes/kit.tsx')]),
   route('blog', 'routes/blog.tsx'),
   route('blog/feed.xml', 'routes/blog-feed.ts', { id: 'blog-rss' }),
   route('blog/atom.xml', 'routes/blog-feed.ts', { id: 'blog-atom' }),

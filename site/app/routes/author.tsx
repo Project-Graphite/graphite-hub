@@ -25,10 +25,6 @@ export function loader({ context, params }: Route.LoaderArgs) {
   };
 }
 
-export const links = () => [
-  { rel: 'alternate', type: 'application/rss+xml', title: 'RSS', href: '/blog/feed.xml' },
-];
-
 export default function Author({ loaderData }: Route.ComponentProps) {
   const hub = useHub();
   const settings = useRoot()!.settings;

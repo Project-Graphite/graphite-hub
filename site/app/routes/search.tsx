@@ -67,9 +67,7 @@ function Browse() {
                 <strong>
                   {project?.name ?? release.project} v{release.version}
                 </strong>
-                <small>
-                  {release.title ?? release.summary ?? release.groups[0]?.changes[0]?.text}
-                </small>
+                <small>{release.title ?? release.summary ?? release.firstChange}</small>
               </span>
               <time dateTime={release.date}>{day(release.date)}</time>
             </Link>

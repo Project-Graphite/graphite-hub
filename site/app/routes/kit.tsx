@@ -1,5 +1,4 @@
 import { useState, type CSSProperties } from 'react';
-import { data } from 'react-router';
 import type { Route } from './+types/kit';
 import { Avatar, Band, Button, Cover, Panel } from '../components/kit/basics';
 import { Confirm, Segmented, Sortable, Switch } from '../components/kit/controls';
@@ -19,9 +18,6 @@ import type { ConsoleLine } from '../types';
 export const handle = topicsFor('kit');
 
 export function loader() {
-  if (!import.meta.env.DEV) {
-    throw data(null, { status: 404 });
-  }
   return { now: Date.now() };
 }
 

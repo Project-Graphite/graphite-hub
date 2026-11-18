@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import express, { type Request, type Response } from 'express';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import { clientAddress } from './address.ts';
 import { config } from './config.ts';
 import { GitHubError, request as asUser } from './github.ts';
@@ -89,6 +89,24 @@ export function createAuth(sessions: Sessions, redis: Redis) {
     response.redirect(303, to);
   }
 
+  async function gate(request: Request, response: Response, next: NextFunction) {
+    const at = request.originalUrl.indexOf('?');
+    const query = at < 0 ? [] : request.originalUrl.slice(at + 1).split('&');
+    const kept = query.filter((part) => part.split('=')[0] !== 'graphite');
+    if (kept.length === query.length || !['GET', 'HEAD'].includes(request.method)) {
+      next();
+      return;
+    }
+    const clean = safeReturn(kept.length > 0 ? `${request.path}?${kept.join('&')}` : request.path);
+    response.setHeader('Cache-Control', 'no-store');
+    response.redirect(
+      302,
+      (await current(request, response))
+        ? clean
+        : `/auth/sign-in?return=${encodeURIComponent(clean).replaceAll('%2F', '/')}`,
+    );
+  }
+
   const router = express.Router();
 
   router.get('/auth/sign-in', async (request: Request, response: Response) => {
@@ -175,7 +193,7 @@ export function createAuth(sessions: Sessions, redis: Redis) {
     },
   );
 
-  return { router, current };
+  return { router, current, gate };
 }
 
 export type Auth = ReturnType<typeof createAuth>;

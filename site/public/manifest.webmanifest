@@ -1,0 +1,13 @@
+{
+  "name": "Project Graphite",
+  "short_name": "Graphite",
+  "description": "A shared portfolio for Project Graphite members, their work and the applications they deploy.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#0c0c0e",
+  "theme_color": "#0c0c0e",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

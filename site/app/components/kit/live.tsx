@@ -179,8 +179,7 @@ export function ReleaseTimeline({ releases, accentOf, nameOf, today, days }: Tim
     7 +
     Math.sqrt(
       group.reduce(
-        (sum, release) =>
-          sum + release.groups.reduce((total, changes) => total + changes.changes.length, 0),
+        (sum, release) => sum + release.changes.reduce((total, { count }) => total + count, 0),
         0,
       ),
     ) *

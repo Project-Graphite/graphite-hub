@@ -49,6 +49,28 @@ describe('share cards', () => {
     assert.equal(card('/projects/nope'), undefined);
   });
 
+  it('gives a changelog page a card naming what it logs', () => {
+    assert.deepEqual(card('/changelog/projects/strata'), {
+      label: 'changelog',
+      title: 'Strata changelog',
+      subtitle: 'no releases yet',
+      accent: '#6f8fd1',
+    });
+    assert.equal(card('/changelog/members/amrmscll')?.title, 'Amr changelog');
+    assert.equal(card('/changelog/projects/nope'), undefined);
+    const released = createModel({
+      ...directory,
+      releases: [
+        { id: 'r2', project: 'strata', version: '1.1.0' },
+        { id: 'r1', project: 'strata', version: '1.0.0' },
+      ],
+    } as unknown as Directory);
+    assert.equal(
+      shareCard(released, '/changelog/projects/strata', 'Headline', ['#111111'])?.subtitle,
+      '2 releases · latest v1.1.0',
+    );
+  });
+
   it('puts a content hash in the image address so a change gets a new address', () => {
     const strata = card('/strata')!;
     assert.equal(sharePath('/strata', strata), `/share/strata.png?v=${shareHash(strata)}`);

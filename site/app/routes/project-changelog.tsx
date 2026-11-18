@@ -7,6 +7,7 @@ import type { Route } from './+types/project-changelog';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
 import Timeline from '../components/Timeline';
+import { hubContext } from '../context';
 import { day, plural } from '../format';
 import { found, modelFrom, useHub } from '../hub';
 import { changelogPath } from '../model';
@@ -15,8 +16,15 @@ import { topicsFor } from '../topics';
 export const handle = topicsFor('project-changelog');
 
 export function loader({ context, params }: Route.LoaderArgs) {
-  const project = found(modelFrom(context).projectByRoute(params.parentSlug, params.slug));
-  return { parent: project.parent ?? undefined, slug: project.slug };
+  const model = modelFrom(context);
+  const project = found(model.projectByRoute(params.parentSlug, params.slug));
+  return {
+    parent: project.parent ?? undefined,
+    slug: project.slug,
+    groups: context
+      .get(hubContext)
+      .reads.releaseGroups(model.releasesForProject(project).map((release) => release.id)),
+  };
 }
 
 export default function ProjectChangelog({ loaderData }: Route.ComponentProps) {
@@ -97,7 +105,11 @@ export default function ProjectChangelog({ loaderData }: Route.ComponentProps) {
           )}
         </PageHeader>
 
-        <Timeline releases={releases} showProject={children.length > 0} />
+        <Timeline
+          releases={releases}
+          groups={loaderData.groups}
+          showProject={children.length > 0}
+        />
       </div>
     </Page>
   );

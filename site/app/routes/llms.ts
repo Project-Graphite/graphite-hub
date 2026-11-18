@@ -1,12 +1,12 @@
 import type { Route } from './+types/llms';
 import { modelFrom } from '../hub';
-import { INDEX, ORIGIN } from '../meta';
+import { absolute, INDEX } from '../meta';
 import { STATUS_LABEL } from '../model';
 import type { Project } from '../types';
 
 function projectLine(project: Project) {
   return [
-    `- [${project.name}](${ORIGIN}${project.path}/): ${project.summary}`,
+    `- [${project.name}](${absolute(project.path)}): ${project.summary}`,
     project.url && project.status === 'live'
       ? ` Open it at ${project.url}.`
       : ` Status: ${STATUS_LABEL[project.status]}.`,
@@ -35,7 +35,7 @@ export function loader({ context }: Route.LoaderArgs) {
     '',
     ...members.map(
       (member) =>
-        `- [${member.name}](${ORIGIN}${member.path}/): ${member.headline ?? `@${member.github}`}`,
+        `- [${member.name}](${absolute(member.path)}): ${member.headline ?? `@${member.github}`}`,
     ),
     '',
     ...(posts.length > 0
@@ -44,16 +44,16 @@ export function loader({ context }: Route.LoaderArgs) {
           '',
           ...posts
             .slice(0, 20)
-            .map((post) => `- [${post.title}](${ORIGIN}${post.path}/): ${post.summary}`),
+            .map((post) => `- [${post.title}](${absolute(post.path)}): ${post.summary}`),
           '',
         ]
       : []),
     '## Site',
     '',
-    `- [Blog](${ORIGIN}/blog/): posts by the members, with RSS at ${ORIGIN}/blog/feed.xml`,
-    `- [Subscribe](${ORIGIN}/subscribe/): new posts by email, per post or as a weekly digest`,
-    `- [Changelog](${ORIGIN}/changelog/): every release of every project`,
-    `- [Sitemap](${ORIGIN}/sitemap.xml): every page on the site`,
+    `- [Blog](${absolute('/blog')}): posts by the members, with RSS at ${absolute('/blog/feed.xml')}`,
+    `- [Subscribe](${absolute('/subscribe')}): new posts by email, per post or as a weekly digest`,
+    `- [Changelog](${absolute('/changelog')}): every release of every project`,
+    `- [Sitemap](${absolute('/sitemap.xml')}): every page on the site`,
     '',
   ].join('\n');
   return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });

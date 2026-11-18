@@ -34,6 +34,7 @@ export interface PostSummary {
   tags: string[];
   coverUrl: string | null;
   publishedAt: string;
+  updatedAt: string;
   readingMinutes: number;
   path: string;
 }

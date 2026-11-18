@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { Link, useNavigate, useRevalidator } from 'react-router';
 import { useRoot } from '../../hub';
+import { directoryIsFollowed } from '../../live';
 import { search } from '../../search';
 import { hitKeys, HitRow } from './directory';
 
 const OPEN = 'graphite:search';
+const RESULTS = 'palette-results';
 
 const JUMPS = [
   { to: '/members', label: 'members' },
@@ -16,22 +18,29 @@ const JUMPS = [
   { to: '/status', label: 'status' },
 ];
 
+const optionId = (index: number) => `${RESULTS}-${index}`;
+
 export const openSearch = () => dispatchEvent(new Event(OPEN));
 
 export function Palette() {
   const root = useRoot();
   const navigate = useNavigate();
+  const { revalidate } = useRevalidator();
   const dialog = useRef<HTMLDialogElement>(null);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const hits = root ? search(root.directory, query, 16) : [];
+  const show = useEffectEvent(() => {
+    if (dialog.current?.open) {
+      return;
+    }
+    dialog.current?.showModal();
+    if (!directoryIsFollowed()) {
+      void revalidate();
+    }
+  });
 
   useEffect(() => {
-    const show = () => {
-      if (!dialog.current?.open) {
-        dialog.current?.showModal();
-      }
-    };
     const open = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (
@@ -51,6 +60,10 @@ export function Palette() {
       removeEventListener(OPEN, show);
     };
   }, []);
+
+  useEffect(() => {
+    document.getElementById(optionId(active))?.scrollIntoView({ block: 'nearest' });
+  }, [active]);
 
   const close = () => {
     dialog.current?.close();
@@ -73,7 +86,12 @@ export function Palette() {
         <input
           autoFocus
           autoComplete="off"
+          role="combobox"
           aria-label="Search"
+          aria-autocomplete="list"
+          aria-expanded={hits.length > 0}
+          aria-controls={hits.length > 0 ? RESULTS : undefined}
+          aria-activedescendant={hits.length > 0 ? optionId(active) : undefined}
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
@@ -89,19 +107,32 @@ export function Palette() {
       </div>
       {query.trim() ? (
         <div className="hits">
-          {root &&
-            hits.map((hit, index) => (
-              <HitRow
-                key={`${hit.kind}:${hit.to}`}
-                hit={hit}
-                needle={query}
-                directory={root.directory}
-                active={index === active}
-                onHover={() => setActive(index)}
-                onPick={close}
-              />
-            ))}
-          {hits.length === 0 && <p className="none">nothing matches “{query.trim()}”</p>}
+          {root && hits.length > 0 && (
+            <div id={RESULTS} role="listbox" aria-label="Results" className="grid gap-[0.35rem]">
+              {hits.map((hit, index) => (
+                <div
+                  key={`${hit.kind}:${hit.to}`}
+                  id={optionId(index)}
+                  role="option"
+                  aria-selected={index === active}
+                >
+                  <HitRow
+                    hit={hit}
+                    needle={query}
+                    directory={root.directory}
+                    active={index === active}
+                    onHover={() => setActive(index)}
+                    onPick={close}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          {hits.length === 0 && (
+            <p className="none" role="status">
+              nothing matches “{query.trim()}”
+            </p>
+          )}
           <Link
             to={`/search?q=${encodeURIComponent(query.trim())}`}
             className="all"

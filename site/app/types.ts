@@ -80,6 +80,11 @@ export interface ReleaseGroup {
   changes: ReleaseChange[];
 }
 
+export interface ChangeCount {
+  type: ChangeType;
+  count: number;
+}
+
 export interface Release {
   id: string;
   project: string;
@@ -89,7 +94,8 @@ export interface Release {
   date: string;
   title: string | null;
   summary: string | null;
-  groups: ReleaseGroup[];
+  changes: ChangeCount[];
+  firstChange: string | null;
 }
 
 export interface Directory {

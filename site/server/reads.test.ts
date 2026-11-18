@@ -233,4 +233,45 @@ describe('reads', () => {
     assert.equal(counts.projects, 1);
     assert.equal(counts.releases, 3);
   });
+
+  it('reads the change groups of the asked releases in one query', () => {
+    const db = memoryDatabase();
+    const insert = db.prepare(
+      "INSERT INTO releases (id, project, version, date, groups) VALUES (?, 'strata', ?, '2026-11-10', ?)",
+    );
+    const added = [
+      { type: 'added', changes: [{ text: 'Boards', commit: null, pr: 4, author: null }] },
+    ];
+    insert.run('strata-1.1.0', '1.1.0', JSON.stringify(added));
+    insert.run('strata-1.0.0', '1.0.0', '[]');
+    insert.run('strata-0.9.0', '0.9.0', '[]');
+
+    assert.deepEqual(createReads(db).releaseGroups(['strata-1.1.0', 'strata-1.0.0', 'gone']), {
+      'strata-1.1.0': added,
+      'strata-1.0.0': [],
+    });
+  });
+
+  it('dates a member page by its last profile edit or by joining, and a project by its last edit', () => {
+    const db = memoryDatabase();
+    const member = db.prepare(
+      "INSERT INTO members (handle, login, name, avatar_url, role, joined_at, synced_at) VALUES (?, ?, ?, '', 'member', ?, '2026-11-18T00:00:00.000Z')",
+    );
+    member.run('amrmscll', 'AmrMsCLL', 'Amr', '2026-11-05T00:00:00.000Z');
+    member.run('fresh', 'Fresh', 'Fresh', '2026-11-12T00:00:00.000Z');
+    db.prepare('UPDATE profiles SET updated_at = ? WHERE handle = ?').run(
+      '2026-11-09T08:00:00.000Z',
+      'amrmscll',
+    );
+    const project = db.prepare(
+      "INSERT INTO projects (slug, repo, entry, synced_at, edited_at) VALUES (?, ?, '{}', '2026-11-18T00:00:00.000Z', ?)",
+    );
+    project.run('strata', 'project-graphite/strata', '2026-11-11T07:00:00.000Z');
+    project.run('stagehand', 'project-graphite/stagehand', null);
+
+    assert.deepEqual(createReads(db).edited(), {
+      members: { amrmscll: '2026-11-09T08:00:00.000Z', fresh: '2026-11-12T00:00:00.000Z' },
+      projects: { strata: '2026-11-11T07:00:00.000Z' },
+    });
+  });
 });

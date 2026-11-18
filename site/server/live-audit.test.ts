@@ -2,6 +2,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, it, mock } from 'node:test';
 import {
+  changesRoot,
+  followsDirectory,
   MAX_TOPICS,
   revalidates,
   ROOT_TOPICS,
@@ -17,6 +19,7 @@ import { createClient, parseTopics } from './live.ts';
 
 const DIRECTORY: Topic[] = ['members', 'profiles', 'projects', 'releases', 'settings', 'posts'];
 const EVERY_PAGE: Topic[] = [...DIRECTORY, 'presence', 'views'];
+const SHELL: Topic[] = ['settings', 'presence'];
 const RAIL: Topic[] = ['deploys', 'uptime'];
 
 const DEPENDS: Record<RouteName, Topic[]> = {
@@ -42,10 +45,9 @@ const DEPENDS: Record<RouteName, Topic[]> = {
   subscribe: EVERY_PAGE,
   subscription: EVERY_PAGE,
   search: EVERY_PAGE,
-  privacy: EVERY_PAGE,
-  'sign-in': EVERY_PAGE,
+  privacy: SHELL,
   kit: EVERY_PAGE,
-  'not-found': EVERY_PAGE,
+  'not-found': SHELL,
 };
 
 const KEY = 'sample-key';
@@ -123,6 +125,22 @@ describe('live audit', () => {
       }
     }
     mock.timers.reset();
+  });
+
+  it('a route that shows no directory data does not follow the directory', () => {
+    for (const route of Object.keys(ROUTE_TOPICS) as RouteName[]) {
+      assert.equal(
+        followsDirectory(subscribed(route)),
+        !['privacy', 'not-found'].includes(route),
+        route,
+      );
+    }
+  });
+
+  it('only the directory topics and a session change reload the root loader', () => {
+    for (const topic of TOPICS) {
+      assert.equal(changesRoot(topic), [...DIRECTORY, 'sessions'].includes(topic), topic);
+    }
   });
 
   it('sessions reach no route by subscription; the stream pushes them to members', () => {

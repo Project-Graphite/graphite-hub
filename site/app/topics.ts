@@ -39,35 +39,43 @@ export function revalidates(topic: string) {
 }
 
 const DIRECTORY: Topic[] = ['members', 'profiles', 'projects', 'releases', 'settings', 'posts'];
-export const ROOT_TOPICS: Topic[] = [...DIRECTORY, 'presence', 'views'];
+export const ROOT_TOPICS: Topic[] = ['settings', 'presence'];
+const PAGE: Topic[] = [...DIRECTORY, 'presence', 'views'];
 const RAIL: Topic[] = ['deploys', 'uptime'];
 
+export function changesRoot(topic: string) {
+  return topic === 'sessions' || DIRECTORY.includes(topic as Topic);
+}
+
+export function followsDirectory(topics: string[]) {
+  return DIRECTORY.every((topic) => topics.includes(topic));
+}
+
 export const ROUTE_TOPICS = {
-  home: [...ROOT_TOPICS, ...RAIL, 'stats', 'messages'],
-  members: [...ROOT_TOPICS, ...RAIL],
-  member: [...ROOT_TOPICS, ...RAIL],
-  epics: [...ROOT_TOPICS, ...RAIL],
-  projects: [...ROOT_TOPICS, ...RAIL],
-  resolved: [...ROOT_TOPICS, ...RAIL, 'reading'],
-  changelog: ROOT_TOPICS,
-  'member-changelog': ROOT_TOPICS,
-  'project-changelog': ROOT_TOPICS,
-  status: [...ROOT_TOPICS, ...RAIL, 'ping', 'map'],
-  admin: [...ROOT_TOPICS, 'errors', 'subscribers'],
-  messages: [...ROOT_TOPICS, 'messages'],
-  blog: ROOT_TOPICS,
-  author: ROOT_TOPICS,
-  post: [...ROOT_TOPICS, 'reading', 'editing'],
-  'blog-new': ROOT_TOPICS,
-  'blog-mine': ROOT_TOPICS,
-  'post-editor': ROOT_TOPICS,
-  editor: ROOT_TOPICS,
-  subscribe: ROOT_TOPICS,
-  subscription: ROOT_TOPICS,
-  search: ROOT_TOPICS,
+  home: [...PAGE, ...RAIL, 'stats', 'messages'],
+  members: [...PAGE, ...RAIL],
+  member: [...PAGE, ...RAIL],
+  epics: [...PAGE, ...RAIL],
+  projects: [...PAGE, ...RAIL],
+  resolved: [...PAGE, ...RAIL, 'reading'],
+  changelog: PAGE,
+  'member-changelog': PAGE,
+  'project-changelog': PAGE,
+  status: [...PAGE, ...RAIL, 'ping', 'map'],
+  admin: [...PAGE, 'errors', 'subscribers'],
+  messages: [...PAGE, 'messages'],
+  blog: PAGE,
+  author: PAGE,
+  post: [...PAGE, 'reading', 'editing'],
+  'blog-new': PAGE,
+  'blog-mine': PAGE,
+  'post-editor': PAGE,
+  editor: PAGE,
+  subscribe: PAGE,
+  subscription: PAGE,
+  search: PAGE,
   privacy: ROOT_TOPICS,
-  'sign-in': ROOT_TOPICS,
-  kit: ROOT_TOPICS,
+  kit: PAGE,
   'not-found': ROOT_TOPICS,
 } satisfies Record<string, Topic[]>;
 
