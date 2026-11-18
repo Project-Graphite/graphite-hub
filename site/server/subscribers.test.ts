@@ -143,6 +143,7 @@ async function publishPost(
       editors: [],
     },
     'amrmscll',
+    { edit: true, manage: true },
   );
   return posts.publish(id, 'amrmscll');
 }

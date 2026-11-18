@@ -168,7 +168,7 @@ export function httpsUrl(value: unknown) {
 }
 
 export function aliasProblem(alias: string, taken: { slugs: Set<string>; aliases: Set<string> }) {
-  if (!SLUG.test(alias)) {
+  if (typeof alias !== 'string' || !SLUG.test(alias)) {
     return 'An alias is 1 to 32 lowercase letters, digits or dashes, not starting or ending with a dash.';
   }
   if (RESERVED.has(alias)) {
@@ -263,6 +263,19 @@ export function blocksProblem(blocks: unknown, uploads: Set<string>) {
 }
 
 export function fieldsProblem(fields: Partial<ProfileFields>, uploads: Set<string>) {
+  if (
+    Object.keys(fields).some(
+      (key) =>
+        !['alias', 'headline', 'bio', 'accent', 'avatarUpload', 'coverUpload', 'listed'].includes(
+          key,
+        ),
+    )
+  ) {
+    return 'That is not a field of a profile.';
+  }
+  if (fields.listed !== undefined && typeof fields.listed !== 'boolean') {
+    return 'Listed is on or off.';
+  }
   if (fields.headline != null && !text(fields.headline, LIMITS.headline, false)) {
     return `A headline is at most ${LIMITS.headline} characters.`;
   }

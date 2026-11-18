@@ -39,31 +39,42 @@ const fields = {
   editors: ['omar'],
 };
 
+const manages = { edit: true, manage: true };
+
 describe('posts', () => {
   it('creates a draft from a template and derives the slug from the title', async () => {
     const { posts } = setup();
     const id = await posts.create('amrmscll', 'amrmscll', 'release-notes');
     assert.equal(posts.read(id)?.status, 'draft');
     assert.match(posts.preview(id).html, /<h2 id="highlights">/);
-    const saved = await posts.save(id, fields, 'amrmscll');
+    const saved = await posts.save(id, fields, 'amrmscll', manages);
     assert.equal(saved.slug, 'hello-world');
     const second = await posts.create('amrmscll', 'amrmscll', null);
-    assert.equal((await posts.save(second, fields, 'amrmscll')).slug, 'hello-world-2');
+    assert.equal((await posts.save(second, fields, 'amrmscll', manages)).slug, 'hello-world-2');
   });
 
   it('refuses bad settings', async () => {
     const { posts } = setup();
     const id = await posts.create('amrmscll', 'amrmscll', null);
-    await assert.rejects(posts.save(id, { ...fields, project: 'nope' }, 'amrmscll'), Refused);
-    await assert.rejects(posts.save(id, { ...fields, editors: ['ghost'] }, 'amrmscll'), Refused);
-    await assert.rejects(posts.save(id, { ...fields, tags: ['Bad Tag'] }, 'amrmscll'), Refused);
+    await assert.rejects(
+      posts.save(id, { ...fields, project: 'nope' }, 'amrmscll', manages),
+      Refused,
+    );
+    await assert.rejects(
+      posts.save(id, { ...fields, editors: ['ghost'] }, 'amrmscll', manages),
+      Refused,
+    );
+    await assert.rejects(
+      posts.save(id, { ...fields, tags: ['Bad Tag'] }, 'amrmscll', manages),
+      Refused,
+    );
     await assert.rejects(posts.publish(id, 'amrmscll'), Refused);
   });
 
   it('publishes once: html, reading time, a version and a public activity row', async () => {
     const { db, posts, recorded } = setup();
     const id = await posts.create('amrmscll', 'amrmscll', null);
-    await posts.save(id, fields, 'amrmscll');
+    await posts.save(id, fields, 'amrmscll', manages);
     const words = Array.from({ length: 500 }, (_, index) => `word${index}`).join(' ');
     posts.storeDoc(
       id,
@@ -107,7 +118,7 @@ describe('posts', () => {
   it('leaves a scheduled post untouched while the bus is down, so the job publishes it later', async () => {
     const { db, posts, link, announced, recorded } = setup();
     const id = await posts.create('amrmscll', 'amrmscll', null);
-    await posts.save(id, fields, 'amrmscll');
+    await posts.save(id, fields, 'amrmscll', manages);
     await posts.schedule(id, new Date(Date.now() + 60_000).toISOString(), 'amrmscll');
     link.down = true;
     await assert.rejects(posts.publish(id, 'amrmscll'), Refused);
@@ -131,7 +142,7 @@ describe('posts', () => {
   it('schedules through the jobs table and publishes when due', async () => {
     const { db, posts, jobs } = setup();
     const id = await posts.create('amrmscll', 'amrmscll', null);
-    await posts.save(id, fields, 'amrmscll');
+    await posts.save(id, fields, 'amrmscll', manages);
     await assert.rejects(posts.schedule(id, '2000-01-01T00:00:00.000Z', 'amrmscll'), Refused);
     const due = new Date(Date.now() + 60_000).toISOString();
     await posts.schedule(id, due, 'amrmscll');
@@ -149,7 +160,7 @@ describe('posts', () => {
   it('trashes, restores to the previous status and removes', async () => {
     const { posts } = setup();
     const id = await posts.create('amrmscll', 'amrmscll', null);
-    await posts.save(id, fields, 'amrmscll');
+    await posts.save(id, fields, 'amrmscll', manages);
     await posts.publish(id, 'amrmscll');
     await posts.trash(id, 'amrmscll');
     assert.equal(posts.read(id)?.status, 'trashed');
@@ -202,7 +213,7 @@ describe('posts', () => {
   it('lists a member’s own and co-edited posts, and everything for the owner', async () => {
     const { posts } = setup();
     const mine = await posts.create('amrmscll', 'amrmscll', null);
-    await posts.save(mine, fields, 'amrmscll');
+    await posts.save(mine, fields, 'amrmscll', manages);
     const theirs = await posts.create('omar', 'omar', null);
     assert.deepEqual(
       posts.byAuthor('omar').map((post) => post.id),
@@ -210,5 +221,51 @@ describe('posts', () => {
     );
     assert.equal(posts.byAuthor('nier').length, 0);
     assert.equal(posts.byAuthor(null).length, 2);
+  });
+
+  it('lets a co-editor change the post but not who edits it', async () => {
+    const { posts } = setup();
+    const id = await posts.create('amrmscll', 'amrmscll', null);
+    await posts.save(id, fields, 'amrmscll', manages);
+    const coEditor = accessTo(posts.read(id)!, { handle: 'omar', owner: false });
+    const added = await posts.save(
+      id,
+      { ...fields, title: 'Edited', editors: ['omar', 'amrmscll'] },
+      'omar',
+      coEditor,
+    );
+    assert.equal(added.title, 'Edited');
+    assert.deepEqual(added.editors, ['omar']);
+    assert.deepEqual((await posts.save(id, { ...fields, editors: [] }, 'omar', coEditor)).editors, [
+      'omar',
+    ]);
+    assert.deepEqual(
+      (await posts.save(id, { ...fields, editors: [] }, 'amrmscll', manages)).editors,
+      [],
+    );
+  });
+
+  it('keeps a post’s id, author and status out of reach of the saved fields', async () => {
+    const { posts } = setup();
+    const id = await posts.create('amrmscll', 'amrmscll', null);
+    const other = await posts.create('omar', 'omar', null);
+    const before = posts.read(other);
+    const saved = await posts.save(
+      id,
+      {
+        ...fields,
+        id: other,
+        author: 'omar',
+        status: 'published',
+        publishedAt: '2026-01-01',
+      } as typeof fields,
+      'amrmscll',
+      manages,
+    );
+    assert.equal(saved.id, id);
+    assert.equal(saved.author, 'amrmscll');
+    assert.equal(saved.status, 'draft');
+    assert.equal(saved.publishedAt, null);
+    assert.deepEqual(posts.read(other), before);
   });
 });
