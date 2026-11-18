@@ -97,7 +97,10 @@ export function createPosts(
   bus: Bus,
   jobs: Jobs,
   onPublished: (post: Post) => void = () => {},
+  now = () => Date.now(),
 ) {
+  const timestamp = () => new Date(now()).toISOString();
+
   const known = {
     upload: (id: string) => Boolean(db.prepare('SELECT 1 FROM uploads WHERE id = ?').get(id)),
     member: (handle: string) =>
@@ -198,7 +201,7 @@ export function createPosts(
     if (!(await bus.alive())) {
       throw new Refused('The live stream is unreachable; try again in a moment.');
     }
-    const at = new Date().toISOString();
+    const at = timestamp();
     const rendered = render(state(id));
     transaction(db, () => {
       store(id, rendered, 'published', at, by);
@@ -235,7 +238,7 @@ export function createPosts(
 
     async create(author: string, by: string, template: string | null) {
       const id = randomBytes(8).toString('hex');
-      const at = new Date().toISOString();
+      const at = timestamp();
       const content =
         BUILT_IN_TEMPLATES.find((candidate) => candidate.id === template)?.content ??
         (template
@@ -275,7 +278,7 @@ export function createPosts(
         throw new Refused(problem);
       }
       const slug = freeSlug(post.author, next.slug, id);
-      const at = new Date().toISOString();
+      const at = timestamp();
       db.prepare(
         `UPDATE posts SET title = ?, slug = ?, summary = ?, tags = ?, project = ?, cover_upload = ?, editors = ?,
            updated_at = ?, updated_by = ? WHERE id = ?`,
@@ -297,7 +300,7 @@ export function createPosts(
     },
 
     storeDoc(id: string, doc: Uint8Array, by: string) {
-      const at = new Date().toISOString();
+      const at = timestamp();
       db.prepare('UPDATE posts SET doc = ?, updated_at = ?, updated_by = ? WHERE id = ?').run(
         doc,
         at,
@@ -314,10 +317,10 @@ export function createPosts(
       if (problem) {
         throw new Refused(problem);
       }
-      if (Number.isNaN(Date.parse(publishAt)) || Date.parse(publishAt) <= Date.now()) {
+      if (Number.isNaN(Date.parse(publishAt)) || Date.parse(publishAt) <= now()) {
         throw new Refused('Pick a time in the future, or publish now.');
       }
-      const at = new Date().toISOString();
+      const at = timestamp();
       const due = new Date(publishAt).toISOString();
       db.prepare(
         "UPDATE posts SET status = 'scheduled', publish_at = ?, updated_at = ?, updated_by = ? WHERE id = ?",
@@ -334,7 +337,7 @@ export function createPosts(
 
     async unpublish(id: string, by: string) {
       const post = must(id);
-      const at = new Date().toISOString();
+      const at = timestamp();
       db.prepare(
         "UPDATE posts SET status = 'draft', publish_at = NULL, updated_at = ?, updated_by = ? WHERE id = ?",
       ).run(at, by, id);
@@ -356,7 +359,7 @@ export function createPosts(
       if (post.status === 'trashed') {
         return;
       }
-      const at = new Date().toISOString();
+      const at = timestamp();
       db.prepare(
         "UPDATE posts SET status = 'trashed', before_trash = ?, trashed_at = ?, publish_at = NULL, updated_at = ?, updated_by = ? WHERE id = ?",
       ).run(post.status, at, at, by, id);
@@ -369,7 +372,7 @@ export function createPosts(
       if (post.status !== 'trashed') {
         return;
       }
-      const at = new Date().toISOString();
+      const at = timestamp();
       const back = post.beforeTrash === 'published' ? 'published' : 'draft';
       db.prepare(
         'UPDATE posts SET status = ?, before_trash = NULL, trashed_at = NULL, updated_at = ?, updated_by = ? WHERE id = ?',
@@ -384,7 +387,7 @@ export function createPosts(
         db.prepare("DELETE FROM versions WHERE kind = 'post' AND key = ?").run(id);
       });
       jobs.cancel(PUBLISH_JOB, id);
-      await changed(post, by, 'removed', new Date().toISOString(), `${by} deleted a post`);
+      await changed(post, by, 'removed', timestamp(), `${by} deleted a post`);
     },
 
     versions(id: string): PostVersion[] {
@@ -407,7 +410,7 @@ export function createPosts(
 
     async keep(id: string, by: string, label: string | null) {
       const post = must(id);
-      const at = new Date().toISOString();
+      const at = timestamp();
       keepVersion(post, by, at, label);
       touch(id, by, at);
       await changed(post, by, 'version', at, `${by} kept a version`);
@@ -421,10 +424,10 @@ export function createPosts(
       const last = db
         .prepare("SELECT at FROM versions WHERE kind = 'post' AND key = ? ORDER BY id DESC LIMIT 1")
         .get(id)?.at as string | undefined;
-      if (last && Date.now() - Date.parse(last) < 15 * 60_000) {
+      if (last && now() - Date.parse(last) < 15 * 60_000) {
         return;
       }
-      keepVersion(post, by, new Date().toISOString(), null, doc);
+      keepVersion(post, by, timestamp(), null, doc);
     },
 
     versionContent(id: string, versionId: number) {
@@ -440,7 +443,7 @@ export function createPosts(
 
     async restored(id: string, versionId: number, by: string) {
       const post = must(id);
-      const at = new Date().toISOString();
+      const at = timestamp();
       keepVersion(post, by, at, `before restoring version ${versionId}`);
       touch(id, by, at);
       await changed(post, by, 'version', at, `${by} restored a version`);
@@ -490,13 +493,7 @@ export function createPosts(
       const templateId = randomBytes(6).toString('hex');
       db.prepare(
         'INSERT INTO post_templates (id, name, by, content, created_at) VALUES (?, ?, ?, ?, ?)',
-      ).run(
-        templateId,
-        trimmed,
-        by,
-        JSON.stringify(stateToJson(state(id))),
-        new Date().toISOString(),
-      );
+      ).run(templateId, trimmed, by, JSON.stringify(stateToJson(state(id))), timestamp());
       return templateId;
     },
 

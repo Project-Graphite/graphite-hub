@@ -91,7 +91,7 @@ function setup(options: { allowed?: boolean; fail?: boolean } = {}) {
     },
     now: () => clock,
   });
-  const posts = createPosts(db, bus, jobs, subscribers.queuePost);
+  const posts = createPosts(db, bus, jobs, subscribers.queuePost, () => clock);
   const subscribe = (
     email: string,
     extra: Partial<Parameters<typeof subscribers.subscribe>[0]> = {},
