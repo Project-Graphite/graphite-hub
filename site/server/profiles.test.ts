@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { Refused, type Block } from '../app/profile.ts';
-import { createProfiles } from './profiles.ts';
+import { createProfiles, type ProfileChange } from './profiles.ts';
 import { memoryDatabase, recordingBus } from './testing.ts';
 
 function setup() {
@@ -135,5 +135,94 @@ describe('profiles', () => {
     );
     await profiles.removeShortLink('amrmscll', 'cv', 'x');
     assert.equal(profiles.shortLink('amrmscll', 'cv'), undefined);
+  });
+
+  it('refuses a draft that names another member and leaves that member alone', async () => {
+    const { db, profiles, published } = setup();
+    const victim = () => db.prepare("SELECT * FROM profiles WHERE handle = 'amrmscll'").get();
+    const before = victim();
+    await assert.rejects(
+      profiles.save(
+        'nier0o',
+        {
+          fields: { handle: 'amrmscll', headline: 'Taken over', bio: null },
+          blocks: [{ id: 'q', type: 'quote', text: 'Taken over', source: '' }],
+        } as ProfileChange,
+        'nier0o',
+      ),
+      Refused,
+    );
+    assert.deepEqual(victim(), before);
+    assert.deepEqual(profiles.history('amrmscll'), []);
+    assert.deepEqual(profiles.history('nier0o'), []);
+    assert.deepEqual(published, []);
+  });
+
+  it('saves only what a member may change, under the handle it was called with', async () => {
+    const { db, profiles } = setup();
+    const save = (fields: object) => profiles.save('nier0o', { fields } as ProfileChange, 'nier0o');
+    for (const stray of [
+      { handle: 'nier0o' },
+      { edited: false },
+      { blocks: [] },
+      { updated_at: '2000-01-01T00:00:00.000Z' },
+    ]) {
+      await assert.rejects(save({ headline: 'Mine', ...stray }), /not a field of a profile/);
+    }
+    await assert.rejects(save({ alias: 123 }), Refused);
+    await assert.rejects(save({ listed: 'no' }), Refused);
+    for (const blocks of [0, '', false]) {
+      await assert.rejects(
+        profiles.save('nier0o', { blocks } as unknown as ProfileChange, 'nier0o'),
+        Refused,
+      );
+    }
+    assert.deepEqual(profiles.history('nier0o'), []);
+    const saved = await save({ headline: 'Mine', listed: false });
+    assert.equal(saved.handle, 'nier0o');
+    assert.equal(saved.headline, 'Mine');
+    assert.equal(saved.listed, false);
+    assert.deepEqual(
+      db
+        .prepare("SELECT key FROM versions WHERE kind = 'profile'")
+        .all()
+        .map((row) => row.key),
+      ['nier0o'],
+    );
+  });
+
+  it('restores a version only for its own member, whatever the stored copy names', async () => {
+    const { db, profiles } = setup();
+    await profiles.save('amrmscll', { fields: { headline: 'Amr' } }, 'amrmscll');
+    await assert.rejects(
+      profiles.revert('nier0o', profiles.history('amrmscll')[0].id, 'nier0o'),
+      /not one of nier0o/,
+    );
+    const victim = () => db.prepare("SELECT * FROM profiles WHERE handle = 'amrmscll'").get();
+    const before = victim();
+    db.prepare(
+      "INSERT INTO versions (kind, key, blob, by, at) VALUES ('profile', 'nier0o', ?, 'nier0o', '2026-01-01T00:00:00.000Z')",
+    ).run(JSON.stringify({ ...profiles.read('amrmscll'), headline: 'Taken over' }));
+    const restored = await profiles.revert('nier0o', profiles.history('nier0o')[0].id, 'nier0o');
+    assert.equal(restored.handle, 'nier0o');
+    assert.equal(restored.headline, 'Taken over');
+    assert.deepEqual(victim(), before);
+  });
+
+  it('keeps one member’s short link apart from another’s of the same name', async () => {
+    const { profiles } = setup();
+    await profiles.setShortLink(
+      'amrmscll',
+      { name: 'cv', url: 'https://example.com/amr', listed: true },
+      'amrmscll',
+    );
+    await profiles.setShortLink(
+      'nier0o',
+      { name: 'cv', url: 'https://example.com/nier', listed: true },
+      'nier0o',
+    );
+    await profiles.removeShortLink('nier0o', 'cv', 'nier0o');
+    assert.equal(profiles.shortLink('amrmscll', 'cv'), 'https://example.com/amr');
+    assert.equal(profiles.shortLink('nier0o', 'cv'), undefined);
   });
 });

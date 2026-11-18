@@ -117,9 +117,19 @@ export function createProfiles(db: Database, bus: Bus) {
 
   async function save(handle: string, change: ProfileChange, by: string) {
     const current = read(handle);
-    const next: Profile = {
+    const { alias, headline, bio, accent, avatarUpload, coverUpload, listed } = {
       ...current,
       ...change.fields,
+    };
+    const next: Profile = {
+      ...current,
+      alias,
+      headline,
+      bio,
+      accent,
+      avatarUpload,
+      coverUpload,
+      listed,
       blocks: change.blocks ?? current.blocks,
     };
     const uploads = uploadsOf(handle);
@@ -128,7 +138,7 @@ export function createProfiles(db: Database, bus: Bus) {
         ? aliasProblem(change.fields.alias, taken(handle))
         : null) ??
       fieldsProblem(change.fields ?? {}, uploads) ??
-      (change.blocks ? blocksProblem(change.blocks, uploads) : null);
+      (change.blocks != null ? blocksProblem(change.blocks, uploads) : null);
     if (problem) {
       throw new Refused(problem);
     }
