@@ -82,15 +82,15 @@ export function useCountUp(target: number) {
   return allowed ? shown : target;
 }
 
-export function useCycle(count: number, every: number) {
+export function useCycle(count: number, every: number, held: boolean) {
   const allowed = useMotion('ticker');
   const [index, setIndex] = useState(0);
   useEffect(() => {
-    if (!allowed || count < 2) {
+    if (!allowed || held || count < 2) {
       return;
     }
     const timer = setInterval(() => setIndex((current) => (current + 1) % count), every);
     return () => clearInterval(timer);
-  }, [allowed, count, every]);
+  }, [allowed, held, count, every]);
   return count === 0 ? 0 : index % count;
 }
