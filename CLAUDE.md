@@ -127,7 +127,7 @@ Public pages render for anyone with no cookie. Member routes check the session i
 - Every page uses the frame: left-anchored main column, one 19rem rail on the right, the same hero, section and kit pieces as the home page.
 - The hub's own kit lives in `app/components/kit/`. Promote a piece to `@project-graphite/ui` only when a second app wants it.
 - All motion sits in `app/motion/` behind `prefers-reduced-motion`. Nothing animates from invisible.
-- Tokens come from `app/styles/graphite.css`, which matches the library's palette exactly.
+- Tokens come from `app/styles/tokens.css`, which matches the library's palette exactly.
 
 ### Security
 
