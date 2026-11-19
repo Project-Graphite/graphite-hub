@@ -1,4 +1,3 @@
-import { plural } from '../format';
 import type { Release, ReleaseGroup } from '../types';
 import ReleaseCard from './ReleaseCard';
 import Section from './Section';
@@ -11,14 +10,7 @@ interface Props {
 
 export default function Timeline({ releases, groups, showProject }: Props) {
   return (
-    <Section
-      label="releases"
-      action={
-        <span className="mono-sm text-muted">
-          {releases.length} {plural(releases.length, 'release')}
-        </span>
-      }
-    >
+    <Section label={`releases · ${releases.length}`}>
       {releases.length === 0 ? (
         <p className="none">no releases yet</p>
       ) : (

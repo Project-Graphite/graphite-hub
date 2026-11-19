@@ -2,22 +2,29 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router';
 import { day } from '../../format';
 import { useHub } from '../../hub';
-import { useReducedMotion, useSpotlight } from '../../motion/motion';
+import { useMotion, useSpotlight, useTilt } from '../../motion/motion';
 import type { PostSummary } from '../../posts';
 import TagList from '../TagList';
 import { accentStyle, Avatar, Cover } from './basics';
-import { Icon } from './icons';
 import { Views } from './live';
 
 export function PostCard({ post, compact = false }: { post: PostSummary; compact?: boolean }) {
   const hub = useHub();
   const author = hub.memberByHandle(post.author);
   const project = post.project ? hub.projectBySlug(post.project) : undefined;
+  const tilt = useTilt<HTMLElement>();
   const spot = useSpotlight<HTMLElement>();
+  const pointer = useCallback(
+    (element: HTMLElement | null) => {
+      tilt(element);
+      spot(element);
+    },
+    [tilt, spot],
+  );
   return (
     <article
-      ref={spot}
-      className={`post-card spot ${compact ? 'compact' : ''}`}
+      ref={pointer}
+      className={`post-card spot tilt ${compact ? 'compact' : ''}`}
       style={accentStyle(author?.accent)}
     >
       <Link to={post.path} className="face" tabIndex={-1} aria-hidden="true">
@@ -59,19 +66,18 @@ export function PostCard({ post, compact = false }: { post: PostSummary; compact
 
 export function Filmstrip({ label, children }: { label: string; children: ReactNode }) {
   const scroller = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
   const [edges, setEdges] = useState({ start: true, end: true });
-  const still = useReducedMotion();
+  const smooth = useMotion('tilt');
 
   const measure = useCallback(() => {
     const element = scroller.current;
     if (!element) {
       return;
     }
-    const start = element.scrollLeft < 4;
-    const end = element.scrollWidth - element.clientWidth - element.scrollLeft < 4;
-    setEdges((current) =>
-      current.start === start && current.end === end ? current : { start, end },
-    );
+    const room = element.scrollWidth - element.clientWidth;
+    setProgress(room > 0 ? element.scrollLeft / room : 1);
+    setEdges({ start: element.scrollLeft < 4, end: room - element.scrollLeft < 4 });
   }, []);
 
   useEffect(() => {
@@ -79,16 +85,34 @@ export function Filmstrip({ label, children }: { label: string; children: ReactN
     if (!element) {
       return;
     }
+    measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
-    return () => observer.disconnect();
+    const wheel = (event: WheelEvent) => {
+      if (
+        Math.abs(event.deltaY) > Math.abs(event.deltaX) &&
+        element.scrollWidth > element.clientWidth
+      ) {
+        const room = element.scrollWidth - element.clientWidth;
+        const at = element.scrollLeft;
+        if ((event.deltaY > 0 && at < room - 1) || (event.deltaY < 0 && at > 1)) {
+          event.preventDefault();
+          element.scrollLeft += event.deltaY;
+        }
+      }
+    };
+    element.addEventListener('wheel', wheel, { passive: false });
+    return () => {
+      observer.disconnect();
+      element.removeEventListener('wheel', wheel);
+    };
   }, [measure]);
 
   const step = (direction: 1 | -1) => {
     const element = scroller.current;
     element?.scrollBy({
       left: direction * element.clientWidth * 0.8,
-      behavior: still ? 'auto' : 'smooth',
+      behavior: smooth ? 'smooth' : 'auto',
     });
   };
 
@@ -107,7 +131,7 @@ export function Filmstrip({ label, children }: { label: string; children: ReactN
         aria-label="Scroll back"
         onClick={() => step(-1)}
       >
-        <Icon name="back" />
+        ←
       </button>
       <button
         type="button"
@@ -115,10 +139,10 @@ export function Filmstrip({ label, children }: { label: string; children: ReactN
         aria-label="Scroll forward"
         onClick={() => step(1)}
       >
-        <Icon name="arrow" />
+        →
       </button>
       <div className="progress" aria-hidden="true">
-        <i />
+        <i style={{ transform: `scaleX(${progress.toFixed(3)})` }} />
       </div>
     </div>
   );

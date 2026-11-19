@@ -1,7 +1,9 @@
+import { useCallback } from 'react';
 import { Link } from 'react-router';
 import { day } from '../../format';
 import { useHub } from '../../hub';
-import { useSpotlight } from '../../motion/motion';
+import { STATUS_LABEL } from '../../model';
+import { useSpotlight, useTilt } from '../../motion/motion';
 import type { Member, Project } from '../../types';
 import Status from '../Status';
 import TagList from '../TagList';
@@ -13,6 +15,18 @@ interface Props {
   owner: Member | undefined;
 }
 
+function useCardPointer<T extends HTMLElement>() {
+  const tilt = useTilt<T>();
+  const spot = useSpotlight<T>();
+  return useCallback(
+    (element: T | null) => {
+      tilt(element);
+      spot(element);
+    },
+    [tilt, spot],
+  );
+}
+
 export function WindowBar({ project }: { project: Project }) {
   return (
     <div className="bar">
@@ -20,18 +34,20 @@ export function WindowBar({ project }: { project: Project }) {
       <i />
       <i />
       <a href={project.url ?? project.repoUrl}>
-        {project.url ? new URL(project.url).host : project.slug}
+        {project.url
+          ? new URL(project.url).host
+          : `${project.slug} · ${STATUS_LABEL[project.status]}`}
       </a>
     </div>
   );
 }
 
 export function Window({ project, owner }: Props) {
-  const spot = useSpotlight<HTMLElement>();
+  const pointer = useCardPointer<HTMLElement>();
   const accent = project.accent ?? owner?.accent ?? '';
   const latest = useHub().postsAbout(project)[0];
   return (
-    <article ref={spot} className="window spot" style={accentStyle(accent)}>
+    <article ref={pointer} className="window spot tilt" style={accentStyle(accent)}>
       <WindowBar project={project} />
       <div className="pane">
         <Cover name={project.name} seed={project.slug} accent={accent} image={project.coverUrl} />
@@ -46,7 +62,7 @@ export function Window({ project, owner }: Props) {
         )}
       </div>
       <div className="body">
-        <div className="title">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h3>
             <Link to={project.path}>{project.name}</Link>
           </h3>
@@ -68,9 +84,14 @@ export function Window({ project, owner }: Props) {
   );
 }
 
-export function ProjectRow({ project, owner }: Props) {
+export function AccentCard({ project, owner }: Props) {
+  const pointer = useCardPointer<HTMLElement>();
   return (
-    <article className="project-row" style={accentStyle(project.accent ?? owner?.accent)}>
+    <article
+      ref={pointer}
+      className="card spot tilt"
+      style={accentStyle(project.accent ?? owner?.accent)}
+    >
       <div className="title">
         <h3>
           <Link to={project.path}>{project.name}</Link>
@@ -78,7 +99,27 @@ export function ProjectRow({ project, owner }: Props) {
         <Status status={project.status} />
       </div>
       <p className="summary">{project.summary}</p>
-      <TagList tags={project.tags.slice(0, 3)} />
+      <TagList tags={project.tags} className="mt-4.5" />
+      <div className="foot">
+        {owner ? (
+          <span className="by">
+            <Avatar member={owner} size="xs" />
+            {owner.name}
+          </span>
+        ) : (
+          <span>{project.owner}</span>
+        )}
+        <span className="links">
+          {project.url && (
+            <a href={project.url} className="rule-link">
+              visit ↗
+            </a>
+          )}
+          <a href={project.repoUrl} className="rule-link">
+            source ↗
+          </a>
+        </span>
+      </div>
     </article>
   );
 }

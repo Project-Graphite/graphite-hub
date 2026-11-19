@@ -9,13 +9,17 @@
   gap: 0.3rem;
 }
 .dir-chips button {
-  padding-block: 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-block: 0.3rem;
+  background: var(--color-surface);
 }
 .dir-chips button b {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--color-muted);
-  transition: color var(--duration-base) var(--ease-settle);
+  transition: color 0.2s;
 }
 .dir-chips button[aria-pressed='true'] b {
   color: var(--color-paper);
@@ -33,21 +37,20 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  min-height: var(--target-fine);
   padding: 0 0.6rem;
-  border: 1px solid var(--color-line-strong);
-  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
   background: var(--color-surface);
   font: inherit;
-  color: var(--color-muted);
+  color: var(--color-faint);
   cursor: pointer;
   transition:
-    color var(--duration-base) var(--ease-settle),
-    border-color var(--duration-base) var(--ease-settle);
+    color 0.2s,
+    border-color 0.2s;
 }
 .fact.pick:hover {
   color: var(--color-ink);
-  border-color: var(--color-ink);
+  border-color: var(--color-muted);
 }
 
 .entries {
@@ -61,10 +64,10 @@
   flex-direction: column;
   min-width: 0;
   border: 1px solid var(--color-line-soft);
-  border-radius: var(--radius-panel);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   overflow: hidden;
-  transition: border-color var(--duration-base) var(--ease-settle);
+  transition: border-color 0.2s;
 }
 .entry:hover {
   border-color: var(--color-line);
@@ -99,7 +102,7 @@
   gap: 1rem;
 }
 .entry h3 {
-  font-size: var(--text-h2);
+  font-size: 1.2rem;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
@@ -108,7 +111,7 @@
 }
 .entry .summary {
   color: var(--color-muted);
-  font-size: var(--text-body);
+  font-size: 0.92rem;
 }
 .entry .chips button[aria-pressed='true'] {
   background: var(--accent, var(--color-ink));
@@ -122,7 +125,7 @@
   padding-top: 0.85rem;
   border-top: 1px solid var(--color-line-soft);
   font-family: var(--font-mono);
-  font-size: var(--text-small);
+  font-size: 0.78rem;
   color: var(--color-faint);
 }
 .entry .latest {
@@ -150,11 +153,11 @@
   justify-content: space-between;
   gap: 0.5rem 1rem;
   font-family: var(--font-mono);
-  font-size: var(--text-small);
+  font-size: 0.8rem;
   color: var(--color-faint);
 }
 .entry .foot .by {
-  transition: color var(--duration-base) var(--ease-settle);
+  transition: color 0.2s;
 }
 .entry .foot .by:hover {
   color: var(--color-ink);
@@ -176,7 +179,7 @@
 .pulse-bars i {
   width: 4px;
   height: var(--h);
-  border-radius: var(--radius-hair);
+  border-radius: 1px;
   background: var(--color-line);
   transform-origin: bottom;
 }
@@ -191,10 +194,10 @@
 .epic {
   position: relative;
   border: 1px solid var(--color-line-soft);
-  border-radius: var(--radius-panel);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   padding: 1.5rem 1.75rem 1.5rem;
-  transition: border-color var(--duration-base) var(--ease-settle);
+  transition: border-color 0.2s;
 }
 .epic:hover {
   border-color: var(--color-line);
@@ -204,7 +207,7 @@
   position: absolute;
   inset: -1px -1px auto;
   height: 2px;
-  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
   background: linear-gradient(90deg, var(--accent, var(--color-line)) 0%, transparent 70%);
 }
 .epic header .title {
@@ -214,7 +217,7 @@
   gap: 0.5rem 1rem;
 }
 .epic h2 {
-  font-size: var(--text-title);
+  font-size: 1.6rem;
   font-weight: 640;
   letter-spacing: -0.03em;
   line-height: 1.15;
@@ -240,7 +243,7 @@
   flex-wrap: wrap;
   gap: 0.25rem 1.1rem;
   font-family: var(--font-mono);
-  font-size: var(--text-small);
+  font-size: 0.78rem;
   color: var(--color-faint);
 }
 .epic .timeline {
@@ -270,7 +273,7 @@
   padding-top: 1rem;
   border-top: 1px solid var(--color-line-soft);
   font-family: var(--font-mono);
-  font-size: var(--text-small);
+  font-size: 0.8rem;
   color: var(--color-faint);
 }
 .epic .foot .by:hover {
@@ -286,21 +289,21 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.25rem;
 }
-.member-card {
+.member {
   position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
   border: 1px solid var(--color-line-soft);
-  border-radius: var(--radius-panel);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   overflow: hidden;
-  transition: border-color var(--duration-base) var(--ease-settle);
+  transition: border-color 0.2s;
 }
-.member-card:hover {
+.member:hover {
   border-color: var(--color-line);
 }
-.member-card .banner {
+.member .sky {
   position: relative;
   height: 5.5rem;
   background:
@@ -316,80 +319,80 @@
     ),
     var(--color-paper);
 }
-.member-card .banner::after {
+.member .sky::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(0deg, transparent 0 2px, var(--color-shade) 2px 3px);
+  background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(0, 0, 0, 0.12) 2px 3px);
   pointer-events: none;
 }
-.member-card .banner img {
+.member .sky img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.member-card .face {
+.member .face {
   position: absolute;
   top: 5.5rem;
   left: 1.25rem;
   transform: translateY(-50%);
 }
-.member-card .face .avatar {
+.member .face .avatar {
   border: 3px solid var(--color-surface);
-  box-shadow: 0 0 0 var(--ring-thin) var(--accent, transparent);
+  box-shadow: 0 0 0 1.5px var(--accent, transparent);
 }
-.member-card .body {
+.member .body {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   padding: 2.6rem 1.25rem 1.25rem;
 }
-.member-card h3 {
-  font-size: var(--text-h2);
+.member h3 {
+  font-size: 1.2rem;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
-.member-card h3 a:hover {
+.member h3 a:hover {
   text-decoration: underline;
 }
-.member-card .headline {
+.member .headline {
   margin-top: -0.4rem;
-  font-size: var(--text-body);
+  font-size: 0.9rem;
   color: var(--color-muted);
 }
-.member-card .bio {
+.member .bio {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: var(--text-body);
+  font-size: 0.88rem;
   color: var(--color-muted);
 }
-.member-card .facts {
+.member .facts {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem 1.1rem;
   padding-top: 0.25rem;
   font-family: var(--font-mono);
-  font-size: var(--text-small);
+  font-size: 0.78rem;
   color: var(--color-faint);
 }
-.member-card .facts b {
+.member .facts b {
   font-weight: 600;
   color: var(--color-ink);
   font-variant-numeric: tabular-nums;
 }
-.member-card .links {
+.member .links {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 1rem;
   margin-top: 0.35rem;
   font-family: var(--font-mono);
-  font-size: var(--text-small);
+  font-size: 0.8rem;
 }
 
 .credits {
@@ -402,7 +405,7 @@
   border-spacing: 0;
   width: 100%;
   min-width: 36rem;
-  font-size: var(--text-body);
+  font-size: 0.88rem;
 }
 .credits th {
   font-weight: 500;
@@ -427,9 +430,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-mono);
-  font-size: var(--text-micro);
+  font-size: 0.76rem;
   color: var(--color-faint);
-  transition: color var(--duration-base) var(--ease-settle);
+  transition: color 0.2s;
 }
 .credits thead th[data-lit] a,
 .credits thead th a:hover {
@@ -444,7 +447,7 @@
   align-items: center;
   gap: 0.6rem;
   color: var(--color-muted);
-  transition: color var(--duration-base) var(--ease-settle);
+  transition: color 0.2s;
 }
 .credits tbody tr:hover th a,
 .credits tbody th a:hover {
@@ -454,7 +457,7 @@
   padding: 0.35rem 0;
   text-align: center;
   border-top: 1px solid var(--color-line-soft);
-  transition: background var(--duration-base) var(--ease-settle);
+  transition: background 0.2s;
 }
 .credits tbody tr:hover td,
 .credits td[data-lit] {
@@ -480,11 +483,15 @@
   width: 0.7rem;
   height: 0.7rem;
   background: var(--accent);
-  transition: box-shadow var(--duration-base) var(--ease-settle);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 35%, transparent);
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s;
 }
 .credits td .dot:hover,
 .credits tbody tr:hover td[data-lit] .dot {
-  box-shadow: 0 0 0 var(--ring-wide) color-mix(in srgb, var(--accent) 35%, transparent);
+  transform: scale(1.35);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .search-box {
@@ -493,9 +500,9 @@
   align-items: center;
   width: min(30rem, 100%);
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-panel);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
-  transition: border-color var(--duration-base) var(--ease-settle);
+  transition: border-color 0.2s;
 }
 .search-box:focus-within {
   border-color: var(--color-muted);
@@ -508,7 +515,7 @@
   background: transparent;
   color: var(--color-ink);
   font: inherit;
-  font-size: var(--text-prose);
+  font-size: 1.02rem;
   outline: none;
 }
 .search-box button {
@@ -517,15 +524,15 @@
   cursor: pointer;
   color: var(--color-faint);
   font: inherit;
-  font-size: var(--text-h2);
+  font-size: 1.1rem;
   line-height: 1;
-  transition: color var(--duration-base) var(--ease-settle);
+  transition: color 0.2s;
 }
 .search-box button:hover {
   color: var(--color-ink);
 }
 .search-box button.kbd {
-  font-size: var(--text-micro);
+  font-size: 0.72rem;
   padding: 0.1rem 0.45rem;
 }
 .page-head .tools .search-box {
@@ -535,7 +542,7 @@
 mark {
   background: color-mix(in srgb, var(--color-wip) 28%, transparent);
   color: inherit;
-  border-radius: var(--radius-hair);
+  border-radius: 2px;
 }
 .hits {
   display: grid;
@@ -548,11 +555,11 @@ mark {
   gap: 0.9rem;
   padding: 0.7rem 0.9rem;
   border: 1px solid transparent;
-  border-radius: var(--radius-field);
+  border-radius: var(--radius-item);
   color: var(--color-ink);
   transition:
-    border-color var(--duration-fast) var(--ease-settle),
-    background var(--duration-fast) var(--ease-settle);
+    border-color 0.15s,
+    background 0.15s;
 }
 .hit[aria-current],
 .hit:hover {
@@ -564,17 +571,17 @@ mark {
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-field);
+  border-radius: var(--radius-item);
   border: 1px solid var(--color-line-soft);
   background: radial-gradient(
     120% 90% at 100% 0%,
-    color-mix(in srgb, var(--accent, var(--color-muted)) 25%, var(--color-paper)),
+    color-mix(in srgb, var(--accent, #8b8b95) 25%, var(--color-paper)),
     var(--color-paper) 70%
   );
   font-family: var(--font-mono);
   font-weight: 600;
   letter-spacing: -0.05em;
-  color: color-mix(in srgb, var(--accent, var(--color-muted)) 55%, var(--color-ink));
+  color: color-mix(in srgb, var(--accent, #8b8b95) 55%, var(--color-ink));
 }
 .hit .glyph.version {
   border-radius: 50%;
@@ -598,14 +605,14 @@ mark {
 .hit .head time,
 .hit .head .owner {
   font-family: var(--font-mono);
-  font-size: var(--text-micro);
+  font-size: 0.76rem;
   color: var(--color-faint);
 }
 .hit .detail {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--text-body);
+  font-size: 0.88rem;
   color: var(--color-muted);
 }
 .hit > .kind[data-kind='member'] {
@@ -625,7 +632,7 @@ mark {
 .browse h2 {
   margin-bottom: 0.6rem;
   font-family: var(--font-mono);
-  font-size: var(--text-small);
+  font-size: 0.82rem;
   font-weight: 400;
   color: var(--color-faint);
 }
@@ -640,9 +647,9 @@ mark {
   gap: 0.75rem;
   margin-inline: -0.6rem;
   padding: 0.45rem 0.6rem;
-  border-radius: var(--radius-field);
+  border-radius: var(--radius-item);
   color: var(--color-ink);
-  transition: background var(--duration-fast) var(--ease-settle);
+  transition: background 0.15s;
 }
 .browse a:hover {
   background: var(--color-surface);
@@ -654,32 +661,32 @@ mark {
 }
 .browse strong {
   font-weight: 600;
-  font-size: var(--text-body);
+  font-size: 0.95rem;
 }
 .browse small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--text-small);
+  font-size: 0.8rem;
   color: var(--color-muted);
 }
 .browse time {
   flex: none;
   font-family: var(--font-mono);
-  font-size: var(--text-micro);
+  font-size: 0.76rem;
   color: var(--color-faint);
 }
 
 .palette .search-box {
   border: 0;
   border-bottom: 1px solid var(--color-line-soft);
-  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
   background: transparent;
   width: 100%;
 }
 .palette .search-box input {
   padding: 0.95rem 1.1rem;
-  font-size: var(--text-lede);
+  font-size: 1.08rem;
 }
 .palette .search-box button {
   margin-right: 0.8rem;
@@ -695,7 +702,7 @@ mark {
 .palette .hit .glyph {
   width: 34px;
   height: 34px;
-  font-size: var(--text-small);
+  font-size: 0.8rem;
 }
 .palette .hit .avatar {
   width: 34px;
@@ -710,9 +717,9 @@ mark {
   padding: 0.6rem 0.7rem;
   border-top: 1px solid var(--color-line-soft);
   font-family: var(--font-mono);
-  font-size: var(--text-small);
+  font-size: 0.78rem;
   color: var(--color-faint);
-  transition: color var(--duration-base) var(--ease-settle);
+  transition: color 0.2s;
 }
 .palette .all:hover {
   color: var(--color-ink);
@@ -721,7 +728,46 @@ mark {
   padding: 0.85rem 1rem 1rem;
 }
 
-@media (max-width: 62.5rem) {
+@media (prefers-reduced-motion: no-preference) {
+  .entry,
+  .member,
+  .epic,
+  .hit,
+  .browse > div {
+    animation: dir-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+  .hits .hit {
+    animation-duration: 0.3s;
+    animation-delay: 0ms;
+  }
+  .pulse-bars i {
+    animation: dir-grow 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .credits td .dot {
+    animation: dot-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+@keyframes dir-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dir-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@media (max-width: 1000px) {
   .entries,
   .roster {
     grid-template-columns: minmax(0, 1fr);
@@ -731,7 +777,7 @@ mark {
     gap: 1.75rem;
   }
 }
-@media (max-width: 40rem) {
+@media (max-width: 640px) {
   .epic {
     padding: 1.25rem 1.1rem;
   }

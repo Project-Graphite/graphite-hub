@@ -6,16 +6,14 @@ import { Console, Counters, ReleaseTimeline, Ticker } from '../components/kit/li
 import { Orbit, People } from '../components/kit/members';
 import { Fact, PageHeader } from '../components/kit/page';
 import { ChangelogPanel, MembersPanel, RunningPanel } from '../components/kit/panels';
-import { ProjectRow, Window } from '../components/kit/projects';
+import { AccentCard, Window } from '../components/kit/projects';
 import { Page } from '../components/Shell';
 import Status from '../components/Status';
 import { useHub, useRoot } from '../hub';
-import { Mark } from '../motion/canvases';
+import { Field, Mark } from '../motion/canvases';
 import { COUNTERS, MOTION } from '../settings';
 import { topicsFor } from '../topics';
 import type { ConsoleLine } from '../types';
-import '../styles/member.css';
-import '../styles/writing.css';
 
 export const handle = topicsFor('kit');
 
@@ -271,6 +269,7 @@ export default function Kit({ loaderData }: Route.ComponentProps) {
         <div id="hero">
           <Band title="hero">
             <section className="hero">
+              <Field />
               <div>
                 <p className="mono-sm mb-4 text-faint">{settings['home.hero.eyebrow']}</p>
                 <h1>{settings['home.hero.headline']}</h1>
@@ -335,14 +334,12 @@ export default function Kit({ loaderData }: Route.ComponentProps) {
           </Band>
         </div>
         <div id="cards">
-          <Band title="project rows and covers">
-            <div className="rows">
-              {hub.projects.slice(3, 6).map((project) => (
-                <ProjectRow key={project.slug} project={project} owner={ownerOf(project.slug)} />
-              ))}
-            </div>
+          <Band title="accent cards and covers">
             <div className="band-grid">
-              <Cover name="Graphite" accent="var(--accent-1)" />
+              {hub.projects.slice(3, 6).map((project) => (
+                <AccentCard key={project.slug} project={project} owner={ownerOf(project.slug)} />
+              ))}
+              <Cover name="Graphite" accent="#6f8fd1" />
             </div>
           </Band>
         </div>

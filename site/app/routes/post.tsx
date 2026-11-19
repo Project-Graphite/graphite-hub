@@ -6,7 +6,6 @@ import { Fact, PageHeader } from '../components/kit/page';
 import { PostRow } from '../components/kit/posts';
 import { WindowBar } from '../components/kit/projects';
 import { SubscribePanel } from '../components/kit/subscribe';
-import { Icon } from '../components/kit/icons';
 import { Page } from '../components/Shell';
 import TagList from '../components/TagList';
 import { hubContext } from '../context';
@@ -213,10 +212,7 @@ export default function Post({ loaderData }: Route.ComponentProps) {
           <nav className="neighbours" aria-label="More posts">
             {previous ? (
               <Link to={previous.path} className="neighbour prev">
-                <span className="mono-sm inline-flex items-center gap-1.5 text-faint">
-                  <Icon name="back" />
-                  earlier
-                </span>
+                <span className="mono-sm text-faint">← earlier</span>
                 <strong>{previous.title}</strong>
               </Link>
             ) : (
@@ -224,10 +220,7 @@ export default function Post({ loaderData }: Route.ComponentProps) {
             )}
             {next && (
               <Link to={next.path} className="neighbour next">
-                <span className="mono-sm inline-flex items-center gap-1.5 text-faint">
-                  later
-                  <Icon name="arrow" />
-                </span>
+                <span className="mono-sm text-faint">later →</span>
                 <strong>{next.title}</strong>
               </Link>
             )}

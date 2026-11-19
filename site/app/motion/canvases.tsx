@@ -1,6 +1,5 @@
-import { useContext, useEffect, useRef } from 'react';
-import { useLiveMessages } from '../live';
-import { MotionContext, useMotion, useReducedMotion } from './motion';
+import { useEffect, useRef } from 'react';
+import { useMotion } from './motion';
 
 interface Particle {
   x: number;
@@ -54,314 +53,207 @@ export function onFrame(draw: () => void) {
   };
 }
 
-interface Star {
-  x: number;
-  y: number;
-  heading: number;
-  speed: number;
-  phase: number;
-  period: number;
-  size: number;
-  dx: number;
-  dy: number;
+function scale() {
+  return Math.min(devicePixelRatio || 1, 2);
 }
 
-const INK = '232, 232, 234';
-const TURN = Math.PI * 2;
-const REACH = 120;
-const EDGE = REACH / 2;
-const LEVELS = 4;
-const LINE_ALPHA = 0.1;
-const DOT_ALPHA = 0.3;
-const FRAME_MS = 1000 / 30;
-const NUDGE_REACH = 200;
-const NUDGE = 12;
-const FLARE_MS = 1200;
-const FLARE_GAP_MS = 1000;
-const FORWARD_CELLS = [
-  [1, 0],
-  [-1, 1],
-  [0, 1],
-  [1, 1],
-] as const;
+function seed(count: number, width: number, height: number, speed: number): Particle[] {
+  return Array.from({ length: count }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    vx: (Math.random() - 0.5) * speed,
+    vy: (Math.random() - 0.5) * speed,
+    tx: 0,
+    ty: 0,
+  }));
+}
 
-function createSky(element: HTMLCanvasElement) {
-  const context = element.getContext('2d')!;
-  const stars: Star[] = [];
-  const lines: number[][] = Array.from({ length: LEVELS }, () => []);
-  const dots: number[][] = Array.from({ length: LEVELS }, () => []);
-  let cells: number[][] = [];
-  let columns = 0;
-  let rows = 0;
-  let width = 0;
-  let height = 0;
-  let pointer: Point = null;
-  let flared = -1;
-  let flaredAt = -FLARE_GAP_MS;
-
-  const link = (a: Star, b: Star) => {
-    const distance = Math.hypot(a.x + a.dx - b.x - b.dx, a.y + a.dy - b.y - b.dy);
-    if (distance < REACH) {
-      lines[Math.min(LEVELS - 1, Math.floor((1 - distance / REACH) * LEVELS))].push(
-        a.x + a.dx,
-        a.y + a.dy,
-        b.x + b.dx,
-        b.y + b.dy,
-      );
+function drawConstellation(
+  context: CanvasRenderingContext2D,
+  points: Particle[],
+  reach: number,
+  dpr: number,
+  lineAlpha: number,
+  dotAlpha: number,
+  glowOf: (point: Particle) => number = () => 1,
+  yOf: (point: Particle) => number = (point) => point.y,
+) {
+  context.lineWidth = dpr;
+  for (let i = 0; i < points.length; i += 1) {
+    const a = points[i];
+    const ay = yOf(a);
+    for (let j = i + 1; j < points.length; j += 1) {
+      const b = points[j];
+      const by = yOf(b);
+      const distance = Math.hypot(a.x - b.x, ay - by);
+      if (distance < reach) {
+        const glow = (glowOf(a) + glowOf(b)) / 2;
+        context.strokeStyle = `rgba(232,232,234,${((1 - distance / reach) * lineAlpha * glow).toFixed(3)})`;
+        context.beginPath();
+        context.moveTo(a.x, ay);
+        context.lineTo(b.x, by);
+        context.stroke();
+      }
     }
+  }
+  for (const point of points) {
+    context.fillStyle = `rgba(232,232,234,${(dotAlpha * glowOf(point)).toFixed(3)})`;
+    context.beginPath();
+    context.arc(point.x, yOf(point), 1.3 * dpr, 0, Math.PI * 2);
+    context.fill();
+  }
+}
+
+function trackPointer(
+  target: HTMLElement | Window,
+  element: HTMLCanvasElement,
+  dpr: number,
+  set: (point: Point) => void,
+) {
+  const move = (event: Event) => {
+    const { clientX, clientY } = event as PointerEvent;
+    const box = element.getBoundingClientRect();
+    set({ x: (clientX - box.left) * dpr, y: (clientY - box.top) * dpr });
   };
-
-  return {
-    resize() {
-      const dpr = Math.min(devicePixelRatio || 1, 1.5);
-      width = element.clientWidth;
-      height = element.clientHeight;
-      element.width = Math.round(width * dpr);
-      element.height = Math.round(height * dpr);
-      context.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const spanX = width + EDGE * 2;
-      const spanY = height + EDGE * 2;
-      const count = Math.min(110, Math.max(40, Math.round((spanX * spanY) / 16000)));
-      const down = Math.max(1, Math.round(Math.sqrt((count * spanY) / spanX)));
-      const across = Math.ceil(count / down);
-      stars.length = Math.min(stars.length, count);
-      while (stars.length < count) {
-        const cell = Math.floor((stars.length * across * down) / count);
-        stars.push({
-          x: ((cell % across) + Math.random()) * (spanX / across) - EDGE,
-          y: (Math.floor(cell / across) + Math.random()) * (spanY / down) - EDGE,
-          heading: Math.random() * TURN,
-          speed: 4 + Math.random() * 6,
-          phase: Math.random() * TURN,
-          period: 4 + Math.random() * 5,
-          size: 0.9 + Math.random() * 0.7,
-          dx: 0,
-          dy: 0,
-        });
-      }
-      columns = Math.ceil((width + EDGE * 2) / REACH) + 1;
-      rows = Math.ceil((height + EDGE * 2) / REACH) + 1;
-      cells = Array.from({ length: columns * rows }, () => []);
-    },
-
-    point(next: Point) {
-      pointer = next;
-    },
-
-    flare(now: number) {
-      if (now - flaredAt < FLARE_GAP_MS) {
-        return;
-      }
-      const inView = stars.flatMap((star, index) =>
-        star.x > width * 0.1 &&
-        star.x < width * 0.9 &&
-        star.y > height * 0.1 &&
-        star.y < height * 0.9
-          ? [index]
-          : [],
-      );
-      if (inView.length > 0) {
-        flared = inView[Math.floor(Math.random() * inView.length)];
-        flaredAt = now;
-      }
-    },
-
-    draw(now: number, elapsed: number) {
-      const seconds = now / 1000;
-      const ease = Math.min(1, elapsed * 6);
-      for (const group of [cells, lines, dots]) {
-        for (const list of group) {
-          list.length = 0;
-        }
-      }
-      stars.forEach((star, index) => {
-        const bearing =
-          star.heading +
-          0.7 * Math.sin(star.x * 0.004 + seconds * 0.16) +
-          0.7 * Math.cos(star.y * 0.005 - seconds * 0.13);
-        star.x += Math.cos(bearing) * star.speed * elapsed;
-        star.y += Math.sin(bearing) * star.speed * elapsed;
-        if (star.x < -EDGE) {
-          star.x += width + EDGE * 2;
-        } else if (star.x > width + EDGE) {
-          star.x -= width + EDGE * 2;
-        }
-        if (star.y < -EDGE) {
-          star.y += height + EDGE * 2;
-        } else if (star.y > height + EDGE) {
-          star.y -= height + EDGE * 2;
-        }
-        let pushX = 0;
-        let pushY = 0;
-        if (pointer) {
-          const awayX = star.x - pointer.x;
-          const awayY = star.y - pointer.y;
-          const distance = Math.hypot(awayX, awayY) || 1;
-          if (distance < NUDGE_REACH) {
-            pushX = (awayX / distance) * (1 - distance / NUDGE_REACH) * NUDGE;
-            pushY = (awayY / distance) * (1 - distance / NUDGE_REACH) * NUDGE;
-          }
-        }
-        star.dx += (pushX - star.dx) * ease;
-        star.dy += (pushY - star.dy) * ease;
-        cells[
-          Math.min(rows - 1, Math.max(0, Math.floor((star.y + EDGE) / REACH))) * columns +
-            Math.min(columns - 1, Math.max(0, Math.floor((star.x + EDGE) / REACH)))
-        ].push(index);
-        dots[
-          Math.min(
-            LEVELS - 1,
-            Math.floor(
-              (0.5 + 0.5 * Math.sin(star.phase + (seconds * TURN) / star.period)) * LEVELS,
-            ),
-          )
-        ].push(star.x + star.dx, star.y + star.dy, star.size);
-      });
-      for (let row = 0; row < rows; row += 1) {
-        for (let column = 0; column < columns; column += 1) {
-          const cell = cells[row * columns + column];
-          cell.forEach((index, position) => {
-            for (let next = position + 1; next < cell.length; next += 1) {
-              link(stars[index], stars[cell[next]]);
-            }
-            for (const [right, down] of FORWARD_CELLS) {
-              if (column + right >= 0 && column + right < columns && row + down < rows) {
-                for (const other of cells[(row + down) * columns + column + right]) {
-                  link(stars[index], stars[other]);
-                }
-              }
-            }
-          });
-        }
-      }
-
-      context.clearRect(0, 0, width, height);
-      lines.forEach((level, index) => {
-        context.strokeStyle = `rgba(${INK}, ${(LINE_ALPHA * (index + 1)) / LEVELS})`;
-        context.beginPath();
-        for (let at = 0; at < level.length; at += 4) {
-          context.moveTo(level[at], level[at + 1]);
-          context.lineTo(level[at + 2], level[at + 3]);
-        }
-        context.stroke();
-      });
-      dots.forEach((level, index) => {
-        context.fillStyle = `rgba(${INK}, ${DOT_ALPHA * (0.75 + (0.5 * index) / (LEVELS - 1))})`;
-        context.beginPath();
-        for (let at = 0; at < level.length; at += 3) {
-          context.moveTo(level[at] + level[at + 2], level[at + 1]);
-          context.arc(level[at], level[at + 1], level[at + 2], 0, TURN);
-        }
-        context.fill();
-      });
-
-      const star = stars[flared];
-      const progress = (now - flaredAt) / FLARE_MS;
-      if (star && progress < 1) {
-        const fade = (1 - progress) / 0.85;
-        const glow = progress < 0.15 ? progress / 0.15 : fade * fade * (3 - 2 * fade);
-        const x = star.x + star.dx;
-        const y = star.y + star.dy;
-        context.strokeStyle = `rgba(${INK}, ${0.32 * glow})`;
-        context.beginPath();
-        for (const other of stars) {
-          if (
-            other !== star &&
-            Math.hypot(other.x + other.dx - x, other.y + other.dy - y) < REACH
-          ) {
-            context.moveTo(x, y);
-            context.lineTo(other.x + other.dx, other.y + other.dy);
-          }
-        }
-        context.stroke();
-        context.fillStyle = `rgba(${INK}, ${0.9 * glow})`;
-        context.beginPath();
-        context.arc(x, y, star.size * (1 + glow), 0, TURN);
-        context.fill();
-      }
-    },
+  const leave = () => set(null);
+  target.addEventListener('pointermove', move);
+  target.addEventListener('pointerleave', leave);
+  return () => {
+    target.removeEventListener('pointermove', move);
+    target.removeEventListener('pointerleave', leave);
   };
 }
 
-export function Sky() {
+export function Field({ density = 7000, reach = 120 }: { density?: number; reach?: number }) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const sky = useRef<ReturnType<typeof createSky>>(null);
-  const shown = useContext(MotionContext).includes('backdrop');
-  const still = useReducedMotion();
-
-  useLiveMessages((message) => {
-    if (message.console) {
-      sky.current?.flare(performance.now());
-    }
-  });
+  const allowed = useMotion('field');
 
   useEffect(() => {
     const element = canvas.current;
-    if (!element) {
+    const host = element?.parentElement;
+    if (!element || !host || !allowed) {
       return;
     }
-    let frame = 0;
-    let wait: ReturnType<typeof setTimeout> | undefined;
-    let last = 0;
-    let stop = () => {};
-    const idle = (window.requestIdleCallback ?? setTimeout)(() => {
-      const created = createSky(element);
-      sky.current = created;
-      created.resize();
-      if (still) {
-        const observer = new ResizeObserver(() => {
-          created.resize();
-          created.draw(0, 0);
-        });
-        observer.observe(element);
-        stop = () => observer.disconnect();
-        return;
-      }
-      const step = (now: number) => {
-        created.draw(now, Math.min(0.1, (now - last) / 1000));
-        last = now;
-        wait = setTimeout(() => {
-          frame = requestAnimationFrame(step);
-        }, FRAME_MS - 4);
-      };
-      const halt = () => {
-        clearTimeout(wait);
-        cancelAnimationFrame(frame);
-      };
-      const run = () => {
-        halt();
-        if (!document.hidden) {
-          last = performance.now();
-          frame = requestAnimationFrame(step);
-        }
-      };
-      const move = (event: PointerEvent) =>
-        created.point(
-          event.pointerType === 'mouse' ? { x: event.clientX, y: event.clientY } : null,
-        );
-      const leave = () => created.point(null);
-      const observer = new ResizeObserver(created.resize);
-      observer.observe(element);
-      addEventListener('pointermove', move, { passive: true });
-      document.documentElement.addEventListener('pointerleave', leave);
-      document.addEventListener('visibilitychange', run);
-      run();
-      stop = () => {
-        halt();
-        observer.disconnect();
-        removeEventListener('pointermove', move);
-        document.documentElement.removeEventListener('pointerleave', leave);
-        document.removeEventListener('visibilitychange', run);
-      };
-    });
-    return () => {
-      (window.cancelIdleCallback ?? clearTimeout)(idle);
-      stop();
-      sky.current = null;
+    const context = element.getContext('2d')!;
+    const dpr = scale();
+    let width = 0;
+    let height = 0;
+    let pointer: Point = null;
+    let points: Particle[] = [];
+    const resize = () => {
+      width = element.width = element.clientWidth * dpr;
+      height = element.height = element.clientHeight * dpr;
+      points = seed(
+        Math.max(16, Math.round((element.clientWidth * element.clientHeight) / density)),
+        width,
+        height,
+        0.12 * dpr,
+      );
     };
-  }, [shown, still]);
+    resize();
+    const draw = () => {
+      context.clearRect(0, 0, width, height);
+      for (const point of points) {
+        if (pointer) {
+          const dx = pointer.x - point.x;
+          const dy = pointer.y - point.y;
+          const distance = Math.hypot(dx, dy) || 1;
+          if (distance < 160 * dpr) {
+            point.vx -= (dx / distance) * 0.004 * dpr;
+            point.vy -= (dy / distance) * 0.004 * dpr;
+          }
+        }
+        point.x = (point.x + point.vx + width) % width;
+        point.y = (point.y + point.vy + height) % height;
+        point.vx *= 0.995;
+        point.vy *= 0.995;
+      }
+      drawConstellation(context, points, reach * dpr, dpr, 0.14, 0.38);
+    };
+    const untrack = trackPointer(host, element, dpr, (point) => {
+      pointer = point;
+    });
+    addEventListener('resize', resize);
+    const stop = onFrame(draw);
+    return () => {
+      stop();
+      untrack();
+      removeEventListener('resize', resize);
+    };
+  }, [allowed, density, reach]);
 
-  return shown ? <canvas ref={canvas} className="ambient-sky" aria-hidden="true" /> : null;
+  return <canvas ref={canvas} className="field" aria-hidden="true" />;
+}
+
+export function Backdrop() {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const allowed = useMotion('backdrop');
+
+  useEffect(() => {
+    const element = canvas.current;
+    if (!element || !allowed) {
+      return;
+    }
+    const context = element.getContext('2d')!;
+    const dpr = scale();
+    let width = 0;
+    let height = 0;
+    let pointer: Point = null;
+    let points: Particle[] = [];
+    const resize = () => {
+      width = element.width = innerWidth * dpr;
+      height = element.height = innerHeight * dpr;
+      points = seed(
+        Math.min(140, Math.max(24, Math.round((innerWidth * innerHeight) / 13000))),
+        width,
+        height,
+        0.07 * dpr,
+      );
+    };
+    resize();
+    const draw = () => {
+      context.clearRect(0, 0, width, height);
+      const shift = scrollY * 0.15 * dpr;
+      const yOf = (point: Particle) => (((point.y - shift) % height) + height) % height;
+      const head = document.querySelector('.page-head, .hero')?.getBoundingClientRect();
+      const top = (head?.top ?? 0) * dpr;
+      const bottom = (head?.bottom ?? 0) * dpr;
+      const glowOf = (point: Particle) => {
+        const y = yOf(point);
+        const away = y < top ? top - y : y > bottom ? y - bottom : 0;
+        return Math.max(0.15, 1 - away / (480 * dpr));
+      };
+      for (const point of points) {
+        if (pointer) {
+          const dx = pointer.x - point.x;
+          const dy = pointer.y - yOf(point);
+          const distance = Math.hypot(dx, dy) || 1;
+          if (distance < 240 * dpr) {
+            const pull = (1 - distance / (240 * dpr)) * 0.0025 * dpr;
+            point.vx += (dx / distance) * pull;
+            point.vy += (dy / distance) * pull;
+          }
+        }
+        point.x = (point.x + point.vx + width) % width;
+        point.y = (point.y + point.vy + height) % height;
+        point.vx *= 0.992;
+        point.vy *= 0.992;
+      }
+      drawConstellation(context, points, 110 * dpr, dpr, 0.11, 0.32, glowOf, yOf);
+    };
+    const untrack = trackPointer(window, element, dpr, (point) => {
+      pointer = point;
+    });
+    addEventListener('resize', resize);
+    const stop = onFrame(draw);
+    return () => {
+      stop();
+      untrack();
+      removeEventListener('resize', resize);
+    };
+  }, [allowed]);
+
+  return <canvas ref={canvas} className="backdrop" aria-hidden="true" />;
 }
 
 export function Mark({ text }: { text?: string } = {}) {
@@ -374,7 +266,7 @@ export function Mark({ text }: { text?: string } = {}) {
       return;
     }
     const context = element.getContext('2d')!;
-    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const dpr = scale();
     const size = Math.round(element.clientWidth * dpr);
     element.width = element.height = size;
     const stencil = document.createElement('canvas');
@@ -432,9 +324,7 @@ export function Mark({ text }: { text?: string } = {}) {
       }
     }
     let pointer: Point = null;
-    let stop: (() => void) | undefined;
     const draw = () => {
-      let moving = pointer !== null;
       context.clearRect(0, 0, size, size);
       context.fillStyle = '#e8e8ea';
       for (const point of points) {
@@ -455,34 +345,21 @@ export function Mark({ text }: { text?: string } = {}) {
           point.vy *= 0.78;
           point.x += point.vx;
           point.y += point.vy;
-          moving ||= Math.abs(point.vx) + Math.abs(point.vy) > 0.02;
         }
         context.fillRect(point.x, point.y, 1.6 * dpr, 1.6 * dpr);
-      }
-      if (!moving) {
-        stop?.();
-        stop = undefined;
       }
     };
     if (!allowed) {
       draw();
       return;
     }
-    const move = (event: PointerEvent) => {
-      const box = element.getBoundingClientRect();
-      pointer = { x: (event.clientX - box.left) * dpr, y: (event.clientY - box.top) * dpr };
-      stop ??= onFrame(draw);
-    };
-    const leave = () => {
-      pointer = null;
-    };
-    element.addEventListener('pointermove', move);
-    element.addEventListener('pointerleave', leave);
-    stop = onFrame(draw);
+    const untrack = trackPointer(element, element, dpr, (point) => {
+      pointer = point;
+    });
+    const stop = onFrame(draw);
     return () => {
-      stop?.();
-      element.removeEventListener('pointermove', move);
-      element.removeEventListener('pointerleave', leave);
+      stop();
+      untrack();
     };
   }, [allowed, text]);
 

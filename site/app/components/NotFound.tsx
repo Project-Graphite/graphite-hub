@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router';
-import { Mark } from '../motion/canvases';
+import { Field, Mark } from '../motion/canvases';
 import { Button } from './kit/basics';
 import { openSearch } from './kit/Palette';
 
@@ -7,8 +7,9 @@ export default function NotFound() {
   const { pathname } = useLocation();
   return (
     <section className="hero gate">
+      <Field />
       <div>
-        <p className="path">{pathname}</p>
+        <p className="mono-sm mb-4 text-faint">{pathname}</p>
         <h1>Nothing here.</h1>
         <div className="actions">
           <Button to="/" primary arrow>

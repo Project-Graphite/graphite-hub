@@ -61,8 +61,9 @@ export function VisitorMap({ initial }: { initial: Country[] }) {
           const radius = 0.9 + Math.min(2, Math.log2(count) * 0.45);
           return (
             <g key={code} className="lit" style={{ transformOrigin: `${x}px ${y}px` }}>
-              <title>{`${countryName(code)}: ${count}`}</title>
+              <title>{`${countryName(code)} · ${count}`}</title>
               <circle className="halo" cx={x} cy={y} r={radius * 2.2} />
+              <circle className="ring" cx={x} cy={y} r={radius} />
               <circle className="core" cx={x} cy={y} r={radius} />
             </g>
           );

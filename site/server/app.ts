@@ -261,15 +261,6 @@ export function createApp(
       }),
     );
     app.use(
-      '/fonts',
-      express.static('build/client/fonts', {
-        immutable: true,
-        maxAge: '1y',
-        index: false,
-        redirect: false,
-      }),
-    );
-    app.use(
       '/.well-known',
       express.static('build/client/.well-known', { maxAge: '1h', index: false, redirect: false }),
     );

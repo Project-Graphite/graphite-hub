@@ -1,17 +1,16 @@
-import { useState } from 'react';
+import { useCallback, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
 import type { Route } from './+types/projects';
 import { accentStyle, Avatar, Cover } from '../components/kit/basics';
 import { Chips, Pulse } from '../components/kit/directory';
 import { Fact, loadRail, PageHeader, StandardRail } from '../components/kit/page';
-import { Icon } from '../components/kit/icons';
 import Status from '../components/Status';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
 import { day, plural } from '../format';
 import { useHub } from '../hub';
 import { STATUS_LABEL } from '../model';
-import { useSpotlight } from '../motion/motion';
+import { useSpotlight, useTilt } from '../motion/motion';
 import { topicsFor } from '../topics';
 import type { Member, Project, ProjectStatus, Release } from '../types';
 
@@ -31,6 +30,7 @@ function Entry({
   owner,
   releases,
   today,
+  index,
   tag,
   pickTag,
 }: {
@@ -38,14 +38,27 @@ function Entry({
   owner: Member | undefined;
   releases: Release[];
   today: string;
+  index: number;
   tag: string | null;
   pickTag: (tag: string) => void;
 }) {
+  const tilt = useTilt<HTMLElement>();
   const spot = useSpotlight<HTMLElement>();
+  const pointer = useCallback(
+    (element: HTMLElement | null) => {
+      tilt(element);
+      spot(element);
+    },
+    [tilt, spot],
+  );
   const accent = project.accent ?? owner?.accent ?? '';
   const latest = releases[0];
   return (
-    <article ref={spot} className="entry spot" style={accentStyle(accent)}>
+    <article
+      ref={pointer}
+      className="entry spot tilt"
+      style={{ ...accentStyle(accent), '--i': index } as CSSProperties}
+    >
       <Link to={project.path} className="face" tabIndex={-1} aria-hidden="true">
         <Cover name={project.name} accent={accent} image={project.coverUrl} />
       </Link>
@@ -100,8 +113,7 @@ function Entry({
               </a>
             )}
             <a href={project.repoUrl} className="rule-link">
-              source
-              <Icon name="external" />
+              source ↗
             </a>
           </span>
         </div>
@@ -161,22 +173,22 @@ export default function Projects({ loaderData }: Route.ComponentProps) {
             {released[0] && <Fact label="last release" value={day(released[0].date)} />}
             {tag && (
               <button type="button" className="fact pick" onClick={() => setTag(null)}>
-                <b>{tag}</b>
-                <Icon name="close" />
+                <b>{tag}</b> ×
               </button>
             )}
           </>
         }
       />
       <section className="band dir">
-        <div className="entries">
-          {shown.map((project) => (
+        <div key={`${status}:${tag}:${sort}`} className="entries">
+          {shown.map((project, index) => (
             <Entry
               key={project.slug}
               project={project}
               owner={hub.memberByHandle(project.owner)}
               releases={hub.releasesForProject(project)}
               today={today}
+              index={index}
               tag={tag}
               pickTag={pickTag}
             />

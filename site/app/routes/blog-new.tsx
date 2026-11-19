@@ -8,7 +8,6 @@ import { useRoot } from '../hub';
 import { checkedForm, EDITOR_PATH, member } from '../pages/blog';
 import { isRefused } from '../profile';
 import { topicsFor } from '../topics';
-import '../styles/member.css';
 
 export const handle = topicsFor('blog-new');
 
@@ -57,8 +56,13 @@ export default function BlogNew({ loaderData }: Route.ComponentProps) {
         />
         <section className="band">
           <div className="templates">
-            {loaderData.templates.map((template) => (
-              <Form key={template.id} method="post" className="template">
+            {loaderData.templates.map((template, index) => (
+              <Form
+                key={template.id}
+                method="post"
+                className="template"
+                style={{ '--i': index } as never}
+              >
                 <input type="hidden" name="csrf" value={csrf} />
                 <input type="hidden" name="template" value={template.id} />
                 <button type="submit" name="intent" value="create" className="sheet">
