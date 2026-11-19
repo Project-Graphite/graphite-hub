@@ -45,6 +45,17 @@ export function createMessages(
     });
   }
 
+  async function onWall(at: string) {
+    await bus.record({
+      topic: 'messages',
+      kind: 'wall',
+      public: true,
+      summary: 'a new message on the wall',
+      detail: {},
+      at,
+    });
+  }
+
   return {
     wall(limit: number): Message[] {
       return db
@@ -93,6 +104,9 @@ export function createMessages(
         leaving.public,
         at,
       );
+      if (leaving.public) {
+        await onWall(at);
+      }
       return { ok: true };
     },
 
@@ -105,6 +119,7 @@ export function createMessages(
         .run(by, at, id);
       if (changes > 0) {
         await changed('A message was published', true, at);
+        await onWall(at);
       }
       return changes > 0;
     },

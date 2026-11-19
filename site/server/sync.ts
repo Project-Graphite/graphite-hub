@@ -2,11 +2,11 @@ import type { Bus } from './bus.ts';
 import { importChangelog, recordRelease, syncReleases, type GitHubRelease } from './changelog.ts';
 import { config } from './config.ts';
 import type { Database } from './db.ts';
-import { dispatchPlatformSync, storedEntries, syncRegistry } from './registry.ts';
+import type { Capture } from './errors.ts';
+import { readProjects } from './projects.ts';
+import { dispatchPlatformSync, syncRegistry } from './registry.ts';
 import { syncMembers, syncStats } from './readers.ts';
 import type { Sessions } from './sessions.ts';
-import { recordUptimeSummary } from './uptime.ts';
-import type { Writeback } from './writeback.ts';
 
 interface Push {
   ref: string;
@@ -24,7 +24,27 @@ export function changedFiles(push: Push) {
   );
 }
 
-export function createSync(db: Database, bus: Bus, sessions: Sessions, writeback: Writeback) {
+export function coalesced(run: () => Promise<void>) {
+  let running: Promise<void> | undefined;
+  let queued: Promise<void> | undefined;
+  return function next(): Promise<void> {
+    if (!running) {
+      running = run().finally(() => {
+        running = undefined;
+      });
+      return running;
+    }
+    queued ??= running
+      .catch(() => undefined)
+      .then(() => {
+        queued = undefined;
+        return next();
+      });
+    return queued;
+  };
+}
+
+export function createSync(db: Database, bus: Bus, sessions: Sessions, capture: Capture) {
   async function members() {
     for (const login of await syncMembers(db, bus)) {
       const removed = await sessions.revoke(login);
@@ -40,26 +60,33 @@ export function createSync(db: Database, bus: Bus, sessions: Sessions, writeback
     }
   }
 
-  async function registry() {
-    const entries = await syncRegistry(db, bus);
-    await importChangelog(db, bus, entries);
-    await writeback.settle(entries);
-    return entries;
-  }
+  const registry = coalesced(async () => {
+    await syncRegistry(db, bus);
+    await importChangelog(db, bus, readProjects(db));
+  });
+
+  const repos = () => [...new Set(readProjects(db).map((project) => project.repo))];
 
   async function stats(repo: string) {
-    if (storedEntries(db).some((entry) => entry.repo.toLowerCase() === repo.toLowerCase())) {
+    if (repos().some((known) => known.toLowerCase() === repo.toLowerCase())) {
       await syncStats(db, bus, [repo]);
     }
   }
 
   return {
     async full() {
-      const entries = await registry();
-      await members();
-      await syncStats(db, bus, [...new Set(entries.map((entry) => entry.repo))]);
-      await syncReleases(db, bus, entries);
-      await recordUptimeSummary(db, bus);
+      for (const [name, step] of [
+        ['registry', registry],
+        ['members', members],
+        ['stats', () => syncStats(db, bus, repos())],
+        ['releases', () => syncReleases(db, bus, readProjects(db))],
+      ] as const) {
+        try {
+          await step();
+        } catch (error) {
+          capture(error, { route: `sync:${name}` });
+        }
+      }
     },
 
     async webhook(event: string, payload: unknown) {
@@ -84,7 +111,7 @@ export function createSync(db: Database, bus: Bus, sessions: Sessions, writeback
         await recordRelease(
           db,
           bus,
-          storedEntries(db),
+          readProjects(db),
           repo,
           (payload as { release: GitHubRelease }).release,
         );

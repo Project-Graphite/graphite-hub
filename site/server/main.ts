@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { RequestHandler } from 'express';
 import type { ServerBuild } from 'react-router';
 import { countryOf, refreshCloudflareRanges } from './address.ts';
@@ -10,9 +11,10 @@ import { createAuth } from './auth.ts';
 import { createBus } from './bus.ts';
 import { createCollab } from './collab.ts';
 import { config } from './config.ts';
+import { createEdit } from './edit.ts';
 import { createJobs } from './jobs.ts';
 import { createPosts } from './posts.ts';
-import { openDatabase } from './db.ts';
+import { closeDatabase, openDatabase } from './db.ts';
 import { createErrors } from './errors.ts';
 import { runLifecycle } from './lifecycle.ts';
 import { createLive } from './live.ts';
@@ -21,41 +23,40 @@ import { alertOwner, sendEmail } from './mail.ts';
 import { createMetrics } from './metrics.ts';
 import { connectRedis, slidingLimit } from './redis.ts';
 import { createSessions } from './sessions.ts';
-import { github } from './github.ts';
 import { createPresence } from './presence.ts';
-import { createPresentations } from './presentation.ts';
 import { createProfiles } from './profiles.ts';
-import { createWriteback } from './writeback.ts';
+import { createProjects } from './projects.ts';
 import { createReads } from './reads.ts';
 import { createUploads } from './uploads.ts';
 import { createSettings } from './settings.ts';
 import { createSnapshot } from './snapshot.ts';
 import { createSubscribers } from './subscribers.ts';
 import { createSync } from './sync.ts';
-import { pingAll } from './uptime.ts';
+import { closeDays, createHealth, HEALTH_JOB } from './uptime.ts';
 import { createViews } from './views.ts';
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
+const DRAIN_MS = 8000;
 
 const db = openDatabase(path.join(config.dataDir, 'hub.db'));
+closeDays(db, new Date().toISOString().slice(0, 10));
 const uploadsDirectory = path.join(config.dataDir, 'uploads');
-const { command: redis, subscriber } = connectRedis(config.redisUrl);
-const bus = createBus(db, redis, subscriber);
-await bus.ready;
+const redis = connectRedis(config.redisUrl);
+const bus = createBus(db, redis);
 const capture = createErrors(db, bus, alertOwner);
 const sessions = createSessions(redis, config.sessionSecret);
 const auth = createAuth(sessions, redis);
 const presence = createPresence(redis, bus);
 const live = createLive(bus, auth, presence, {
   handleOf: (login) =>
-    db.prepare('SELECT handle FROM members WHERE login = ? COLLATE NOCASE').get(login)?.handle as
-      string | undefined,
+    db
+      .prepare('SELECT handle FROM members WHERE login = ? COLLATE NOCASE AND left_at IS NULL')
+      .get(login)?.handle as string | undefined,
   countryOf: (request) => (config.dev ? countryOf(request, true) : countryOf(request)),
 });
-const writeback = createWriteback(db, bus, github);
-const sync = createSync(db, bus, sessions, writeback);
+const sync = createSync(db, bus, sessions, capture);
 const settings = createSettings(db, bus);
 const snapshot = createSnapshot(db, bus, settings);
 const views = createViews(db, redis, bus, {
@@ -63,6 +64,13 @@ const views = createViews(db, redis, bus, {
     kind === 'post'
       ? snapshot.get().posts.some((post) => post.id === key)
       : snapshot.get().projects.some((project) => project.slug === key),
+  title: (kind, key) =>
+    kind === 'post'
+      ? snapshot
+          .get()
+          .posts.filter((post) => post.id === key)
+          .map((post) => `“${post.title}”`)[0]
+      : snapshot.get().projects.find((project) => project.slug === key)?.name,
   allow: (address) => slidingLimit(redis, `views:${address}`, 30, MINUTE),
 });
 const jobs = createJobs(
@@ -77,9 +85,14 @@ const jobs = createJobs(
     digest: async () => {
       subscribers.runDigest();
     },
+    [HEALTH_JOB]: async () => {
+      health.arm();
+      await health.digest();
+    },
   },
   capture,
 );
+const health = createHealth(db, bus, jobs);
 const subscribers = createSubscribers(db, jobs, bus, {
   secret: config.sessionSecret,
   origin: new URL(config.appUrl).origin,
@@ -91,6 +104,11 @@ const subscribers = createSubscribers(db, jobs, bus, {
 });
 const posts = createPosts(db, bus, jobs, subscribers.queuePost);
 const collab = createCollab(db, posts, sessions, bus);
+const profiles = createProfiles(db, bus);
+const projects = createProjects(db, bus);
+const uploads = createUploads(db, uploadsDirectory, (owner) =>
+  slidingLimit(redis, `uploads:${owner}`, 20, HOUR),
+);
 
 process.on('unhandledRejection', (reason) => capture(reason, { route: 'process' }));
 process.on('uncaughtExceptionMonitor', (error) => capture(error, { route: 'process' }));
@@ -117,15 +135,13 @@ const app = createApp(
     bus,
     snapshot,
     settings,
-    reads: createReads(db),
+    reads: createReads(db, bus),
     admin: createAdmin(db, bus, settings, sessions),
     share: createShare(),
-    profiles: createProfiles(db, bus),
-    presentations: createPresentations(db, bus),
-    writeback,
-    uploads: createUploads(db, uploadsDirectory, (owner) =>
-      slidingLimit(redis, `uploads:${owner}`, 20, HOUR),
-    ),
+    profiles,
+    projects,
+    edit: createEdit(db, { settings, profiles, projects, uploads }),
+    uploads,
     messages: createMessages(
       db,
       bus,
@@ -150,11 +166,19 @@ const app = createApp(
 const server = app.listen(config.port, () => log.info({ port: config.port }, 'listening'));
 server.on('upgrade', collab.upgrade);
 subscribers.start();
+health.start();
 jobs.start();
 presence.start().catch((error: unknown) => capture(error, { route: 'presence' }));
 
+const working = new Set<Promise<unknown>>();
+
 function every(name: string, ms: number, job: () => Promise<unknown>) {
-  const run = () => job().catch((error: unknown) => capture(error, { route: `job:${name}` }));
+  const run = () => {
+    const work = job()
+      .catch((error: unknown) => capture(error, { route: `job:${name}` }))
+      .finally(() => working.delete(work));
+    working.add(work);
+  };
   run();
   return setInterval(run, ms);
 }
@@ -174,20 +198,19 @@ function nightly(name: string, hourUtc: number, job: () => Promise<unknown>) {
 const timers = [
   every('cloudflare-ranges', DAY, refreshCloudflareRanges),
   every('full-sync', HOUR, sync.full),
-  every('uptime', 30_000, () => pingAll(db, bus)),
-  nightly('lifecycle', 3, () => runLifecycle(db, redis, bus)),
+  every('uptime', 30_000, health.ping),
+  nightly('lifecycle', 3, () => runLifecycle(db, redis, bus, uploadsDirectory)),
 ];
 
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   log.info('shutting down');
   timers.forEach(clearTimeout);
-  jobs.stop();
   presence.stop();
-  collab.destroy();
   server.close();
+  await Promise.race([Promise.allSettled([jobs.stop(), ...working]), delay(DRAIN_MS)]);
+  collab.destroy();
   server.closeAllConnections();
-  Promise.allSettled([redis.quit(), subscriber.quit()]).then(() => {
-    db.close();
-    process.exit(0);
-  });
+  await Promise.allSettled([redis.quit()]);
+  closeDatabase(db);
+  process.exit(0);
 });

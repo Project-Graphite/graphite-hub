@@ -17,6 +17,7 @@ import type { Bus } from './bus.ts';
 import { json, transaction, type Database } from './db.ts';
 import { atom, rss } from './feeds.ts';
 import type { Jobs } from './jobs.ts';
+import { projectExists } from './projects.ts';
 import { jsonToState, render, stateToJson, type Rendered } from './render.ts';
 import { BUILT_IN_TEMPLATES } from './templates.ts';
 
@@ -104,9 +105,8 @@ export function createPosts(
   const known = {
     upload: (id: string) => Boolean(db.prepare('SELECT 1 FROM uploads WHERE id = ?').get(id)),
     member: (handle: string) =>
-      Boolean(db.prepare('SELECT 1 FROM members WHERE handle = ?').get(handle)),
-    project: (slug: string) =>
-      Boolean(db.prepare('SELECT 1 FROM projects WHERE slug = ?').get(slug)),
+      Boolean(db.prepare('SELECT 1 FROM members WHERE handle = ? AND left_at IS NULL').get(handle)),
+    project: (slug: string) => projectExists(db, slug),
   };
 
   function read(id: string): Post | undefined {

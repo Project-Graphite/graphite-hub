@@ -23,9 +23,9 @@ import type { Messages } from './messages.ts';
 import type { Collab } from './collab.ts';
 import type { Posts } from './posts.ts';
 import type { Presence } from './presence.ts';
-import type { Presentations } from './presentation.ts';
+import type { Edit } from './edit.ts';
 import type { Profiles } from './profiles.ts';
-import type { Writeback } from './writeback.ts';
+import type { Projects } from './projects.ts';
 import type { Uploads } from './uploads.ts';
 import type { Share } from './share.ts';
 import type { Reads } from './reads.ts';
@@ -46,8 +46,8 @@ export interface Services {
   messages: Messages;
   share: Share;
   profiles: Profiles;
-  presentations: Presentations;
-  writeback: Writeback;
+  projects: Projects;
+  edit: Edit;
   uploads: Uploads;
   posts: Posts;
   subscribers: Subscribers;
@@ -277,8 +277,8 @@ export function createApp(
             messages: services.messages,
             share: services.share,
             profiles: services.profiles,
-            presentations: services.presentations,
-            writeback: services.writeback,
+            projects: services.projects,
+            edit: services.edit,
             uploads: services.uploads,
             posts: services.posts,
             subscribers: services.subscribers,

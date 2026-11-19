@@ -13,14 +13,15 @@ Traefik, with the apex proxied through Cloudflare.
 
 | Area | What |
 | :--- | :--- |
-| Directory | members from the GitHub organisation; projects and epics from `platform/projects/*.yml`, validated with platform's `schema/project.schema.json` through `ajv` |
+| Directory | members from the GitHub organisation; projects and epics appear when `platform/projects/*.yml` lists them, validated with platform's `schema/project.schema.json` through `ajv`. A member who leaves and a project the registry drops are kept and hidden, and return intact |
 | Profiles | a member edits their page at `/<alias>/edit`: ordered blocks (bio, projects, stack, github, releases, links, short links, writing, gallery, text, quote, embed), alias, accent, avatar and cover; every save is a version with undo and history |
-| Projects | presentation (cover, accent, summary override, layout, feature slot) lives here; registry fields (name, summary, tags, status, pinned, listed) are committed back to the repository's `.graphite.yml` through the platform GitHub App, or proposed as a pull request where `main` refuses the commit, and shown as pending until the sync confirms them |
+| Projects | the hub's database owns a project's content: name, summary, tags, status, listed, featured order, showcase, owner, authors, cover, accent, layout and feature slot. The registry entry fills them the first time a slug is seen; afterwards it supplies infrastructure only (repo, parent, kind, deploy, paths, releases). Nothing the hub edits is written to a repository |
+| Editing | `POST /edit` takes one patch for a setting, a profile or a project, checks who may make it, validates it against a schema and saves a version; `/edit/upload`, `/edit/restore` and `/edit/history` complete it |
 | Blog | a TipTap 3 editor with co-editing over Yjs and Hocuspocus, offline drafts, versions, templates and trash; scheduled publishing; RSS and Atom feeds; a published post renders from stored HTML with no editor code |
 | Subscribe | email subscriptions to everything, one project or one member, per post or as a weekly digest, sent through SMTP with signed confirm, manage and unsubscribe links |
 | Live | every page subscribes to topics over `/live`; presence, reading counters, the editing badge, view counters and the visitor map patch in place, everything else revalidates its loader |
 | Changelog | every project was recorded at 1.0.0 when the changelog started fresh; releases come from GitHub Releases since |
-| Status | rollout reports from the VPS, a 30-second probe of every live host, 30-day uptime, the public console and the visitor map |
+| Status | rollout reports from the VPS, a 30-second probe of every live host, 30-day uptime, the public console and the visitor map. The console reports changes: deploys, releases, posts, registry syncs, a host going down and coming back, one health digest a day, stars, members, projects, messages on the wall and view milestones |
 | Messages | the wall from Message Lab, folded in: public or private messages, moderated by members |
 | Admin | `/admin`, owners only: every setting with history and revert, a live preview, the errors panel, subscribers and email templates with a test send, members, sign everyone out |
 
@@ -58,12 +59,19 @@ permanently. `/kit`, the preview of every kit piece, answers 404 in production.
 | `POST /views/<kind>/<key>` | A view report from a page that was visible for 10 s and scrolled a quarter; counted once per visitor per item per day through a hashed id that is never stored |
 | `GET /uploads/<id>/<width>.webp` | Images from the `sharp` pipeline, immutable |
 | `GET /admin/email?kind=` | The email preview an owner sees on `/admin` |
+| `POST /edit`, `POST /edit/upload`, `POST /edit/restore`, `GET /edit/history?target=` | The edit endpoint. Form fields `csrf` and `patch` (JSON), `target`, `kind` and `file`, or `version`. A refusal answers 400 with the reason; anyone who may not make the edit gets 404 |
+| `GET /live?topics=` | The event stream; at most 20 streams per address, the 21st answers 429 |
 
 The webhook drives the sync: a push to `platform` under `projects/` or `schema/` rereads the
 registry; a push that changes a repository's `.graphite.yml` dispatches platform's **Sync
 registry**; `release` records the release; `star`, `fork` and `repository` refresh that
 repository's numbers; `member`, `membership` and `organization` resync members and revoke a removed
-member's sessions. A full sync runs every hour as the fallback.
+member's sessions. A full sync runs every hour as the fallback; its steps run independently, so one
+failing does not skip the rest.
+
+A registry sync inserts a new slug with its content, updates only infrastructure on a slug it
+knows, and marks a slug absent from a listing that validated cleanly as removed. A listing with an
+invalid file removes nothing. A `live` project whose entry stops deploying becomes `archived`.
 
 ## Sign-in and roles
 
@@ -87,20 +95,23 @@ subscribers, sends, jobs, messages, short links, settings, errors and webhook de
 live under `DATA_DIR/uploads`. The volume is in the nightly backup.
 
 Redis is append-only with `noeviction`, so a full Redis fails a write loudly instead of dropping a
-session: the event bus and the `events` stream (7 days, the stream id is the SSE event id),
-sessions, presence sorted sets, view HyperLogLogs, the visitor map and every rate limit, each with
-a TTL. Nothing lives only in Redis: scheduled publishing, emails and the digest are `jobs` and
-`sends` rows in SQLite driven by a timer, so losing Redis delays nothing durable.
+session: the `events` stream (7 days, the stream id is the SSE event id, kept for replay after a
+reconnect), sessions, presence sorted sets, view HyperLogLogs, the visitor map and every rate
+limit, each with a TTL. Events reach the open streams and the caches in process, so a write is seen
+at once whether or not Redis answers. Nothing lives only in Redis: scheduled publishing, emails,
+the weekly digest and the daily health digest are `jobs` and `sends` rows in SQLite driven by a
+timer, so losing Redis delays nothing durable.
 
 ## Background work
 
 | Job | When |
 | :--- | :--- |
-| Full sync: registry, members, repository stats, releases, uptime summary | every hour |
-| Uptime probe of every live host | every 30 s |
+| Full sync: registry, members, repository stats, releases | every hour |
+| Uptime probe of every live host; a console line when a host fails two probes in a row and when it is back | every 30 s |
+| Health digest: yesterday's minutes closed into one row per project, and one console line | daily at 00:00 UTC |
 | Cloudflare address ranges, which decide when `CF-Connecting-IP` and `CF-IPCountry` are trusted | daily |
-| Lifecycle: uptime rolled up to days after 30 days, activity 180 days (deploys and releases kept), errors 30 days, webhook deliveries 7 days, versions 90 days or the last 50 per key, trashed posts 30 days, unconfirmed subscribers 7 days, unsubscribed 30 days, sends 90 days, the Redis stream 7 days | nightly at 03:30 UTC |
-| Due jobs: scheduled publishes, the email queue within `email.hourly`, the weekly digest | a timer armed to the next due row |
+| Lifecycle: uptime minutes 30 days (the daily rows stay), activity 180 days (deploys and releases kept), errors 30 days, webhook deliveries 7 days, versions 90 days or the last 50 per key, trashed posts 30 days and their versions with them, uploads 30 days after nothing references them, unconfirmed subscribers 7 days, unsubscribed 30 days, sends 90 days, the Redis stream 7 days | nightly at 03:30 UTC |
+| Due jobs: scheduled publishes, the email queue within `email.hourly`, the weekly digest, the health digest; each kind runs in its own lane, and a job that fails eight times is closed with its error | a timer armed to the next due row |
 
 ## Observability
 
@@ -118,7 +129,7 @@ the error rate, p95 and live connections for its Alerts page.
 | `REDIS_URL` | Redis, with the password where there is one |
 | `SESSION_SECRET` | encrypts the GitHub token inside each session and signs subscriber links; changing it signs everyone out |
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | the hub's GitHub OAuth App, callback `<APP_URL>/auth/callback` |
-| `PLATFORM_APP_CLIENT_ID`, `PLATFORM_APP_PRIVATE_KEY` | the platform GitHub App, for reading the registry, members and releases and for write-back |
+| `PLATFORM_APP_CLIENT_ID`, `PLATFORM_APP_PRIVATE_KEY` | the platform GitHub App, for reading the registry, members and releases; it needs no write permission on project repositories |
 | `GITHUB_WEBHOOK_SECRET` | the organisation webhook's secret |
 | `DEPLOY_REPORT_SECRET` | shared with the deploy agent and the console |
 | `SMTP_URL`, `ALERTS_FROM`, `ALERTS_EMAIL` | the SMTP transport, the sending address, the owner's address for error alerts and test sends; optional, email is off without them |
@@ -167,7 +178,7 @@ to read the real registry, members and releases.
 | `app/editor/` | The post editor, loaded lazily |
 | `app/styles/graphite.css`, `app/styles/pages/` | Tokens, then one sheet per page group |
 | `server/main.ts`, `server/app.ts` | Process start and timers; the Express app, security headers, internal routes and the React Router handler |
-| `server/*.ts` | One module per concern: auth, sessions, bus, live, presence, views, registry, writeback, sync, readers, changelog, deploys, uptime, profiles, presentation, uploads, posts, collab, feeds, subscribers, sends, digest, emails, mail, settings, admin, errors, lifecycle, snapshot, share |
+| `server/*.ts` | One module per concern: auth, sessions, bus, live, presence, views, registry, projects, edit, sync, readers, changelog, deploys, uptime, profiles, uploads, posts, collab, feeds, subscribers, sends, digest, emails, mail, settings, admin, errors, lifecycle, snapshot, share |
 | `server/migrations/` | Numbered SQL, applied on start |
 | `server/console/public.ts` | `toPublicEvent`: the only projection of events onto the public console |
 | `scripts/` | The bundle size check, the release rules and the release sync |

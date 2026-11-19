@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
+import { CONSOLE_KINDS, foldRuns } from '../../console';
 import { useFolded } from '../../folds';
 import { clock, day, describe, plural } from '../../format';
 import { useRoot } from '../../hub';
@@ -110,10 +111,14 @@ export function Counters({ counts, shown }: { counts: Counts; shown: string[] })
   );
 }
 
-function Kind({ kind }: { kind: string }) {
+function Kind({ line }: { line: ConsoleLine }) {
   return (
-    <span className="kind" data-kind={kind}>
-      {kind === 'uptime' ? 'up' : kind}
+    <span
+      className="kind"
+      data-kind={line.kind}
+      data-state={line.kind === 'health' && line.detail.ok === false ? 'down' : undefined}
+    >
+      {line.kind}
     </span>
   );
 }
@@ -127,7 +132,7 @@ export function Ticker({ lines }: { lines: ConsoleLine[] }) {
       {line ? (
         <span className="cycle">
           <span key={line.id}>
-            <Kind kind={line.kind} />
+            <Kind line={line} />
             {line.summary}
           </span>
         </span>
@@ -246,9 +251,6 @@ export function ReleaseTimeline({ releases, accentOf, nameOf, today, days }: Tim
   );
 }
 
-const FILTERS = ['all', 'deploy', 'release', 'post', 'sync', 'uptime'];
-const FILTER_LABEL: Record<string, string> = { uptime: 'up' };
-
 export function Console({
   initial,
   limit,
@@ -266,41 +268,44 @@ export function Console({
   const [folded, toggle] = useFolded('console');
   const box = useRef<HTMLDivElement>(null);
 
-  useLiveMessages((message) => {
-    const line = message.console;
-    if (line && message.id) {
+  useLiveMessages(({ console: line }) => {
+    if (line) {
       setArrived((current) =>
-        [...current.filter((item) => item.id !== message.id), { id: message.id, ...line }].slice(
-          -limit,
-        ),
+        [...current.filter((item) => item.id !== line.id), line].slice(-limit),
       );
     }
   });
 
   const lines = useMemo(() => {
-    const byId = new Map([...initial, ...arrived].map((line) => [line.id, line]));
-    return [...byId.values()].sort((a, b) => a.at.localeCompare(b.at)).slice(-limit);
+    const loaded = Number(initial.at(-1)?.id ?? 0);
+    return foldRuns(
+      [...initial, ...arrived.filter((line) => Number(line.id) > loaded)].sort((a, b) =>
+        a.at.localeCompare(b.at),
+      ),
+    ).slice(-limit);
   }, [initial, arrived, limit]);
   const hours = useMemo(() => {
     const newest = Date.parse(lines.at(-1)?.at ?? new Date(0).toISOString());
-    return Array.from(
-      { length: 24 },
-      (_, hour) =>
-        lines.filter((line) => {
+    return Array.from({ length: 24 }, (_, hour) =>
+      lines
+        .filter((line) => {
           const age = (newest - Date.parse(line.at)) / 3_600_000;
           return age >= 23 - hour && age < 24 - hour;
-        }).length,
+        })
+        .reduce((sum, line) => sum + (line.count ?? 1), 0),
     );
   }, [lines]);
+  const kinds = CONSOLE_KINDS.filter((kind) => lines.some((line) => line.kind === kind));
+  const shown = (kinds as string[]).includes(filter) ? filter : 'all';
   useEffect(() => {
     const element = box.current;
     if (element) {
       element.scrollTop = element.scrollHeight;
     }
-  }, [lines, filter, folded]);
+  }, [lines, shown, folded]);
 
   return (
-    <aside className="console" data-folded={folded || undefined}>
+    <aside className="console" aria-label="Live console" data-folded={folded || undefined}>
       <div className="top">
         <Fold open={!folded} toggle={toggle}>
           <Status status="live" />
@@ -321,20 +326,26 @@ export function Console({
         )}
       </div>
       <div className="filters" hidden={folded}>
-        {FILTERS.map((kind) => (
+        {['all', ...kinds].map((kind) => (
           <button
             key={kind}
             type="button"
-            aria-pressed={filter === kind}
+            aria-pressed={shown === kind}
             onClick={() => setFilter(kind)}
           >
-            {FILTER_LABEL[kind] ?? kind}
+            {kind}
           </button>
         ))}
       </div>
-      <div ref={box} className={`lines ${tall ? 'tall' : ''}`} hidden={folded}>
+      <div
+        ref={box}
+        className={`lines ${tall ? 'tall' : ''}`}
+        role="log"
+        aria-label="Site activity"
+        hidden={folded}
+      >
         {lines
-          .filter((line) => filter === 'all' || line.kind === filter)
+          .filter((line) => shown === 'all' || line.kind === shown)
           .map((line) => (
             <button
               key={line.id}
@@ -345,8 +356,15 @@ export function Console({
               onClick={() => setOpen(open === line.id ? null : line.id)}
             >
               <span className="t">{clock(line.at)}</span>
-              <Kind kind={line.kind} />
-              <span className="m">{line.summary}</span>
+              <Kind line={line} />
+              {line.count ? (
+                <span className="m run">
+                  <span>{line.summary}</span>
+                  <b aria-label={`${line.count} times`}>×{line.count}</b>
+                </span>
+              ) : (
+                <span className="m">{line.summary}</span>
+              )}
               <span className="x">{describe(line.detail) || line.at}</span>
             </button>
           ))}

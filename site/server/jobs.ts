@@ -16,9 +16,9 @@ export function createJobs(
   capture: (error: unknown, context: { route: string }) => void,
 ) {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  let running = false;
   let stopped = false;
   const active = new Set<number>();
+  const lanes = new Map<string, Promise<string[]>>();
 
   function arm(now = Date.now()) {
     clearTimeout(timer);
@@ -26,20 +26,17 @@ export function createJobs(
       return;
     }
     const next = db
-      .prepare('SELECT min(due_at) AS due FROM jobs WHERE done_at IS NULL AND attempts < ?')
-      .get(MAX_ATTEMPTS)!.due as string | null;
+      .prepare(
+        'SELECT min(due_at) AS due FROM jobs WHERE done_at IS NULL AND kind NOT IN (SELECT value FROM json_each(?))',
+      )
+      .get(JSON.stringify([...lanes.keys()]))!.due as string | null;
     const wait = next ? Math.max(0, Date.parse(next) - now) : MINUTE;
     timer = setTimeout(tick, Math.min(wait, MINUTE)).unref();
   }
 
-  async function runDue(now = Date.now()) {
-    const due = db
-      .prepare(
-        'SELECT id, kind, ref, attempts FROM jobs WHERE done_at IS NULL AND attempts < ? AND due_at <= ? ORDER BY due_at, id',
-      )
-      .all(MAX_ATTEMPTS, new Date(now).toISOString());
+  async function runLane(jobs: Record<string, unknown>[], now: number) {
     const ran: string[] = [];
-    for (const job of due) {
+    for (const job of jobs) {
       const id = job.id as number;
       const attempts = (job.attempts as number) + 1;
       db.prepare('UPDATE jobs SET attempts = ? WHERE id = ?').run(attempts, id);
@@ -52,9 +49,10 @@ export function createJobs(
         );
         ran.push(`${job.kind as string}:${job.ref as string}`);
       } catch (error) {
-        db.prepare('UPDATE jobs SET last_error = ?, due_at = ? WHERE id = ?').run(
+        db.prepare('UPDATE jobs SET last_error = ?, due_at = ?, done_at = ? WHERE id = ?').run(
           error instanceof Error ? error.message : String(error),
           retryAt(attempts, now),
+          attempts < MAX_ATTEMPTS ? null : new Date().toISOString(),
           id,
         );
         capture(error, { route: `job:${job.kind as string}` });
@@ -65,17 +63,30 @@ export function createJobs(
     return ran;
   }
 
-  async function tick() {
-    if (running) {
-      return;
-    }
-    running = true;
-    try {
-      await runDue();
-    } finally {
-      running = false;
-      arm();
-    }
+  async function runDue(now = Date.now()) {
+    const due = Map.groupBy(
+      db
+        .prepare(
+          'SELECT id, kind, ref, attempts FROM jobs WHERE done_at IS NULL AND due_at <= ? ORDER BY due_at, id',
+        )
+        .all(new Date(now).toISOString())
+        .filter((job) => !lanes.has(job.kind as string)),
+      (job) => job.kind as string,
+    );
+    const started = [...due].map(([kind, jobs]) => {
+      const lane = runLane(jobs, now).finally(() => {
+        lanes.delete(kind);
+        arm();
+      });
+      lanes.set(kind, lane);
+      return lane;
+    });
+    return (await Promise.all(started)).flat();
+  }
+
+  function tick() {
+    runDue().catch((error: unknown) => capture(error, { route: 'jobs' }));
+    arm();
   }
 
   function clear(kind: string, ref: string) {
@@ -109,6 +120,7 @@ export function createJobs(
     stop() {
       stopped = true;
       clearTimeout(timer);
+      return Promise.allSettled(lanes.values());
     },
   };
 }

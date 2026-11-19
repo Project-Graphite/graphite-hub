@@ -1,3 +1,4 @@
+import type { ConsoleKind } from '../../app/console.ts';
 import type { HubEvent } from '../bus.ts';
 
 export interface PublicEvent {
@@ -11,6 +12,7 @@ type Detail = Record<string, unknown>;
 
 const number = (value: unknown) => (typeof value === 'number' ? value : undefined);
 const text = (value: unknown) => (typeof value === 'string' ? value : undefined);
+const flag = (value: unknown) => (typeof value === 'boolean' ? value : undefined);
 const counts = (value: unknown) =>
   Object.fromEntries(
     Object.entries((value ?? {}) as Detail).filter(
@@ -28,7 +30,7 @@ function defined(detail: PublicEvent['detail'] | Record<string, unknown>) {
   ) as PublicEvent['detail'];
 }
 
-const projections: Record<string, (detail: Detail) => PublicEvent['detail']> = {
+const projections: Record<ConsoleKind, (detail: Detail) => PublicEvent['detail']> = {
   deploy: (detail) =>
     defined({
       project: text(detail.project),
@@ -52,8 +54,6 @@ const projections: Record<string, (detail: Detail) => PublicEvent['detail']> = {
       projects: number(detail.projects),
       stars: detail.stars === undefined ? undefined : counts(detail.stars),
     }),
-  uptime: (detail) =>
-    defined({ up: number(detail.up), total: number(detail.total), p95Ms: number(detail.p95Ms) }),
   post: (detail) =>
     defined({
       author: text(detail.author),
@@ -61,12 +61,39 @@ const projections: Record<string, (detail: Detail) => PublicEvent['detail']> = {
       project: text(detail.project),
       slug: text(detail.slug),
     }),
+  health: (detail) =>
+    defined({
+      project: text(detail.project),
+      ok: flag(detail.ok),
+      downMs: number(detail.downMs),
+      up: number(detail.up),
+      total: number(detail.total),
+      p95Ms: number(detail.p95Ms),
+    }),
+  star: (detail) => defined({ project: text(detail.project), stars: number(detail.stars) }),
+  member: (detail) => defined({ member: text(detail.member), change: text(detail.change) }),
+  project: (detail) => defined({ project: text(detail.project), status: text(detail.status) }),
+  wall: () => ({}),
+  milestone: (detail) =>
+    defined({
+      project: text(detail.project),
+      post: text(detail.post),
+      views: number(detail.views),
+    }),
 };
 
+function isConsoleKind(kind: string): kind is ConsoleKind {
+  return Object.hasOwn(projections, kind);
+}
+
 export function toPublicEvent(event: HubEvent): PublicEvent | null {
-  const project = projections[event.kind];
-  if (!event.public || !project) {
+  if (!event.public || !isConsoleKind(event.kind)) {
     return null;
   }
-  return { kind: event.kind, at: event.at, summary: event.summary, detail: project(event.detail) };
+  return {
+    kind: event.kind,
+    at: event.at,
+    summary: event.summary,
+    detail: projections[event.kind](event.detail),
+  };
 }

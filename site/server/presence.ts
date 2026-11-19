@@ -165,7 +165,7 @@ export function createPresence(redis: Redis, bus: Bus, now = () => Date.now()) {
           await redis.del(...keys);
         }
       } while (cursor !== '0');
-      sweeper = setInterval(() => void sweep().catch(() => undefined), SWEEP_MS);
+      sweeper = setInterval(sweep, SWEEP_MS);
       await sweep();
     },
 

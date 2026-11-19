@@ -2,6 +2,8 @@ import type { Bus } from './bus.ts';
 import { config } from './config.ts';
 import { transaction, type Database } from './db.ts';
 import { github, paginate } from './github.ts';
+import { firstName } from './profiles.ts';
+import { readProjects } from './projects.ts';
 
 interface GitHubUser {
   login: string;
@@ -31,12 +33,16 @@ export async function syncMembers(db: Database, bus: Bus) {
   );
   const now = new Date().toISOString();
   const fields = 'login, name, avatar_url, role, public_repos, followers, github_since';
-  const before = JSON.stringify(db.prepare(`SELECT ${fields} FROM members ORDER BY handle`).all());
+  const state = () =>
+    JSON.stringify(db.prepare(`SELECT ${fields}, left_at FROM members ORDER BY handle`).all());
+  const before = state();
   const current = new Set(users.map((user) => user.login.toLowerCase()));
-  const removed = db
-    .prepare('SELECT handle, login FROM members')
-    .all()
-    .filter((row) => !current.has(row.handle as string))
+  const known = db.prepare('SELECT handle, login, left_at FROM members').all();
+  const here = new Set(
+    known.filter((row) => row.left_at === null).map((row) => row.handle as string),
+  );
+  const left = known
+    .filter((row) => here.has(row.handle as string) && !current.has(row.handle as string))
     .map((row) => row.login as string);
 
   transaction(db, () => {
@@ -44,7 +50,8 @@ export async function syncMembers(db: Database, bus: Bus) {
       `INSERT INTO members (handle, ${fields}, joined_at, synced_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (handle) DO UPDATE SET login = excluded.login, name = excluded.name,
          avatar_url = excluded.avatar_url, role = excluded.role, public_repos = excluded.public_repos,
-         followers = excluded.followers, github_since = excluded.github_since, synced_at = excluded.synced_at`,
+         followers = excluded.followers, github_since = excluded.github_since, synced_at = excluded.synced_at,
+         left_at = NULL`,
     );
     for (const user of users) {
       upsert.run(
@@ -60,25 +67,42 @@ export async function syncMembers(db: Database, bus: Bus) {
         now,
       );
     }
-    const remove = db.prepare('DELETE FROM members WHERE login = ?');
-    for (const login of removed) {
-      remove.run(login);
+    const leave = db.prepare('UPDATE members SET left_at = ? WHERE login = ?');
+    for (const login of left) {
+      leave.run(now, login);
     }
   });
 
-  if (
-    JSON.stringify(db.prepare(`SELECT ${fields} FROM members ORDER BY handle`).all()) !== before
-  ) {
+  if (state() !== before) {
     await bus.publish({
       topic: 'members',
       kind: 'members',
       public: true,
       summary: `Members synced: ${users.length} in the organisation`,
-      detail: { removed: removed.length },
+      detail: { left: left.length },
       at: now,
     });
   }
-  return removed;
+  if (known.length > 0) {
+    for (const row of db
+      .prepare(
+        `SELECT m.handle, coalesce(p.name, m.name) AS name FROM members m LEFT JOIN profiles p USING (handle)
+          WHERE m.left_at IS NULL AND coalesce(p.listed, 1) = 1 ORDER BY m.handle`,
+      )
+      .all()
+      .filter((member) => !here.has(member.handle as string))) {
+      await bus.record({
+        topic: 'members',
+        key: row.handle as string,
+        kind: 'member',
+        public: true,
+        summary: `${firstName(row.name as string)} joined`,
+        detail: { member: row.handle as string, change: 'joined' },
+        at: now,
+      });
+    }
+  }
+  return left;
 }
 
 export async function syncStats(db: Database, bus: Bus, repos: string[]) {
@@ -96,7 +120,7 @@ export async function syncStats(db: Database, bus: Bus, repos: string[]) {
        open_issues = excluded.open_issues, pushed_at = excluded.pushed_at,
        languages = excluded.languages, synced_at = excluded.synced_at`,
   );
-  const stars: Record<string, number> = {};
+  const projects = readProjects(db).filter((project) => project.listed);
   for (const repo of repos) {
     const [details, languages] = await Promise.all([
       github<GitHubRepository>(`/repos/${repo}`),
@@ -116,9 +140,6 @@ export async function syncStats(db: Database, bus: Bus, repos: string[]) {
       continue;
     }
     upsert.run(key, row.stars, row.forks, row.open_issues, row.pushed_at, row.languages, now);
-    if (before && before.stars !== row.stars) {
-      stars[key] = row.stars - (before.stars as number);
-    }
     await bus.publish({
       topic: 'stats',
       key,
@@ -128,15 +149,18 @@ export async function syncStats(db: Database, bus: Bus, repos: string[]) {
       detail: { stars: row.stars, forks: row.forks },
       at: now,
     });
-  }
-  if (Object.keys(stars).length > 0) {
-    await bus.record({
-      topic: 'stats',
-      kind: 'sync',
-      public: true,
-      summary: `Stars changed on ${Object.keys(stars).length} repositories`,
-      detail: { stars },
-      at: now,
-    });
+    const inRepo = projects.filter((project) => project.repo.toLowerCase() === key);
+    const project = inRepo.find((candidate) => !candidate.parent) ?? inRepo[0];
+    if (project && before && row.stars > (before.stars as number)) {
+      await bus.record({
+        topic: 'stats',
+        key: project.slug,
+        kind: 'star',
+        public: true,
+        summary: `${project.name} reached ${row.stars} ${row.stars === 1 ? 'star' : 'stars'}`,
+        detail: { project: project.slug, stars: row.stars },
+        at: now,
+      });
+    }
   }
 }

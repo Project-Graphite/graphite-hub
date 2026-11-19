@@ -6,6 +6,7 @@ import { config } from './config.ts';
 import { json, transaction, type Database } from './db.ts';
 import { github, githubText } from './github.ts';
 import { log } from './log.ts';
+import { archiveUndeployed, statusLine } from './projects.ts';
 
 export interface RegistryEntry {
   slug: string;
@@ -26,6 +27,12 @@ export interface RegistryEntry {
   deploy: { kind: 'compose' | 'pages'; host: string } | { kind: 'none' };
 }
 
+const INFRASTRUCTURE = ['parent', 'kind', 'repo', 'deploy', 'paths', 'releases'] as const;
+
+function infrastructure(entry: RegistryEntry) {
+  return JSON.stringify(INFRASTRUCTURE.map((key) => entry[key] ?? null));
+}
+
 export function validateEntries(schema: object, files: { name: string; text: string }[]) {
   const ajv = new Ajv2020({ allErrors: true });
   const valid = ajv.compile<RegistryEntry>(schema);
@@ -44,40 +51,63 @@ export function validateEntries(schema: object, files: { name: string; text: str
   return { entries, problems };
 }
 
-export function storedEntries(db: Database) {
-  return db
-    .prepare('SELECT entry FROM projects ORDER BY slug')
-    .all()
-    .map((row) => json<RegistryEntry>(row.entry));
-}
-
-export function applyEntries(db: Database, entries: RegistryEntry[], now: string) {
+export function applyEntries(db: Database, entries: RegistryEntry[], now: string, complete = true) {
   const existing = new Map(
     db
-      .prepare('SELECT slug, entry FROM projects')
+      .prepare('SELECT slug, entry, removed_at FROM projects')
       .all()
-      .map((row) => [row.slug as string, row.entry as string]),
+      .map((row) => [row.slug as string, row]),
   );
-  const incoming = new Map(entries.map((entry) => [entry.slug, JSON.stringify(entry)]));
-  const added = [...incoming.keys()].filter((slug) => !existing.has(slug));
-  const removed = [...existing.keys()].filter((slug) => !incoming.has(slug));
-  const changed = [...incoming].filter(
-    ([slug, entry]) => existing.has(slug) && existing.get(slug) !== entry,
-  );
+  const present = (slug: string) => existing.has(slug) && existing.get(slug)!.removed_at === null;
+  const incoming = new Set(entries.map((entry) => entry.slug));
+  const removed = complete
+    ? [...existing.keys()].filter((slug) => present(slug) && !incoming.has(slug))
+    : [];
   transaction(db, () => {
-    const upsert = db.prepare(
-      `INSERT INTO projects (slug, repo, entry, synced_at) VALUES (?, ?, ?, ?)
-       ON CONFLICT (slug) DO UPDATE SET repo = excluded.repo, entry = excluded.entry, synced_at = excluded.synced_at`,
+    const seed = db.prepare(
+      `INSERT INTO projects (slug, repo, entry, synced_at, name, summary, tags, status, listed, pin_order, showcase, owner, authors)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    );
+    const refresh = db.prepare(
+      'UPDATE projects SET repo = ?, entry = ?, synced_at = ?, removed_at = NULL WHERE slug = ?',
     );
     for (const entry of entries) {
-      upsert.run(entry.slug, entry.repo, incoming.get(entry.slug)!, now);
+      if (existing.has(entry.slug)) {
+        refresh.run(entry.repo, JSON.stringify(entry), now, entry.slug);
+      } else {
+        seed.run(
+          entry.slug,
+          entry.repo,
+          JSON.stringify(entry),
+          now,
+          entry.name,
+          entry.summary.trim(),
+          JSON.stringify(entry.tags ?? []),
+          entry.status,
+          entry.listed === false ? 0 : 1,
+          entry.pinned ? 0 : null,
+          entry.showcase ? JSON.stringify(entry.showcase) : null,
+          entry.owner,
+          JSON.stringify(entry.authors),
+        );
+      }
     }
-    const remove = db.prepare('DELETE FROM projects WHERE slug = ?');
+    const remove = db.prepare('UPDATE projects SET removed_at = ? WHERE slug = ?');
     for (const slug of removed) {
-      remove.run(slug);
+      remove.run(now, slug);
     }
   });
-  return { added, removed, changed: changed.map(([slug]) => slug) };
+  return {
+    added: entries.filter((entry) => !present(entry.slug)).map((entry) => entry.slug),
+    removed,
+    changed: entries
+      .filter(
+        (entry) =>
+          present(entry.slug) &&
+          infrastructure(json(existing.get(entry.slug)!.entry)) !== infrastructure(entry),
+      )
+      .map((entry) => entry.slug),
+  };
 }
 
 export async function syncRegistry(db: Database, bus: Bus) {
@@ -98,7 +128,9 @@ export async function syncRegistry(db: Database, bus: Bus) {
     log.warn({ problem }, 'registry entry skipped');
   }
   const now = new Date().toISOString();
-  const { added, removed, changed } = applyEntries(db, entries, now);
+  const seeded = db.prepare('SELECT 1 FROM projects').get() !== undefined;
+  const { added, removed, changed } = applyEntries(db, entries, now, problems.length === 0);
+  const archived = archiveUndeployed(db);
   if (added.length + removed.length + changed.length > 0) {
     await bus.record({
       topic: 'projects',
@@ -109,7 +141,30 @@ export async function syncRegistry(db: Database, bus: Bus) {
       at: now,
     });
   }
-  return entries;
+  const lines = [
+    ...(seeded
+      ? db
+          .prepare(
+            'SELECT slug, name FROM projects WHERE listed = 1 AND slug IN (SELECT value FROM json_each(?))',
+          )
+          .all(JSON.stringify(added))
+          .map((row) => ({ slug: row.slug as string, summary: `${row.name as string} was added` }))
+      : []),
+    ...archived
+      .filter((project) => project.listed)
+      .map(({ slug, name }) => ({ slug, summary: statusLine(name, 'archived') })),
+  ];
+  for (const { slug, summary } of lines) {
+    await bus.record({
+      topic: 'projects',
+      key: slug,
+      kind: 'project',
+      public: true,
+      summary,
+      detail: { project: slug },
+      at: now,
+    });
+  }
 }
 
 export function dispatchPlatformSync() {

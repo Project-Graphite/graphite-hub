@@ -3,6 +3,7 @@ import {
   blocksProblem,
   defaultBlocks,
   fieldsProblem,
+  PROFILE_FIELDS,
   Refused,
   shortLinkProblem,
   type Block,
@@ -12,6 +13,7 @@ import {
 } from '../app/profile.ts';
 import type { Bus } from './bus.ts';
 import { json, transaction, type Database } from './db.ts';
+import { projectSlugs } from './projects.ts';
 
 export interface ProfileVersion {
   id: number;
@@ -26,6 +28,16 @@ export interface ProfileChange {
 
 function withIds(blocks: Omit<Block, 'id'>[]): Block[] {
   return blocks.map((block, index) => ({ id: `${block.type}-${index}`, ...block }) as Block);
+}
+
+export function firstName(name: string) {
+  return name.split(' ')[0];
+}
+
+export function fieldsOf(profile: Profile) {
+  return Object.fromEntries(
+    PROFILE_FIELDS.map((key) => [key, profile[key] ?? null]),
+  ) as unknown as ProfileFields;
 }
 
 export function createProfiles(db: Database, bus: Bus) {
@@ -44,6 +56,7 @@ export function createProfiles(db: Database, bus: Bus) {
     const edited = Boolean(row?.edited_at);
     return {
       handle,
+      name: (row?.name as string | null) ?? null,
       alias: (row?.alias as string | null) ?? null,
       headline: (row?.headline as string | null) ?? null,
       bio: (row?.bio as string | null) ?? null,
@@ -58,12 +71,7 @@ export function createProfiles(db: Database, bus: Bus) {
 
   function taken(handle: string) {
     return {
-      slugs: new Set(
-        db
-          .prepare('SELECT slug FROM projects')
-          .all()
-          .map((row) => row.slug as string),
-      ),
+      slugs: projectSlugs(db),
       aliases: new Set(
         db
           .prepare('SELECT alias FROM profiles WHERE alias IS NOT NULL AND handle <> ?')
@@ -74,28 +82,41 @@ export function createProfiles(db: Database, bus: Bus) {
   }
 
   async function changed(handle: string, by: string, at: string) {
-    await bus.publish({
-      topic: 'profiles',
-      key: handle,
-      kind: 'profile',
-      public: true,
-      actor: by,
-      summary: `${handle}'s page changed`,
-      detail: { handle },
-      at,
-    });
+    const unannounced = db
+      .prepare(
+        `SELECT coalesce(p.name, m.name) AS name FROM members m LEFT JOIN profiles p USING (handle)
+          WHERE m.handle = ? AND m.left_at IS NULL AND coalesce(p.listed, 1) = 1 AND NOT EXISTS (
+            SELECT 1 FROM activity WHERE kind = 'member' AND ref = m.handle AND at >= ?
+               AND json_extract(detail, '$.change') = 'page')`,
+      )
+      .get(handle, at.slice(0, 10));
+    const event = { topic: 'profiles', key: handle, public: true, actor: by, at };
+    await (unannounced
+      ? bus.record({
+          ...event,
+          kind: 'member',
+          summary: `${firstName(unannounced.name as string)} updated their page`,
+          detail: { member: handle, change: 'page' },
+        })
+      : bus.publish({
+          ...event,
+          kind: 'profile',
+          summary: `${handle}'s page changed`,
+          detail: { handle },
+        }));
   }
 
   function write(profile: Profile, by: string, at: string, edited: boolean) {
     db.prepare(
-      `INSERT INTO profiles (handle, alias, headline, bio, accent, avatar_upload, cover_upload, listed, blocks, edited_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT (handle) DO UPDATE SET alias = excluded.alias, headline = excluded.headline,
+      `INSERT INTO profiles (handle, name, alias, headline, bio, accent, avatar_upload, cover_upload, listed, blocks, edited_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (handle) DO UPDATE SET name = excluded.name, alias = excluded.alias, headline = excluded.headline,
          bio = excluded.bio, accent = excluded.accent, avatar_upload = excluded.avatar_upload,
          cover_upload = excluded.cover_upload, listed = excluded.listed, blocks = excluded.blocks,
          edited_at = excluded.edited_at, updated_at = excluded.updated_at`,
     ).run(
       profile.handle,
+      profile.name,
       profile.alias,
       profile.headline,
       profile.bio,
@@ -117,19 +138,9 @@ export function createProfiles(db: Database, bus: Bus) {
 
   async function save(handle: string, change: ProfileChange, by: string) {
     const current = read(handle);
-    const { alias, headline, bio, accent, avatarUpload, coverUpload, listed } = {
-      ...current,
-      ...change.fields,
-    };
     const next: Profile = {
       ...current,
-      alias,
-      headline,
-      bio,
-      accent,
-      avatarUpload,
-      coverUpload,
-      listed,
+      ...fieldsOf({ ...current, ...change.fields }),
       blocks: change.blocks ?? current.blocks,
     };
     const uploads = uploadsOf(handle);
@@ -153,8 +164,12 @@ export function createProfiles(db: Database, bus: Bus) {
     save,
 
     handleForAlias(alias: string) {
-      return db.prepare('SELECT handle FROM profiles WHERE alias = ?').get(alias)?.handle as
-        string | undefined;
+      return db
+        .prepare(
+          `SELECT handle FROM profiles p WHERE alias = ?
+              AND NOT EXISTS (SELECT 1 FROM members m WHERE m.handle = p.handle AND m.left_at IS NOT NULL)`,
+        )
+        .get(alias)?.handle as string | undefined;
     },
 
     history(handle: string): ProfileVersion[] {
@@ -189,12 +204,7 @@ export function createProfiles(db: Database, bus: Bus) {
     },
 
     async revertTo(handle: string, profile: Profile, by: string) {
-      const { alias, headline, bio, accent, avatarUpload, coverUpload, listed, blocks } = profile;
-      return save(
-        handle,
-        { fields: { alias, headline, bio, accent, avatarUpload, coverUpload, listed }, blocks },
-        by,
-      );
+      return save(handle, { fields: fieldsOf(profile), blocks: profile.blocks }, by);
     },
 
     async reset(handle: string, by: string) {

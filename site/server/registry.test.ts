@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { applyEntries, storedEntries, validateEntries, type RegistryEntry } from './registry.ts';
+import { archiveUndeployed, readProjects } from './projects.ts';
+import { applyEntries, validateEntries, type RegistryEntry } from './registry.ts';
 import { memoryDatabase } from './testing.ts';
 
 const schema = {
@@ -52,24 +53,101 @@ describe('validateEntries', () => {
 });
 
 describe('applyEntries', () => {
-  it('reports added, changed and removed slugs and stores only the incoming set', () => {
+  const stored = (db: ReturnType<typeof memoryDatabase>) =>
+    db
+      .prepare('SELECT slug, name, removed_at IS NOT NULL AS removed FROM projects ORDER BY slug')
+      .all()
+      .map((row) => [row.slug, row.name, row.removed]);
+
+  it('seeds content on first sight, then reports added, changed and removed slugs and keeps what was removed', () => {
     const db = memoryDatabase();
     applyEntries(db, [entry('strata'), entry('tracker')], '2026-11-05T00:00:00.000Z');
 
     const diff = applyEntries(
       db,
-      [entry('strata', 'Strata renamed'), entry('pixelpocket')],
+      [
+        { ...entry('strata', 'Strata renamed'), repo: 'project-graphite/strata-app' },
+        entry('pixelpocket'),
+      ],
       '2026-11-05T01:00:00.000Z',
     );
 
     assert.deepEqual(diff, { added: ['pixelpocket'], removed: ['tracker'], changed: ['strata'] });
+    assert.deepEqual(stored(db), [
+      ['pixelpocket', 'A project', 0],
+      ['strata', 'A project', 0],
+      ['tracker', 'A project', 1],
+    ]);
     assert.deepEqual(
-      storedEntries(db).map((stored) => [stored.slug, stored.name]),
+      readProjects(db).map((project) => [project.slug, project.repo]),
       [
-        ['pixelpocket', 'A project'],
-        ['strata', 'Strata renamed'],
+        ['pixelpocket', 'project-graphite/pixelpocket'],
+        ['strata', 'project-graphite/strata-app'],
       ],
     );
+  });
+
+  it('counts a change of content in the registry as no change', () => {
+    const db = memoryDatabase();
+    applyEntries(db, [entry('strata')], '2026-11-05T00:00:00.000Z');
+    assert.deepEqual(
+      applyEntries(db, [entry('strata', 'Strata renamed')], '2026-11-05T01:00:00.000Z'),
+      { added: [], removed: [], changed: [] },
+    );
+  });
+
+  it('removes nothing when the listing had a problem', () => {
+    const db = memoryDatabase();
+    applyEntries(db, [entry('strata'), entry('tracker')], '2026-11-05T00:00:00.000Z');
+    assert.deepEqual(applyEntries(db, [entry('strata')], '2026-11-05T01:00:00.000Z', false), {
+      added: [],
+      removed: [],
+      changed: [],
+    });
+    assert.deepEqual(stored(db), [
+      ['strata', 'A project', 0],
+      ['tracker', 'A project', 0],
+    ]);
+  });
+
+  it('brings a returning slug back with the content it had', () => {
+    const db = memoryDatabase();
+    applyEntries(db, [entry('strata'), entry('tracker')], '2026-11-05T00:00:00.000Z');
+    db.prepare("UPDATE projects SET name = 'Edited on the site' WHERE slug = 'tracker'").run();
+    applyEntries(db, [entry('strata')], '2026-11-05T01:00:00.000Z');
+    assert.deepEqual(
+      readProjects(db).map((project) => project.slug),
+      ['strata'],
+    );
+    assert.deepEqual(
+      applyEntries(db, [entry('strata'), entry('tracker')], '2026-11-05T02:00:00.000Z'),
+      { added: ['tracker'], removed: [], changed: [] },
+    );
+    assert.deepEqual(stored(db), [
+      ['strata', 'A project', 0],
+      ['tracker', 'Edited on the site', 0],
+    ]);
+  });
+
+  it('trims the seeded summary and archives a live project the registry no longer deploys', () => {
+    const db = memoryDatabase();
+    applyEntries(
+      db,
+      [
+        {
+          ...entry('strata'),
+          summary: 'A summary that ends in a newline.\n',
+          deploy: { kind: 'compose', host: 'strata.project-graphite.com' },
+        },
+      ],
+      '2026-11-05T00:00:00.000Z',
+    );
+    assert.equal(readProjects(db)[0].summary, 'A summary that ends in a newline.');
+    assert.deepEqual(archiveUndeployed(db), []);
+    applyEntries(db, [entry('strata')], '2026-11-05T01:00:00.000Z');
+    assert.deepEqual(archiveUndeployed(db), [{ slug: 'strata', name: 'A project', listed: true }]);
+    assert.equal(readProjects(db)[0].status, 'archived');
+    assert.deepEqual(archiveUndeployed(db), []);
   });
 
   it('reports nothing when the registry did not change', () => {

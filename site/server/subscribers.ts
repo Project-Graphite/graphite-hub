@@ -14,7 +14,7 @@ import {
 } from '../app/subscribe.ts';
 import type { Directory } from '../app/types.ts';
 import type { Bus } from './bus.ts';
-import type { Database } from './db.ts';
+import { transaction, type Database } from './db.ts';
 import { digestFor, nextDigestAt, spreadDue } from './digest.ts';
 import { excerptOf, renderEmail, type EmailInput, type EmailPost } from './emails.ts';
 import type { Jobs } from './jobs.ts';
@@ -469,17 +469,20 @@ export function createSubscribers(
     queuePost(post: { id: string; author: string; project: string | null }) {
       const at = now();
       const perHour = deps.settings()['email.hourly'];
-      let queued = 0;
-      for (const subscriber of activeWith('each')) {
-        const scope = parseScope(subscriber.scope);
-        if (
-          scope &&
-          scopeMatches(scope, post) &&
-          sends.queue(subscriber.id, 'post', post.id, spreadDue(at, queued, perHour))
-        ) {
-          queued += 1;
+      const queued = transaction(db, () => {
+        let count = 0;
+        for (const subscriber of activeWith('each')) {
+          const scope = parseScope(subscriber.scope);
+          if (
+            scope &&
+            scopeMatches(scope, post) &&
+            sends.queue(subscriber.id, 'post', post.id, spreadDue(at, count, perHour))
+          ) {
+            count += 1;
+          }
         }
-      }
+        return count;
+      });
       if (queued > 0) {
         sends.arm(at);
       }
@@ -501,18 +504,21 @@ export function createSubscribers(
         return { skipped: true, queued: 0 };
       }
       const perHour = deps.settings()['email.hourly'];
-      let queued = 0;
-      for (const subscriber of activeWith('weekly')) {
-        if (
-          digestFor(subscriber.scope, posts).length > 0 &&
-          sends.queue(subscriber.id, 'digest', `${since}/${until}`, spreadDue(at, queued, perHour))
-        ) {
-          queued += 1;
+      const queued = transaction(db, () => {
+        let count = 0;
+        for (const subscriber of activeWith('weekly')) {
+          if (
+            digestFor(subscriber.scope, posts).length > 0 &&
+            sends.queue(subscriber.id, 'digest', `${since}/${until}`, spreadDue(at, count, perHour))
+          ) {
+            count += 1;
+          }
         }
-      }
-      db.prepare(
-        'INSERT INTO state (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value',
-      ).run(DIGEST_SINCE, until);
+        db.prepare(
+          'INSERT INTO state (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value',
+        ).run(DIGEST_SINCE, until);
+        return count;
+      });
       sends.arm(at);
       return { skipped: false, queued };
     },

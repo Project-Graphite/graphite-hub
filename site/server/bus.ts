@@ -1,4 +1,5 @@
 import type { Database } from './db.ts';
+import { log } from './log.ts';
 import type { Redis } from './redis.ts';
 
 export interface HubEvent {
@@ -14,68 +15,72 @@ export interface HubEvent {
 
 export interface Delivery {
   id?: string;
+  line?: number;
   event: HubEvent;
 }
 
 const STREAM = 'events';
 const STREAM_DAYS = 7;
 
-export function createBus(db: Database, redis: Redis, subscriber: Redis) {
+export function createBus(db: Database, redis: Redis) {
   const listeners = new Set<(delivery: Delivery) => void>();
   const insert = db.prepare(
     'INSERT INTO activity (kind, public, ref, actor, summary, detail, at) VALUES (?, ?, ?, ?, ?, ?, ?)',
   );
-  const assign = db.prepare('UPDATE activity SET seq = ? WHERE id = ?');
 
-  subscriber.on('pmessage', (_pattern: string, _channel: string, message: string) => {
-    const delivery = JSON.parse(message) as Delivery;
+  function dispatch(delivery: Delivery) {
     for (const listener of listeners) {
       listener(delivery);
     }
-  });
-  const ready = subscriber.psubscribe('topic:*');
-
-  async function send(delivery: Delivery) {
-    await redis.publish(`topic:${delivery.event.topic}`, JSON.stringify(delivery));
   }
 
   return {
-    ready,
     alive: () =>
       redis.ping().then(
         () => true,
         () => false,
       ),
     async record(event: HubEvent) {
-      const { lastInsertRowid } = insert.run(
-        event.kind,
-        event.public ? 1 : 0,
-        event.key ?? null,
-        event.actor ?? null,
-        event.summary,
-        JSON.stringify(event.detail),
-        event.at,
+      const line = Number(
+        insert.run(
+          event.kind,
+          event.public ? 1 : 0,
+          event.key ?? null,
+          event.actor ?? null,
+          event.summary,
+          JSON.stringify(event.detail),
+          event.at,
+        ).lastInsertRowid,
       );
-      const id = (await redis.xadd(
-        STREAM,
-        'MINID',
-        '~',
-        String(Date.now() - STREAM_DAYS * 86_400_000),
-        '*',
-        'event',
-        JSON.stringify(event),
-      )) as string;
-      assign.run(id, lastInsertRowid);
-      await send({ id, event });
-      return id;
+      const id = await redis
+        .xadd(
+          STREAM,
+          'MINID',
+          '~',
+          String(Date.now() - STREAM_DAYS * 86_400_000),
+          '*',
+          'event',
+          JSON.stringify(event),
+          'line',
+          String(line),
+        )
+        .catch((error: unknown) => {
+          log.warn({ err: error }, 'event kept out of the replay stream');
+          return null;
+        });
+      dispatch({ id: id ?? undefined, line, event });
     },
-    publish(event: HubEvent) {
-      return send({ event });
+    async publish(event: HubEvent) {
+      dispatch({ event });
     },
-    async since(id: string) {
-      const entries = await redis.xrange(STREAM, `(${id}`, '+');
+    async since(id: string): Promise<Delivery[]> {
+      const entries = await redis.xrange(STREAM, `(${id}`, '+').catch((error: unknown) => {
+        log.warn({ err: error }, 'replay stream not read');
+        return [];
+      });
       return entries.map(([entryId, fields]) => ({
         id: entryId,
+        line: fields[3] === undefined ? undefined : Number(fields[3]),
         event: JSON.parse(fields[1]) as HubEvent,
       }));
     },

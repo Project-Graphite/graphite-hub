@@ -3,12 +3,11 @@ import { Redis } from 'ioredis';
 export type { Redis };
 
 export function connectRedis(url: string) {
-  const command = new Redis(url, {
+  return new Redis(url, {
     maxRetriesPerRequest: 2,
     lazyConnect: false,
     commandTimeout: 2000,
   });
-  return { command, subscriber: command.duplicate() };
 }
 
 export async function slidingLimit(redis: Redis, key: string, max: number, windowMs: number) {

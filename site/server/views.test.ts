@@ -62,6 +62,28 @@ describe('views', () => {
     assert.equal(await setup(() => false).view(), 'limited');
   });
 
+  it('records one console line when an item passes a milestone, and none between', async () => {
+    const db = memoryDatabase();
+    const { bus, recorded } = recordingBus();
+    const views = createViews(db, fakeRedis(), bus, {
+      exists: () => true,
+      title: (kind, key) => (kind === 'project' ? 'Strata' : `“${key}”`),
+      allow: async () => true,
+    });
+    for (let visitor = 1; visitor <= 49; visitor += 1) {
+      await views.count({
+        kind: 'project',
+        key: 'strata',
+        address: `203.0.113.${visitor}`,
+        userAgent: CHROME,
+      });
+    }
+    assert.deepEqual(
+      recorded.map((event) => [event.kind, event.topic, event.summary, event.detail]),
+      [['milestone', 'projects', 'Strata passed 10 views', { project: 'strata', views: 10 }]],
+    );
+  });
+
   it('stores hashes only: no address, agent or visitor id in Redis', async () => {
     const { view, redis } = setup();
     await view();

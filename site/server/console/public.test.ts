@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { CONSOLE_KINDS, type ConsoleKind } from '../../app/console.ts';
 import type { HubEvent } from '../bus.ts';
 import { toPublicEvent } from './public.ts';
 
@@ -62,11 +63,18 @@ describe('toPublicEvent', () => {
     assertClean(projected);
   });
 
-  for (const [kind, detail] of Object.entries({
+  const DETAILS: Record<Exclude<ConsoleKind, 'deploy' | 'post'>, Record<string, unknown>> = {
     release: { project: 'strata', version: '1.2.0', counts: { added: 2, host: 'x' } },
     sync: { added: ['strata'], changed: [], removed: [], stars: { 'project-graphite/strata': 1 } },
-    uptime: { up: 5, total: 6, p95Ms: 120 },
-  })) {
+    health: { project: 'strata', ok: true, downMs: 240_000, up: 4, total: 4, p95Ms: 210 },
+    star: { project: 'strata', stars: 12 },
+    member: { member: 'omar-mohamed24', change: 'joined' },
+    project: { project: 'pixelpocket', status: 'live' },
+    wall: { name: 'Mona', body: 'Hello from Cairo' },
+    milestone: { project: 'strata', views: 100 },
+  };
+
+  for (const [kind, detail] of Object.entries(DETAILS)) {
     it(`never lets a forbidden field through on ${kind}`, () => {
       const projected = toPublicEvent(event(kind, detail));
       assert.ok(projected);
@@ -74,9 +82,29 @@ describe('toPublicEvent', () => {
     });
   }
 
+  it('has a projection for every kind the console shows', () => {
+    assert.deepEqual([...Object.keys(DETAILS), 'deploy', 'post'].sort(), [...CONSOLE_KINDS].sort());
+    for (const kind of CONSOLE_KINDS) {
+      assert.ok(toPublicEvent(event(kind, {})), `${kind} has no projection`);
+    }
+  });
+
+  it('keeps only what each new kind names', () => {
+    assert.deepEqual(toPublicEvent(event('health', DETAILS.health))?.detail, DETAILS.health);
+    assert.deepEqual(toPublicEvent(event('star', DETAILS.star))?.detail, DETAILS.star);
+    assert.deepEqual(toPublicEvent(event('member', DETAILS.member))?.detail, DETAILS.member);
+    assert.deepEqual(toPublicEvent(event('project', DETAILS.project))?.detail, DETAILS.project);
+    assert.deepEqual(toPublicEvent(event('wall', DETAILS.wall))?.detail, {});
+    assert.deepEqual(
+      toPublicEvent(event('milestone', DETAILS.milestone))?.detail,
+      DETAILS.milestone,
+    );
+  });
+
   it('hides private events and kinds without a projection', () => {
     assert.equal(toPublicEvent(event('deploy', { project: 'strata' }, false)), null);
     assert.equal(toPublicEvent(event('lifecycle', {})), null);
     assert.equal(toPublicEvent(event('error', {})), null);
+    assert.equal(toPublicEvent(event('uptime', { up: 5, total: 6, p95Ms: 120 })), null);
   });
 });

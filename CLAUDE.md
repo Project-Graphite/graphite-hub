@@ -75,6 +75,18 @@ Narrows the storage decision as built. Publishing, email and the digest are `job
 
 The `Changelog` workflow in `actions` tags the next version and publishes a GitHub Release, which the hub records from the organisation webhook; nothing writes release YAML into this repository. Message Lab's `.graphite.yml` is `archived` with `deploy: none`, so the hub stops probing a host that no longer exists; its code stays untouched.
 
+### 2026-11-18 The database is the source of truth; the registry seeds a project once
+
+Reverses "Registry of record stays in platform; the hub reads it and writes back". The hub's database owns everything the site shows about a project: name, summary, tags, status, listed, featured order, showcase, owner, authors, cover, accent, layout and feature. The registry entry fills them the first time a slug is seen and afterwards supplies infrastructure only: slug, repo, parent, kind, deploy, paths and releases. Edits are made on the site through `POST /edit` and are never written to a repository; write-back and the pending overlay are gone. Nothing outside the hub read those content fields, write-back was never exercised in production, and three layers deciding one field gave the editor two summaries. One invariant crosses the boundary: a `live` project whose entry stops deploying becomes `archived`. Removal is soft: a slug absent from a registry listing that validated cleanly, and a member who left the organisation, are marked and hidden, never deleted, and return intact. The platform App needs no write permission on project repositories.
+
+### 2026-11-18 The console reports changes, never steady state
+
+Narrows "The console is a projection of public events only". The hourly uptime summary filled the console with one repeated line, so health is recorded only when it changes: a host that fails two probes in a row, its recovery with the length of the outage, and one digest a day at 00:00 UTC. The console gained the kinds `health`, `star`, `member`, `project`, `wall` and `milestone`, each with its own projection in `toPublicEvent`; the `uptime` kind no longer projects. The reader folds a run of the same line into one with a count, and the activity line shows one line of each kind before it repeats a kind.
+
+### 2026-11-18 Events are delivered in process; Redis keeps the replay stream
+
+Narrows "SQLite for everything durable, Redis for everything ephemeral". With one replica, Redis pub/sub only carried an event from the process back to itself, and a Redis outage left a saved change unseen and reported as failed. `publish` and `record` now hand the event to the listeners in the process; `record` also appends it to the `events` stream, which exists so a reconnecting tab can replay what it missed. A console line is identified by its activity row, not by its stream id, so a line survives a failed append.
+
 ### 2026-11-04 Declined
 
 Trending lists, particle cursors, a second replica, a staging host, a threat model document, a dependency pinning bot, an accessibility gate in CI, passkey step-up for revealing secrets, restore drills on a schedule. Each was considered and not wanted now.
@@ -91,6 +103,10 @@ Trending lists, particle cursors, a second replica, a staging host, a threat mod
 ### Settings, not constants
 
 Any count, order, label, limit or paragraph that appears on a page is read from `site_settings` with a seeded default and validated on write. A component that hard-codes one of these is a bug.
+
+### Content in the database, infrastructure in the registry
+
+Project content is read through `server/projects.ts` and changed through `server/edit.ts`, which authorises, validates against a schema and keeps a version. The registry sync writes `entry`, `repo` and `synced_at` on a known slug and nothing else. A new editable field is a column the hub owns, never a registry field. Rows that other rows point at are removed softly: `projects.removed_at`, `members.left_at`.
 
 ### Live, not polled
 
@@ -143,5 +159,6 @@ Run the spec files that cover the change, never the whole suite. Every route mus
 
 - The Message Lab repository: its code is untouched; its registry entry is archived with no deploy.
 - Comments, mentions, trending, particle cursors, a second replica, staging: do not add them without a new decision record.
+- Writing to a project repository from the hub: write-back was removed; the hub reads GitHub and dispatches the platform sync, nothing more.
 - Release YAML, a committed registry file or a prerender step: they were removed with the static site; releases come from GitHub Releases and the registry from `platform/projects` at runtime.
 - Any address, token or secret value in this file, the README, or the docs: the organisation's repositories are public.

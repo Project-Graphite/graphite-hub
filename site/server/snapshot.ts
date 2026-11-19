@@ -1,69 +1,44 @@
-import type { Presentation } from '../app/presentation.ts';
 import { uploadUrl } from '../app/profile.ts';
-import { readPresentations } from './presentation.ts';
-import { readPending, type Pending } from './writeback.ts';
 import type { Directory, Member, MemberLink, Project, Release, StackGroup } from '../app/types.ts';
 import { compareVersions } from '../scripts/rules.mjs';
 import type { Bus } from './bus.ts';
 import { json, type Database } from './db.ts';
 import { readPublished } from './posts.ts';
-import { storedEntries, type RegistryEntry } from './registry.ts';
+import { readProjects, type ProjectRecord } from './projects.ts';
 import type { Settings } from './settings.ts';
 
 const TOPICS = new Set(['members', 'profiles', 'projects', 'releases', 'settings', 'posts']);
 
 type Block = { type: 'stack'; groups: StackGroup[] } | { type: 'links'; links: MemberLink[] };
 
-export function projectFromEntry(entry: RegistryEntry): Project {
+export function presentedProject(record: ProjectRecord): Project {
   return {
-    slug: entry.slug,
-    parent: entry.parent ?? null,
-    kind: entry.kind,
-    name: entry.name,
-    summary: entry.summary,
-    tags: entry.tags ?? [],
-    repo: entry.repo,
-    repoUrl: `https://github.com/${entry.repo}`,
-    owner: entry.owner,
-    authors: entry.authors,
-    status: entry.status,
-    pinned: entry.pinned ?? false,
-    showcase: entry.showcase ?? null,
-    url: entry.deploy.kind === 'none' ? null : `https://${entry.deploy.host}`,
-    path: entry.parent ? `/${entry.parent}/${entry.slug}` : `/${entry.slug}`,
-    coverUrl: null,
-    accent: null,
-    layout: 'window',
-    feature: { note: '', screenshotUrl: null, posts: [] },
-    pending: [],
-    pullRequest: null,
-  };
-}
-
-export function presentedProject(
-  entry: RegistryEntry,
-  presentation: Presentation | undefined,
-  pending: Pending | undefined,
-): Project {
-  const base = projectFromEntry(entry);
-  if (!presentation && !pending) {
-    return base;
-  }
-  return {
-    ...base,
-    summary: presentation?.summary ?? base.summary,
-    coverUrl: presentation?.coverUpload ? uploadUrl(presentation.coverUpload, 'cover') : null,
-    accent: presentation?.accent ?? null,
-    layout: presentation?.layout ?? 'window',
+    slug: record.slug,
+    parent: record.parent,
+    kind: record.kind,
+    name: record.name,
+    summary: record.summary,
+    tags: record.tags,
+    repo: record.repo,
+    repoUrl: `https://github.com/${record.repo}`,
+    owner: record.owner,
+    authors: record.authors,
+    status: record.status,
+    pinned: record.pinOrder !== null,
+    pinOrder: record.pinOrder,
+    showcase: record.showcase,
+    url: record.deploy.kind === 'none' ? null : `https://${record.deploy.host}`,
+    path: record.parent ? `/${record.parent}/${record.slug}` : `/${record.slug}`,
+    coverUrl: record.coverUpload ? uploadUrl(record.coverUpload, 'cover') : null,
+    accent: record.accent,
+    layout: record.layout,
     feature: {
-      note: presentation?.feature.note ?? '',
-      screenshotUrl: presentation?.feature.screenshot
-        ? uploadUrl(presentation.feature.screenshot, 'screenshot')
+      note: record.feature.note,
+      screenshotUrl: record.feature.screenshot
+        ? uploadUrl(record.feature.screenshot, 'screenshot')
         : null,
-      posts: presentation?.feature.posts ?? [],
+      posts: record.feature.posts,
     },
-    pending: Object.keys(pending?.fields ?? {}),
-    pullRequest: pending?.pullRequest ?? null,
   };
 }
 
@@ -83,9 +58,11 @@ export function accentsFor(handles: string[], chosen: Map<string, string>, palet
 function build(db: Database, palette: string[]): Directory {
   const rows = db
     .prepare(
-      `SELECT m.handle, m.login, m.name, m.avatar_url, m.public_repos, m.followers, m.github_since,
-              p.headline, p.bio, p.blocks, p.accent, p.alias, p.avatar_upload, p.cover_upload, p.listed
+      `SELECT m.handle, m.login, coalesce(p.name, m.name) AS name, m.avatar_url, m.public_repos,
+              m.followers, m.github_since, p.headline, p.bio, p.blocks, p.accent, p.alias,
+              p.avatar_upload, p.cover_upload, p.listed
          FROM members m LEFT JOIN profiles p USING (handle)
+        WHERE m.left_at IS NULL
         ORDER BY m.joined_at, m.handle`,
     )
     .all();
@@ -123,14 +100,9 @@ function build(db: Database, palette: string[]): Directory {
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const presentations = readPresentations(db);
-  const pending = readPending(db);
-  const projects = storedEntries(db)
-    .map((entry) => ({ ...entry, ...pending.get(entry.slug)?.fields }))
-    .filter((entry) => entry.listed !== false)
-    .map((entry) =>
-      presentedProject(entry, presentations.get(entry.slug), pending.get(entry.slug)),
-    );
+  const projects = readProjects(db)
+    .filter((project) => project.listed)
+    .map(presentedProject);
   const listed = new Set(projects.map((project) => project.slug));
 
   const releases = db

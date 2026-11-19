@@ -27,6 +27,7 @@ export interface Project {
   authors: string[];
   status: ProjectStatus;
   pinned: boolean;
+  pinOrder: number | null;
   showcase: ProjectShowcase | null;
   url: string | null;
   path: string;
@@ -34,8 +35,6 @@ export interface Project {
   accent: string | null;
   layout: 'window' | 'card';
   feature: { note: string; screenshotUrl: string | null; posts: string[] };
-  pending: string[];
-  pullRequest: string | null;
 }
 
 export interface MemberLink {
@@ -106,6 +105,7 @@ export interface ConsoleLine {
   at: string;
   summary: string;
   detail: Record<string, unknown>;
+  count?: number;
 }
 
 export type Day = 'up' | 'down' | 'none';
