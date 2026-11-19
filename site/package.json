@@ -6,7 +6,7 @@
     "dev": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/main.ts",
     "build": "react-router build",
     "start": "node --disable-warning=ExperimentalWarning server/main.ts",
-    "typecheck": "react-router typegen && tsc",
+    "typecheck": "react-router typegen --mode development && tsc",
     "lint": "eslint .",
     "format:check": "prettier --check .",
     "test": "node --env-file=server/test.env --disable-warning=ExperimentalWarning --test \"server/**/*.test.ts\" \"scripts/*.test.mjs\"",

@@ -3,6 +3,7 @@ import { createRequestHandler } from '@react-router/express';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { RouterContextProvider, type RouterContext, type ServerBuild } from 'react-router';
 import type { Hub } from '../app/context.ts';
+import { publicDirectory } from '../app/model.ts';
 import type { Auth } from './auth.ts';
 import type { Bus } from './bus.ts';
 import { config } from './config.ts';
@@ -10,7 +11,7 @@ import type { Database } from './db.ts';
 import { recordDeploy, validReport } from './deploys.ts';
 import { clientError, describe, httpStatus, type Capture } from './errors.ts';
 import { validSignature } from './github.ts';
-import { contentSecurityPolicy, securityHeaders } from './headers.ts';
+import { contentSecurityPolicy, securityHeaders, unslashed } from './headers.ts';
 import { createVerifier } from './internal.ts';
 import type { Live } from './live.ts';
 import { log } from './log.ts';
@@ -194,6 +195,8 @@ export function createApp(
     response.json(metrics.snapshot(live.connections));
   });
 
+  app.use(unslashed);
+  app.use(auth.gate);
   app.use((request, response, next) => {
     const path = request.path.replace(/(.)\/$/, '$1');
     const target = MOVED[path];
@@ -239,6 +242,7 @@ export function createApp(
       immutable: true,
       maxAge: '1y',
       index: false,
+      redirect: false,
       dotfiles: 'deny',
       setHeaders: (response) => response.setHeader('Content-Disposition', 'inline'),
     }),
@@ -249,9 +253,18 @@ export function createApp(
   } else {
     app.use(
       '/assets',
-      express.static('build/client/assets', { immutable: true, maxAge: '1y', index: false }),
+      express.static('build/client/assets', {
+        immutable: true,
+        maxAge: '1y',
+        index: false,
+        redirect: false,
+      }),
     );
-    app.use(express.static('build/client', { maxAge: '1h', index: false }));
+    app.use(
+      '/.well-known',
+      express.static('build/client/.well-known', { maxAge: '1h', index: false, redirect: false }),
+    );
+    app.use(express.static('build/client', { maxAge: '1h', index: false, redirect: false }));
   }
 
   app.all(
@@ -270,7 +283,7 @@ export function createApp(
         context.set(
           (build.entry.module as unknown as { hubContext: RouterContext<Hub> }).hubContext,
           {
-            directory: snapshot.get(),
+            directory: signedIn ? snapshot.get() : publicDirectory(snapshot.get()),
             settings: settings.get(),
             reads,
             admin,

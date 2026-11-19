@@ -4,16 +4,17 @@ import { day } from '../format';
 import { useHub } from '../hub';
 import { changelogPath, compareUrl, releaseTitle } from '../model';
 import { useSpotlight } from '../motion/motion';
-import type { Release } from '../types';
+import type { Release, ReleaseGroup } from '../types';
 import { accentStyle } from './kit/basics';
 import { CHANGE_COLOR, ChangeMix } from './kit/releases';
 
 interface Props {
   release: Release;
+  groups: ReleaseGroup[];
   showProject: boolean;
 }
 
-export default function ReleaseCard({ release, showProject }: Props) {
+export default function ReleaseCard({ release, groups, showProject }: Props) {
   const { memberByHandle, projectBySlug } = useHub();
   const spot = useSpotlight<HTMLElement>();
   const project = projectBySlug(release.project)!;
@@ -57,7 +58,7 @@ export default function ReleaseCard({ release, showProject }: Props) {
             {paragraph}
           </p>
         ))}
-        {release.groups.map((group) => (
+        {groups.map((group) => (
           <section key={group.type} className="group">
             <h4>
               <i style={{ '--c': CHANGE_COLOR[group.type] } as CSSProperties} />

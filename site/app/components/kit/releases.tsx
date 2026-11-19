@@ -31,19 +31,11 @@ interface HistoryProps {
 export function ChangeMix({ release }: { release: Release }) {
   return (
     <span className="mix" aria-hidden="true">
-      {release.groups.length === 0 ? (
+      {release.changes.length === 0 ? (
         <i />
       ) : (
-        release.groups.map((group) => (
-          <i
-            key={group.type}
-            style={
-              {
-                '--n': group.changes.length,
-                '--c': CHANGE_COLOR[group.type],
-              } as CSSProperties
-            }
-          />
+        release.changes.map(({ type, count }) => (
+          <i key={type} style={{ '--n': count, '--c': CHANGE_COLOR[type] } as CSSProperties} />
         ))
       )}
     </span>
@@ -63,7 +55,7 @@ function Node({
 }) {
   const spot = useSpotlight<HTMLAnchorElement>();
   const name = project?.name ?? release.project;
-  const changes = release.groups.reduce((sum, group) => sum + group.changes.length, 0);
+  const changes = release.changes.reduce((sum, { count }) => sum + count, 0);
   return (
     <li style={accentStyle(accent)}>
       <Link

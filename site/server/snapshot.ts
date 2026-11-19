@@ -1,5 +1,13 @@
 import { uploadUrl } from '../app/profile.ts';
-import type { Directory, Member, MemberLink, Project, Release, StackGroup } from '../app/types.ts';
+import type {
+  Directory,
+  Member,
+  MemberLink,
+  Project,
+  Release,
+  ReleaseGroup,
+  StackGroup,
+} from '../app/types.ts';
 import { compareVersions } from '../scripts/rules.mjs';
 import type { Bus } from './bus.ts';
 import { json, type Database } from './db.ts';
@@ -109,17 +117,21 @@ function build(db: Database, palette: string[]): Directory {
     .prepare('SELECT * FROM releases')
     .all()
     .filter((row) => listed.has(row.project as string))
-    .map((row): Release => ({
-      id: row.id as string,
-      project: row.project as string,
-      version: row.version as string,
-      tag: row.tag as string | null,
-      previous: row.previous as string | null,
-      date: row.date as string,
-      title: row.title as string | null,
-      summary: row.summary as string | null,
-      groups: json(row.groups),
-    }))
+    .map((row): Release => {
+      const groups = json<ReleaseGroup[]>(row.groups);
+      return {
+        id: row.id as string,
+        project: row.project as string,
+        version: row.version as string,
+        tag: row.tag as string | null,
+        previous: row.previous as string | null,
+        date: row.date as string,
+        title: row.title as string | null,
+        summary: row.summary as string | null,
+        changes: groups.map(({ type, changes }) => ({ type, count: changes.length })),
+        firstChange: groups[0]?.changes[0]?.text ?? null,
+      };
+    })
     .sort(
       (a, b) =>
         b.date.localeCompare(a.date) ||

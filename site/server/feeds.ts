@@ -15,6 +15,7 @@ export interface FeedSource {
   description: string;
   siteUrl: string;
   feedUrl: string;
+  builtAt: string;
   entries: FeedEntry[];
 }
 
@@ -35,10 +36,13 @@ export function escapeXml(value: string) {
   });
 }
 
-const latest = (entries: FeedEntry[], fallback: string) =>
-  entries.reduce((last, entry) => (entry.updatedAt > last ? entry.updatedAt : last), fallback);
+const latest = (entries: FeedEntry[], builtAt: string) =>
+  entries
+    .map((entry) => entry.updatedAt)
+    .sort()
+    .at(-1) ?? builtAt;
 
-export function rss({ title, description, siteUrl, feedUrl, entries }: FeedSource) {
+export function rss({ title, description, siteUrl, feedUrl, builtAt, entries }: FeedSource) {
   const items = entries.map((entry) =>
     [
       '    <item>',
@@ -61,7 +65,7 @@ export function rss({ title, description, siteUrl, feedUrl, entries }: FeedSourc
     `    <link>${escapeXml(siteUrl)}</link>`,
     `    <description>${escapeXml(description)}</description>`,
     '    <language>en</language>',
-    `    <lastBuildDate>${new Date(latest(entries, new Date(0).toISOString())).toUTCString()}</lastBuildDate>`,
+    `    <lastBuildDate>${new Date(latest(entries, builtAt)).toUTCString()}</lastBuildDate>`,
     `    <atom:link href="${escapeXml(feedUrl)}" rel="self" type="application/rss+xml"/>`,
     ...items,
     '  </channel>',
@@ -70,7 +74,7 @@ export function rss({ title, description, siteUrl, feedUrl, entries }: FeedSourc
   ].join('\n');
 }
 
-export function atom({ title, description, siteUrl, feedUrl, entries }: FeedSource) {
+export function atom({ title, description, siteUrl, feedUrl, builtAt, entries }: FeedSource) {
   const items = entries.map((entry) =>
     [
       '  <entry>',
@@ -92,7 +96,7 @@ export function atom({ title, description, siteUrl, feedUrl, entries }: FeedSour
     `  <id>${escapeXml(siteUrl)}</id>`,
     `  <title>${escapeXml(title)}</title>`,
     `  <subtitle>${escapeXml(description)}</subtitle>`,
-    `  <updated>${latest(entries, new Date(0).toISOString())}</updated>`,
+    `  <updated>${latest(entries, builtAt)}</updated>`,
     `  <link rel="alternate" type="text/html" href="${escapeXml(siteUrl)}"/>`,
     `  <link rel="self" type="application/atom+xml" href="${escapeXml(feedUrl)}"/>`,
     ...items,

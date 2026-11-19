@@ -67,7 +67,8 @@ export function accessTo(post: Pick<Post, 'author' | 'editors'>, viewer: Viewer)
 export function readPublished(db: Database, pathOf: (author: string) => string | undefined) {
   return db
     .prepare(
-      `SELECT id, slug, title, summary, author, project, tags, cover_upload, published_at, reading_minutes
+      `SELECT id, slug, title, summary, author, project, tags, cover_upload, published_at,
+              max(updated_at, published_at) AS updated_at, reading_minutes
          FROM posts WHERE status = 'published' ORDER BY published_at DESC, id`,
     )
     .all()
@@ -85,6 +86,7 @@ export function readPublished(db: Database, pathOf: (author: string) => string |
               tags: json(row.tags),
               coverUrl: row.cover_upload ? uploadUrl(row.cover_upload as string, 'cover') : null,
               publishedAt: row.published_at as string,
+              updatedAt: row.updated_at as string,
               readingMinutes: row.reading_minutes as number,
               path: postPath(authorPath, row.slug as string),
             },
@@ -455,6 +457,15 @@ export function createPosts(
 
     html(id: string) {
       return db.prepare('SELECT html FROM posts WHERE id = ?').get(id)?.html as string | null;
+    },
+
+    bodies(ids: string[]) {
+      return new Map(
+        db
+          .prepare('SELECT id, html FROM posts WHERE id IN (SELECT value FROM json_each(?))')
+          .all(JSON.stringify(ids))
+          .map((row) => [row.id as string, row.html as string | null]),
+      );
     },
 
     bySlug(author: string, slug: string) {

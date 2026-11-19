@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { data, Link, redirect, useFetcher } from 'react-router';
+import { data, Link, redirect, useFetcher, useLoaderData } from 'react-router';
 import type { Route } from './+types/admin';
 import { Avatar, Band, Button, Panel } from '../components/kit/basics';
 import { Confirm, Segmented, Sortable, Switch } from '../components/kit/controls';
@@ -43,6 +43,7 @@ export function loader({ context, request }: Route.LoaderArgs) {
     waiting: hub.messages.queue().length,
     history: key && isSettingKey(key) ? { key, versions: hub.admin.history(key) } : null,
     email: hub.subscribers.overview(),
+    settings: hub.settings,
   };
 }
 
@@ -318,7 +319,7 @@ function SettingRow({
   csrf: string;
   history: Versions | null;
 }) {
-  const stored = useRoot()!.settings[settingKey];
+  const stored = useLoaderData<typeof loader>().settings[settingKey];
   const setting: Setting = SETTINGS[settingKey];
   const [draft, setDraft] = useState<unknown>(stored);
   const [base, setBase] = useState<unknown>(stored);
@@ -457,7 +458,7 @@ const EMAIL_KINDS = [
 ] as const;
 
 function EmailStudio({ csrf, testTo }: { csrf: string; testTo: string }) {
-  const settings = useRoot()!.settings;
+  const settings = useLoaderData<typeof loader>().settings;
   const [kind, setKind] = useState<(typeof EMAIL_KINDS)[number][0]>('post');
   const test = useFetcher<typeof action>();
   const version = JSON.stringify(

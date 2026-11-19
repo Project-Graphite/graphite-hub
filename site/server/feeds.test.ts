@@ -7,6 +7,7 @@ const source: FeedSource = {
   description: 'Posts by the members.',
   siteUrl: 'https://project-graphite.com/blog/',
   feedUrl: 'https://project-graphite.com/blog/feed.xml',
+  builtAt: '2026-11-18T09:00:00.000Z',
   entries: [
     {
       id: 'p1',
@@ -90,7 +91,15 @@ describe('feeds', () => {
     assert.match(xml, /<category term="hub"\/>/);
   });
 
-  it('dates an empty feed at the epoch rather than now', () => {
-    assert.match(atom({ ...source, entries: [] }), /<updated>1970-01-01T00:00:00\.000Z<\/updated>/);
+  it('dates an empty feed at the build time rather than the epoch or now', () => {
+    assert.match(atom({ ...source, entries: [] }), /<updated>2026-11-18T09:00:00\.000Z<\/updated>/);
+    assert.match(
+      rss({ ...source, entries: [] }),
+      /<lastBuildDate>Wed, 18 Nov 2026 09:00:00 GMT<\/lastBuildDate>/,
+    );
+  });
+
+  it('dates a feed with entries at its newest entry, not at the build time', () => {
+    assert.match(rss(source), /<lastBuildDate>Fri, 06 Nov 2026 11:00:00 GMT<\/lastBuildDate>/);
   });
 });

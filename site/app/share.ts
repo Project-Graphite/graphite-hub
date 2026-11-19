@@ -48,6 +48,22 @@ export function shareCard(
       accent: writer?.accent ?? accents[0],
     };
   }
+  const logged = model.changelogOf(path);
+  if (logged) {
+    const releases =
+      'handle' in logged ? model.releasesOwnedBy(logged) : model.releasesForProject(logged);
+    return {
+      label: 'changelog',
+      title: `${logged.name} changelog`,
+      subtitle: releases[0]
+        ? `${releases.length} ${releases.length === 1 ? 'release' : 'releases'} · latest v${releases[0].version}`
+        : 'no releases yet',
+      accent:
+        'handle' in logged
+          ? logged.accent
+          : (model.memberByHandle(logged.owner)?.accent ?? accents[0]),
+    };
+  }
   const blogOf = path.match(/^(.+)\/blog$/)?.[1];
   const writer = blogOf ? model.resolve(blogOf).member : undefined;
   if (writer) {

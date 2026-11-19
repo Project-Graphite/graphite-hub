@@ -5,6 +5,7 @@ import { Page } from '../components/Shell';
 import { Link } from 'react-router';
 import type { Route } from './+types/member-changelog';
 import Timeline from '../components/Timeline';
+import { hubContext } from '../context';
 import { plural } from '../format';
 import { found, modelFrom, useHub } from '../hub';
 import { changelogPath } from '../model';
@@ -13,7 +14,14 @@ import { topicsFor } from '../topics';
 export const handle = topicsFor('member-changelog');
 
 export function loader({ context, params }: Route.LoaderArgs) {
-  return { handle: found(modelFrom(context).memberByHandle(params.handle)).handle };
+  const model = modelFrom(context);
+  const member = found(model.memberByHandle(params.handle));
+  return {
+    handle: member.handle,
+    groups: context
+      .get(hubContext)
+      .reads.releaseGroups(model.releasesOwnedBy(member).map((release) => release.id)),
+  };
 }
 
 export default function MemberChangelog({ loaderData }: Route.ComponentProps) {
@@ -56,7 +64,7 @@ export default function MemberChangelog({ loaderData }: Route.ComponentProps) {
           )}
         </PageHeader>
 
-        <Timeline releases={releases} showProject />
+        <Timeline releases={releases} groups={loaderData.groups} showProject />
       </div>
     </Page>
   );

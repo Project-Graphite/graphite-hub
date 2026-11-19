@@ -20,6 +20,7 @@ export default function handleRequest(
   routerContext: EntryContext,
   loadContext: RouterContextProvider,
 ) {
+  responseHeaders.set('Cache-Control', 'no-cache');
   if (request.method.toUpperCase() === 'HEAD') {
     return new Response(null, { status: responseStatusCode, headers: responseHeaders });
   }

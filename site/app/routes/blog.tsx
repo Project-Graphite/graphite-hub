@@ -28,11 +28,6 @@ export function loader({ context }: Route.LoaderArgs) {
   };
 }
 
-export const links = () => [
-  { rel: 'alternate', type: 'application/rss+xml', title: 'RSS', href: '/blog/feed.xml' },
-  { rel: 'alternate', type: 'application/atom+xml', title: 'Atom', href: '/blog/atom.xml' },
-];
-
 export default function Blog({ loaderData }: Route.ComponentProps) {
   const hub = useHub();
   const settings = useRoot()!.settings;

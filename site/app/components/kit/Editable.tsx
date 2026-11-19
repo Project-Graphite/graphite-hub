@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFetcher, useSearchParams } from 'react-router';
 import { useRoot } from '../../hub';
-import { defaults, SETTINGS, type SettingKey } from '../../settings';
+import { defaults, SETTINGS, type PublicSettingKey } from '../../settings';
 
 type TextKey = {
-  [K in SettingKey]: (typeof SETTINGS)[K]['kind'] extends 'text' ? K : never;
-}[SettingKey];
+  [K in PublicSettingKey]: (typeof SETTINGS)[K]['kind'] extends 'text' ? K : never;
+}[PublicSettingKey];
 
 export function useEditing() {
   const root = useRoot();

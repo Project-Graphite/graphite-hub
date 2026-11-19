@@ -43,7 +43,7 @@ export function search(directory: Directory, query: string, limit = 20): Hit[] {
       })),
     ...directory.releases.flatMap((release): Hit[] => {
       const project = model.projectBySlug(release.project);
-      const line = release.title ?? release.summary ?? release.groups[0]?.changes[0]?.text ?? '';
+      const line = release.title ?? release.summary ?? release.firstChange ?? '';
       return project && matches(project.name, `v${release.version}`, line)
         ? [
             {

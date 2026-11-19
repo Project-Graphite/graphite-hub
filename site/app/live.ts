@@ -1,6 +1,12 @@
 import { useEffect, useEffectEvent, useSyncExternalStore } from 'react';
-import { useMatches, useRevalidator } from 'react-router';
-import { revalidates, subscription, type LiveHandle } from './topics';
+import { useMatches, useRevalidator, type ShouldRevalidateFunctionArgs } from 'react-router';
+import {
+  changesRoot,
+  followsDirectory,
+  revalidates,
+  subscription,
+  type LiveHandle,
+} from './topics';
 import type { ConsoleLine, Presence } from './types';
 
 const COALESCE_MS = 100;
@@ -161,6 +167,24 @@ export function useLiveMessages(listener: (message: LiveMessage) => void) {
   }, []);
 }
 
+let round: { topics: ReadonlySet<string> | null } | null = null;
+let directoryFollowed = true;
+
+export function directoryIsFollowed() {
+  return directoryFollowed;
+}
+
+export function shouldRevalidateRoot({
+  currentUrl,
+  nextUrl,
+  formMethod,
+  defaultShouldRevalidate,
+}: ShouldRevalidateFunctionArgs) {
+  return round?.topics && !formMethod && currentUrl.href === nextUrl.href
+    ? [...round.topics].some(changesRoot)
+    : defaultShouldRevalidate;
+}
+
 export function useLive() {
   const matches = useMatches();
   const live = subscription(
@@ -169,46 +193,83 @@ export function useLive() {
   );
   const topics = live.topics.join(',');
   const { revalidate } = useRevalidator();
-  const refresh = useEffectEvent(() => revalidate());
+  const refresh = useEffectEvent((fired: string[] | null) => {
+    const mine = {
+      topics:
+        fired === null || round?.topics === null
+          ? null
+          : new Set([...(round?.topics ?? []), ...fired]),
+    };
+    round = mine;
+    void revalidate().finally(() => {
+      if (round === mine) {
+        round = null;
+      }
+    });
+  });
 
   useEffect(() => {
     if (!topics) {
       return;
     }
+    directoryFollowed = followsDirectory(topics.split(','));
     reading.set(new Map());
     editing.set(new Map());
     const query = new URLSearchParams({ topics });
     if (live.reading) {
       query.set('reading', live.reading);
     }
-    const source = new EventSource(`/live?${query}`);
+    let source: EventSource | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let fired: string[] = [];
     let dropped = false;
-    source.onopen = () => {
-      connection.set('live');
-      if (dropped) {
-        dropped = false;
-        refresh();
+    const connect = () => {
+      source = new EventSource(`/live?${query}`);
+      source.onopen = () => {
+        connection.set('live');
+        if (dropped) {
+          dropped = false;
+          refresh(null);
+        }
+      };
+      source.onerror = () => {
+        dropped = true;
+        connection.set('reconnecting');
+      };
+      source.onmessage = (event: MessageEvent<string>) => {
+        const message = { ...JSON.parse(event.data), id: event.lastEventId } as LiveMessage;
+        patch(message);
+        for (const listener of listeners) {
+          listener(message);
+        }
+        if (revalidates(message.topic)) {
+          fired.push(message.topic);
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            refresh(fired);
+            fired = [];
+          }, COALESCE_MS);
+        }
+      };
+    };
+    const onHide = () => {
+      source?.close();
+      source = undefined;
+    };
+    const onShow = (event: PageTransitionEvent) => {
+      if (event.persisted && !source) {
+        connect();
+        refresh(null);
       }
     };
-    source.onerror = () => {
-      dropped = true;
-      connection.set('reconnecting');
-    };
-    source.onmessage = (event: MessageEvent<string>) => {
-      const message = { ...JSON.parse(event.data), id: event.lastEventId } as LiveMessage;
-      patch(message);
-      for (const listener of listeners) {
-        listener(message);
-      }
-      if (revalidates(message.topic)) {
-        clearTimeout(timer);
-        timer = setTimeout(refresh, COALESCE_MS);
-      }
-    };
+    connect();
+    addEventListener('pagehide', onHide);
+    addEventListener('pageshow', onShow);
     return () => {
       clearTimeout(timer);
-      source.close();
+      removeEventListener('pagehide', onHide);
+      removeEventListener('pageshow', onShow);
+      source?.close();
       connection.set('live');
     };
   }, [topics, live.reading]);

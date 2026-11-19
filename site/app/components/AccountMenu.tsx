@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useRoot } from '../hub';
 import { accentStyle } from './kit/basics';
@@ -116,22 +116,8 @@ export default function AccountMenu() {
       ]
     : [];
 
-  let avatar: ReactNode;
-  if (viewer) {
-    avatar = (
-      <span className="avatar xs" style={accentStyle(member?.accent)}>
-        <img src={viewer.avatarUrl} alt="" width={20} height={20} />
-      </span>
-    );
-  } else {
-    avatar = (
-      <span className="avatar xs guest">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5}>
-          <circle cx="10" cy="7" r="3.25" />
-          <path d="M3.5 17.5a6.5 6.5 0 0 1 13 0" />
-        </svg>
-      </span>
-    );
+  if (!viewer) {
+    return null;
   }
 
   return (
@@ -142,57 +128,49 @@ export default function AccountMenu() {
         className="account-button"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-controls="account-menu"
-        aria-label={viewer ? `Signed in as ${viewer.login}` : 'Account'}
+        aria-controls={open ? 'account-menu' : undefined}
+        aria-label={`Account menu, signed in as ${viewer.login}`}
         onClick={() => setOpen(!open)}
       >
-        {avatar}
+        <span className="avatar xs" style={accentStyle(member?.accent)}>
+          <img src={viewer.avatarUrl} alt="" width={20} height={20} />
+        </span>
       </button>
       {open && (
-        <div ref={menu} id="account-menu" role="menu" className="menu">
-          {viewer ? (
+        <div
+          ref={menu}
+          id="account-menu"
+          role="menu"
+          aria-label={`Account, ${member?.name ?? viewer.login}`}
+          className="menu"
+        >
+          <div className="menu-head">
+            <strong>{member?.name ?? viewer.login}</strong>
+            <span>
+              @{viewer.login}
+              {viewer.owner && ' · owner'}
+            </span>
+          </div>
+          {mine.length > 0 && (
             <>
-              <div className="menu-head">
-                <strong>{member?.name ?? viewer.login}</strong>
-                <span>
-                  @{viewer.login}
-                  {viewer.owner && ' · owner'}
-                </span>
-              </div>
-              {mine.length > 0 && (
-                <>
-                  <hr />
-                  <Group entries={mine} close={close} />
-                </>
-              )}
-              {owner.length > 0 && (
-                <>
-                  <hr />
-                  <Group entries={owner} close={close} />
-                </>
-              )}
               <hr />
-              <Item to="/status" label="status" close={close} />
-              <form method="post" action="/auth/sign-out">
-                <input type="hidden" name="csrf" value={root?.csrf ?? ''} />
-                <button type="submit" role="menuitem" tabIndex={-1}>
-                  sign out
-                </button>
-              </form>
-            </>
-          ) : (
-            <>
-              <a
-                role="menuitem"
-                tabIndex={-1}
-                href={`/auth/sign-in?return=${encodeURIComponent(pathname)}`}
-              >
-                sign in
-              </a>
-              <hr />
-              <Item to="/status" label="status" close={close} />
+              <Group entries={mine} close={close} />
             </>
           )}
+          {owner.length > 0 && (
+            <>
+              <hr />
+              <Group entries={owner} close={close} />
+            </>
+          )}
+          <hr />
+          <Item to="/status" label="status" close={close} />
+          <form method="post" action="/auth/sign-out">
+            <input type="hidden" name="csrf" value={root?.csrf ?? ''} />
+            <button type="submit" role="menuitem" tabIndex={-1}>
+              sign out
+            </button>
+          </form>
         </div>
       )}
     </div>

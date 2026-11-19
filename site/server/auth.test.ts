@@ -63,6 +63,89 @@ describe('the current session', () => {
   });
 });
 
+describe('the ?graphite gate', () => {
+  const session: Session = {
+    login: 'AmrMsCLL',
+    owner: true,
+    avatarUrl: 'https://avatars.githubusercontent.com/u/1',
+    token: 'sealed',
+    csrf: 'csrf',
+    createdAt: '2026-11-18T00:00:00.000Z',
+    checkedAt: Date.now(),
+  };
+  const { gate } = createAuth(
+    { read: async (id: string | undefined) => (id ? session : undefined) } as unknown as Sessions,
+    {} as Redis,
+  );
+
+  async function visit(url: string, { signedIn = false, method = 'GET' } = {}) {
+    const seen = { status: 0, location: '', cache: '', passed: false };
+    await gate(
+      {
+        method,
+        originalUrl: url,
+        path: url.split('?')[0],
+        headers: signedIn ? { cookie: 'hub_session=abc' } : {},
+      } as never,
+      {
+        setHeader: (_name: string, value: string) => {
+          seen.cache = value;
+        },
+        redirect: (status: number, location: string) => Object.assign(seen, { status, location }),
+      } as never,
+      () => {
+        seen.passed = true;
+      },
+    );
+    return seen;
+  }
+
+  it('sends a visitor to sign in and back to the address without the parameter', async () => {
+    assert.deepEqual(await visit('/strata?graphite'), {
+      status: 302,
+      location: '/auth/sign-in?return=/strata',
+      cache: 'no-store',
+      passed: false,
+    });
+    assert.equal(
+      (await visit('/members/amrmscll?edit&graphite=1')).location,
+      '/auth/sign-in?return=/members/amrmscll%3Fedit',
+    );
+    assert.equal((await visit('/?graphite')).location, '/auth/sign-in?return=/');
+  });
+
+  it('sends a signed-in member to the clean address', async () => {
+    assert.deepEqual(await visit('/strata?graphite', { signedIn: true }), {
+      status: 302,
+      location: '/strata',
+      cache: 'no-store',
+      passed: false,
+    });
+    assert.equal(
+      (await visit('/strata?graphite&edit', { signedIn: true })).location,
+      '/strata?edit',
+    );
+  });
+
+  it('never redirects off the site', async () => {
+    assert.equal((await visit('//evil.example?graphite')).location, '/auth/sign-in?return=/');
+    assert.equal((await visit('//evil.example?graphite', { signedIn: true })).location, '/');
+    assert.equal((await visit('/\\evil.example?graphite', { signedIn: true })).location, '/');
+  });
+
+  it('leaves every other request alone', async () => {
+    for (const url of [
+      '/strata',
+      '/search?q=graphite',
+      '/strata?graphites',
+      '/strata?x=graphite',
+    ]) {
+      assert.ok((await visit(url)).passed, url);
+    }
+    assert.ok((await visit('/messages?graphite', { method: 'POST' })).passed);
+  });
+});
+
 describe('sign-in helpers', () => {
   it('returns only to a path on this site', () => {
     assert.equal(safeReturn('/members/amrmscll'), '/members/amrmscll');

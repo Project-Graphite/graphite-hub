@@ -113,6 +113,10 @@ describe('posts', () => {
       readPublished(db, () => '/amr').map((summary) => summary.path),
       ['/amr/blog/hello-world'],
     );
+    const [summary] = readPublished(db, () => '/amr');
+    assert.ok(summary.updatedAt >= summary.publishedAt);
+    assert.deepEqual([...posts.bodies([id, 'missing'])], [[id, html]]);
+    assert.deepEqual([...posts.bodies([])], []);
   });
 
   it('leaves a scheduled post untouched while the bus is down, so the job publishes it later', async () => {

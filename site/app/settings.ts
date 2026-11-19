@@ -332,6 +332,15 @@ export function defaults(): Values {
   ) as Values;
 }
 
+export type PublicSettingKey = Exclude<SettingKey, `email.${string}`>;
+export type PublicValues = Pick<Values, PublicSettingKey>;
+
+export function publicSettings(values: Values) {
+  return Object.fromEntries(
+    Object.entries(values).filter(([key]) => !key.startsWith('email.')),
+  ) as PublicValues;
+}
+
 export function visible(items: OrderItem[]) {
   return items.filter((item) => item.on).map((item) => item.id);
 }

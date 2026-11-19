@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { defaults, problem } from '../app/settings.ts';
+import { defaults, problem, publicSettings } from '../app/settings.ts';
 import { createSettings, SettingRefused } from './settings.ts';
 import { accentsFor } from './snapshot.ts';
 import { memoryDatabase, recordingBus } from './testing.ts';
@@ -56,6 +56,18 @@ describe('settings', () => {
 
     assert.equal(settings.get()['home.featured.count'], 2);
     assert.equal(settings.history('home.featured.count').length, 3);
+  });
+});
+
+describe('public settings', () => {
+  it('leaves out every email setting and keeps the rest', () => {
+    const sent = publicSettings(defaults());
+    assert.deepEqual(
+      Object.keys(sent),
+      Object.keys(defaults()).filter((key) => !key.startsWith('email.')),
+    );
+    assert.equal(sent['site.name'], 'Project Graphite');
+    assert.doesNotMatch(JSON.stringify(sent), /"email\.|\{\{/);
   });
 });
 

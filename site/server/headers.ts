@@ -27,7 +27,29 @@ export function contentSecurityPolicy(nonce: string) {
     .join('; ');
 }
 
-export function securityHeaders(_request: Request, response: Response, next: NextFunction) {
+export function unslashed(request: Request, response: Response, next: NextFunction) {
+  if (
+    request.path.length > 1 &&
+    request.path.endsWith('/') &&
+    ['GET', 'HEAD'].includes(request.method)
+  ) {
+    const query = request.originalUrl.indexOf('?');
+    response.redirect(
+      301,
+      `/${request.path
+        .split(/[\\/]+/)
+        .filter(Boolean)
+        .join('/')}${query < 0 ? '' : request.originalUrl.slice(query)}`,
+    );
+    return;
+  }
+  next();
+}
+
+export function securityHeaders(request: Request, response: Response, next: NextFunction) {
+  if (request.path.endsWith('.data')) {
+    response.setHeader('X-Robots-Tag', 'noindex');
+  }
   response.setHeader('Strict-Transport-Security', 'max-age=31536000');
   response.setHeader('X-Content-Type-Options', 'nosniff');
   response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
