@@ -82,6 +82,7 @@ export interface ShortLink {
 }
 
 export interface ProfileFields {
+  name: string | null;
   alias: string | null;
   headline: string | null;
   bio: string | null;
@@ -97,8 +98,20 @@ export interface Profile extends ProfileFields {
   edited: boolean;
 }
 
+export const PROFILE_FIELDS = [
+  'name',
+  'alias',
+  'headline',
+  'bio',
+  'accent',
+  'avatarUpload',
+  'coverUpload',
+  'listed',
+] as const satisfies readonly (keyof ProfileFields)[];
+
 export const LIMITS = {
   blocks: 20,
+  name: 60,
   headline: 90,
   bio: 1200,
   links: 12,
@@ -263,18 +276,14 @@ export function blocksProblem(blocks: unknown, uploads: Set<string>) {
 }
 
 export function fieldsProblem(fields: Partial<ProfileFields>, uploads: Set<string>) {
-  if (
-    Object.keys(fields).some(
-      (key) =>
-        !['alias', 'headline', 'bio', 'accent', 'avatarUpload', 'coverUpload', 'listed'].includes(
-          key,
-        ),
-    )
-  ) {
+  if (Object.keys(fields).some((key) => !(PROFILE_FIELDS as readonly string[]).includes(key))) {
     return 'That is not a field of a profile.';
   }
   if (fields.listed !== undefined && typeof fields.listed !== 'boolean') {
     return 'Listed is on or off.';
+  }
+  if (fields.name != null && !text(fields.name, LIMITS.name)) {
+    return `A name is 1 to ${LIMITS.name} characters.`;
   }
   if (fields.headline != null && !text(fields.headline, LIMITS.headline, false)) {
     return `A headline is at most ${LIMITS.headline} characters.`;

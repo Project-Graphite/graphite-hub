@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { changelogPath, createModel } from '../app/model.ts';
 import type { Directory, Member, Project } from '../app/types.ts';
-import { projectFromEntry } from './snapshot.ts';
+import { readProjects } from './projects.ts';
+import { applyEntries } from './registry.ts';
+import { presentedProject } from './snapshot.ts';
+import { memoryDatabase } from './testing.ts';
 
 function project(slug: string, extra: Partial<Project> = {}): Project {
   return {
@@ -18,6 +21,7 @@ function project(slug: string, extra: Partial<Project> = {}): Project {
     authors: ['AmrMsCLL'],
     status: 'live',
     pinned: false,
+    pinOrder: null,
     showcase: null,
     url: null,
     path: extra.parent ? `/${extra.parent}/${slug}` : `/${slug}`,
@@ -25,8 +29,6 @@ function project(slug: string, extra: Partial<Project> = {}): Project {
     accent: null,
     layout: 'window',
     feature: { note: '', screenshotUrl: null, posts: [] },
-    pending: [],
-    pullRequest: null,
     ...extra,
   };
 }
@@ -60,20 +62,28 @@ const model = createModel({
 
 describe('addresses', () => {
   it('puts projects at the root and projects in an epic under it', () => {
-    const entry = {
-      slug: 'tasktune',
-      parent: 'windhawk-mods',
-      kind: 'project' as const,
-      name: 'TaskTune',
-      summary: 's',
-      repo: 'project-graphite/windhawk-mods',
-      owner: 'amrmscll',
-      authors: ['AmrMsCLL'],
-      status: 'live' as const,
-      deploy: { kind: 'none' as const },
-    };
-    assert.equal(projectFromEntry(entry).path, '/windhawk-mods/tasktune');
-    assert.equal(projectFromEntry({ ...entry, parent: undefined }).path, '/tasktune');
+    const db = memoryDatabase();
+    applyEntries(
+      db,
+      [
+        {
+          slug: 'tasktune',
+          parent: 'windhawk-mods',
+          kind: 'project',
+          name: 'TaskTune',
+          summary: 's',
+          repo: 'project-graphite/windhawk-mods',
+          owner: 'amrmscll',
+          authors: ['AmrMsCLL'],
+          status: 'live',
+          deploy: { kind: 'none' },
+        },
+      ],
+      '2026-11-18T00:00:00.000Z',
+    );
+    const [record] = readProjects(db);
+    assert.equal(presentedProject(record).path, '/windhawk-mods/tasktune');
+    assert.equal(presentedProject({ ...record, parent: null }).path, '/tasktune');
   });
 
   it('resolves projects, aliases, epic children and member-scoped projects', () => {

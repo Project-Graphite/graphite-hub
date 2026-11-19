@@ -181,6 +181,31 @@
 .board .console .lines {
   padding-inline: 1.25rem;
 }
+.console .lines .line {
+  grid-template-columns: 2.8rem 4.4rem minmax(0, 1fr);
+}
+.kind[data-kind='health'] {
+  color: var(--color-muted);
+}
+.kind[data-kind='health'][data-state='down'] {
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 45%, transparent);
+}
+.console .lines .line .run {
+  display: flex;
+  gap: 0.4rem;
+}
+.console .lines .line .run > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.console .lines .line .run > b {
+  flex: none;
+  font-weight: 400;
+  color: var(--color-faint);
+  font-variant-numeric: tabular-nums;
+}
 .atlas {
   grid-column: 1 / -1;
   display: grid;

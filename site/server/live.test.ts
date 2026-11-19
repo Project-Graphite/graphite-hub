@@ -1,7 +1,22 @@
 import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
 import { describe, it, mock } from 'node:test';
+import type { Request, Response } from 'express';
+import type { Auth } from './auth.ts';
 import type { HubEvent } from './bus.ts';
-import { createClient, matches, newer, parseKey, parseTopics, payload, signedOut } from './live.ts';
+import {
+  createClient,
+  createLive,
+  frame,
+  matches,
+  newer,
+  parseKey,
+  parseTopics,
+  payload,
+  signedOut,
+} from './live.ts';
+import type { Presence } from './presence.ts';
+import { recordingBus } from './testing.ts';
 
 const event = (topic: string, key?: string, isPublic = true): HubEvent => ({
   topic,
@@ -121,6 +136,93 @@ describe('payload', () => {
     assert.ok(!('data' in payload(release, false)));
     assert.ok(!('event' in payload(release, false)));
     assert.deepEqual((payload(release, true) as { event?: HubEvent }).event, release);
+  });
+});
+
+describe('console lines', () => {
+  const deploy: HubEvent = {
+    ...event('deploys', 'strata'),
+    kind: 'deploy',
+    detail: { project: 'strata', ok: true, host: 'x' },
+  };
+
+  it('carries the line of a recorded event under its activity id, and no line for the rest', () => {
+    assert.deepEqual(payload(deploy, false, 42).console, {
+      id: '42',
+      kind: 'deploy',
+      at: deploy.at,
+      summary: 's',
+      detail: { project: 'strata', ok: true },
+    });
+    assert.equal(payload(deploy, false).console, null);
+    assert.equal(payload({ ...deploy, public: false }, true, 42).console, null);
+    assert.equal(payload({ ...deploy, kind: 'uptime' }, false, 42).console, null);
+  });
+
+  it('writes one frame per event for every stream of the same audience', () => {
+    const delivery = { id: '7-0', line: 42, event: deploy };
+    assert.equal(frame(delivery, false), frame(delivery, false));
+    assert.match(frame(delivery, false), /^id: 7-0\ndata: \{.*"console":\{"id":"42"/);
+    assert.ok(!frame(delivery, false).includes('host'));
+    assert.ok(frame(delivery, true).includes('host'));
+    assert.match(frame({ line: 43, event: deploy }, false), /^data: /);
+  });
+});
+
+describe('createLive', () => {
+  function open(live: ReturnType<typeof createLive>, address: string) {
+    const request = Object.assign(new EventEmitter(), {
+      query: { topics: 'releases' },
+      headers: {},
+      socket: { remoteAddress: address },
+    });
+    const answered: { status?: number; body?: string } = {};
+    const response = {
+      status(code: number) {
+        answered.status = code;
+        return response;
+      },
+      set: () => response,
+      type: () => response,
+      send(body: string) {
+        answered.body = body;
+      },
+      writeHead(code: number) {
+        answered.status = code;
+      },
+      write: () => true,
+      end() {},
+      writableLength: 0,
+    };
+    return live
+      .handler(request as unknown as Request, response as unknown as Response)
+      .then(() => ({ answered, close: () => request.emit('close') }));
+  }
+
+  it('refuses the 21st stream from one address with 429 and gives the place back when one closes', async () => {
+    const { bus } = recordingBus();
+    const live = createLive(
+      bus,
+      { current: async () => undefined } as unknown as Auth,
+      { join: async () => {}, touch: async () => {}, leave: async () => {} } as unknown as Presence,
+      { handleOf: () => undefined, countryOf: () => undefined },
+    );
+    const streams = [];
+    for (let stream = 0; stream < 20; stream += 1) {
+      streams.push(await open(live, '203.0.113.7'));
+    }
+    assert.ok(streams.every((stream) => stream.answered.status === 200));
+    assert.equal(live.connections, 20);
+    const refused = await open(live, '203.0.113.7');
+    assert.equal(refused.answered.status, 429);
+    assert.equal(refused.answered.body, 'Too many live streams.');
+    const elsewhere = await open(live, '198.51.100.9');
+    assert.equal(elsewhere.answered.status, 200);
+    streams[0].close();
+    const again = await open(live, '203.0.113.7');
+    assert.equal(again.answered.status, 200);
+    [...streams, elsewhere, again].forEach((stream) => stream.close());
+    assert.equal(live.connections, 0);
   });
 });
 

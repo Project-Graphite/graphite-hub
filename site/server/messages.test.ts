@@ -36,6 +36,33 @@ describe('messages', () => {
     assert.equal(messages.wall(10).length, 0);
   });
 
+  it('tells the console a message reached the wall, with no name and no text', async () => {
+    const db = memoryDatabase();
+    const { bus, recorded } = recordingBus();
+    const messages = createMessages(db, bus, async () => true, 'secret');
+    const leave = (isPublic: boolean) =>
+      messages.leave({
+        name: 'Mona',
+        body: 'Hello from Cairo',
+        public: isPublic,
+        trap: '',
+        address: '203.0.113.7',
+      });
+    await leave(false);
+    assert.equal(recorded.length, 0);
+    await leave(true);
+    const [onWall] = messages.wall(10);
+    await messages.unpublish(onWall.id);
+    await messages.publish(onWall.id, 'amrmscll');
+    assert.deepEqual(
+      recorded.map((event) => [event.kind, event.topic, event.summary, event.detail]),
+      [
+        ['wall', 'messages', 'a new message on the wall', {}],
+        ['wall', 'messages', 'a new message on the wall', {}],
+      ],
+    );
+  });
+
   it('refuses empty, long and rate-limited messages, and silently drops the honeypot', async () => {
     assert.equal((await setup().leave('   ')).ok, false);
     assert.equal((await setup().leave('x'.repeat(1001))).ok, false);

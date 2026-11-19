@@ -1,7 +1,14 @@
 import { createTransport } from 'nodemailer';
 import { config } from './config.ts';
 
-const transport = config.smtpUrl ? createTransport(config.smtpUrl) : undefined;
+const transport = config.smtpUrl
+  ? createTransport({
+      url: config.smtpUrl,
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 30_000,
+    })
+  : undefined;
 
 export interface Outgoing {
   from: { name: string };

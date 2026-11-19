@@ -3,7 +3,9 @@ import { CHANGE_TYPES, classify, compareVersions, parseTag } from '../scripts/ru
 import type { Bus } from './bus.ts';
 import { transaction, type Database } from './db.ts';
 import { github } from './github.ts';
-import type { RegistryEntry } from './registry.ts';
+import type { ProjectRecord } from './projects.ts';
+
+type Released = Pick<ProjectRecord, 'slug' | 'repo' | 'name'> & { parent?: string | null };
 
 export interface GitHubRelease {
   tag_name: string;
@@ -23,7 +25,7 @@ export function importedOn(db: Database) {
     string | undefined;
 }
 
-export async function importChangelog(db: Database, bus: Bus, entries: RegistryEntry[]) {
+export async function importChangelog(db: Database, bus: Bus, entries: Released[]) {
   if (importedOn(db)) {
     return;
   }
@@ -71,7 +73,7 @@ export function groupNotes(body: string) {
   );
 }
 
-export function projectForTag(entries: RegistryEntry[], repo: string, tag: string) {
+export function projectForTag(entries: Released[], repo: string, tag: string) {
   const parsed = parseTag(tag);
   const inRepo = entries.filter((entry) => entry.repo.toLowerCase() === repo.toLowerCase());
   const project = parsed?.slug
@@ -83,7 +85,7 @@ export function projectForTag(entries: RegistryEntry[], repo: string, tag: strin
 export async function recordRelease(
   db: Database,
   bus: Bus,
-  entries: RegistryEntry[],
+  entries: Released[],
   repo: string,
   release: GitHubRelease,
 ) {
@@ -132,7 +134,7 @@ export async function recordRelease(
   }
 }
 
-export async function syncReleases(db: Database, bus: Bus, entries: RegistryEntry[]) {
+export async function syncReleases(db: Database, bus: Bus, entries: Released[]) {
   for (const repo of new Set(entries.map((entry) => entry.repo.toLowerCase()))) {
     for (const release of await github<GitHubRelease[]>(`/repos/${repo}/releases?per_page=30`)) {
       await recordRelease(db, bus, entries, repo, release);

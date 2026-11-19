@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import type { Request, Response } from 'express';
 import { MAX_TOPICS, PATCHED, type Topic } from '../app/topics.ts';
+import { clientAddress } from './address.ts';
 import type { Auth } from './auth.ts';
 import type { Bus, Delivery, HubEvent } from './bus.ts';
 import { toPublicEvent } from './console/public.ts';
@@ -10,6 +11,9 @@ const TOPIC = /^[a-z]+(?::[a-z0-9-]+)?$/;
 const KEY = /^[a-z0-9-]{1,80}$/;
 const HEARTBEAT_MS = 25_000;
 const COALESCE_MS = 100;
+const MAX_STREAMS = 1000;
+const MAX_STREAMS_PER_ADDRESS = 20;
+const MAX_BUFFERED_BYTES = 1_048_576;
 
 export function parseTopics(value: unknown) {
   const topics = [
@@ -43,15 +47,25 @@ export function newer(id: string, than: string | undefined) {
   return ms > lastMs || (ms === lastMs && seq > lastSeq);
 }
 
-export function payload(event: HubEvent, member: boolean) {
+export function payload(event: HubEvent, member: boolean, line?: number) {
+  const projected = line === undefined ? null : toPublicEvent(event);
   const shared = {
     topic: event.topic,
     key: event.key,
     kind: event.kind,
-    console: toPublicEvent(event),
+    console: projected && { id: String(line), ...projected },
     ...(PATCHED.has(event.topic as Topic) ? { data: event.detail } : {}),
   };
   return member ? { ...shared, event } : shared;
+}
+
+const frames = new WeakMap<Delivery, { member?: string; visitor?: string }>();
+
+export function frame(delivery: Delivery, member: boolean) {
+  const { id, line, event } = delivery;
+  const cached = frames.get(delivery) ?? frames.set(delivery, {}).get(delivery)!;
+  return (cached[member ? 'member' : 'visitor'] ??=
+    `${id ? `id: ${id}\n` : ''}data: ${JSON.stringify(payload(event, member, line))}\n\n`);
 }
 
 export function createClient(
@@ -67,8 +81,8 @@ export function createClient(
   function flush() {
     clearTimeout(timer);
     timer = undefined;
-    for (const { id, event } of pending.values()) {
-      write(`${id ? `id: ${id}\n` : ''}data: ${JSON.stringify(payload(event, member))}\n\n`);
+    for (const delivery of pending.values()) {
+      write(frame(delivery, member));
     }
     pending.clear();
   }
@@ -124,6 +138,8 @@ export function createLive(
   },
 ) {
   const streams = new Set<Stream>();
+  const open = new Map<string, number>();
+  let total = 0;
 
   function deliver(stream: Stream, delivery: Delivery) {
     if (signedOut(stream, delivery.event)) {
@@ -146,7 +162,37 @@ export function createLive(
       response.status(400).type('text').send(`Ask for 1 to ${MAX_TOPICS} topics.`);
       return;
     }
+    const address = clientAddress(request);
+    const held = open.get(address) ?? 0;
+    if (total >= MAX_STREAMS || held >= MAX_STREAMS_PER_ADDRESS) {
+      response
+        .status(total >= MAX_STREAMS ? 503 : 429)
+        .set('Retry-After', '30')
+        .type('text')
+        .send('Too many live streams.');
+      return;
+    }
+    total += 1;
+    open.set(address, held + 1);
+    let live = true;
+    request.on('close', () => {
+      live = false;
+      total -= 1;
+      if (open.get(address) === 1) {
+        open.delete(address);
+      } else {
+        open.set(address, open.get(address)! - 1);
+      }
+    });
     const signedIn = await auth.current(request, response);
+    if (!live) {
+      return;
+    }
+    const write = (chunk: string) => {
+      if (!response.write(chunk) && response.writableLength > MAX_BUFFERED_BYTES) {
+        response.destroy();
+      }
+    };
     const header = String(request.headers['last-event-id'] ?? '');
     const lastId = /^\d+-\d+$/.test(header) ? header : undefined;
     response.writeHead(200, {
@@ -157,13 +203,8 @@ export function createLive(
     });
     response.write('retry: 3000\n\n');
     const tab = randomBytes(6).toString('base64url');
-    const held: Delivery[] = [];
-    const client = createClient(
-      (chunk) => response.write(chunk),
-      topics,
-      Boolean(signedIn),
-      lastId,
-    );
+    const waiting: Delivery[] = [];
+    const client = createClient(write, topics, Boolean(signedIn), lastId);
     const stream: Stream = {
       offer: client.offer,
       push: client.push,
@@ -174,14 +215,12 @@ export function createLive(
         response.end();
       },
     };
-    const holder: Stream = { ...stream, offer: (delivery) => held.push(delivery) };
+    const holder: Stream = { ...stream, offer: (delivery) => waiting.push(delivery) };
     const heartbeat = setInterval(() => {
-      response.write(': ping\n\n');
+      write(': ping\n\n');
       void presence.touch(tab);
     }, HEARTBEAT_MS);
-    let open = true;
     request.on('close', () => {
-      open = false;
       clearInterval(heartbeat);
       client.close();
       streams.delete(holder);
@@ -191,8 +230,8 @@ export function createLive(
     streams.add(holder);
     const replay = lastId ? await bus.since(lastId) : [];
     streams.delete(holder);
-    if (open) {
-      for (const delivery of [...replay, ...held]) {
+    if (live) {
+      for (const delivery of [...replay, ...waiting]) {
         deliver(stream, delivery);
       }
       streams.add(stream);

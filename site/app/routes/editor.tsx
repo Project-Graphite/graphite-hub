@@ -9,7 +9,8 @@ import { hubContext, type Hub } from '../context';
 import { useHub, useRoot } from '../hub';
 import { createModel } from '../model';
 import { MemberView } from '../pages/member-page';
-import { STATUSES, type Presentation, type RegistryFields } from '../presentation';
+import type { ProjectFields } from '../editing/contract';
+import { PROJECT_LIMITS, STATUSES } from '../presentation';
 import {
   BLOCK_LABEL,
   BLOCK_TYPES,
@@ -68,11 +69,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
   }
   return {
     handle: member.handle,
-    projects: hub.writeback.ownedBy(member.handle).map((project) => ({
-      ...project,
-      presentation: hub.presentations.read(project.slug),
-      registry: hub.writeback.current(project.slug)!,
-    })),
+    projects: hub.projects.ownedBy(member.handle),
     profile: hub.profiles.read(member.handle),
     shortLinks: hub.profiles.shortLinks(member.handle, true),
     history: hub.profiles.history(member.handle),
@@ -117,18 +114,21 @@ export async function action({ context, params, request }: Route.ActionArgs) {
         }
         return { upload: await uploads.store(handle, kind, file), kind };
       }
-      case 'presentation':
-      case 'registry': {
-        const slug = String(form.get('slug') ?? '');
-        if (!hub.writeback.ownedBy(handle).some((project) => project.slug === slug)) {
-          return data({ error: `${slug} is not ${member.name}'s project.` }, { status: 400 });
+      case 'project': {
+        const result = await hub.edit.apply(
+          {
+            target: { kind: 'project', slug: String(form.get('slug') ?? '') },
+            fields: JSON.parse(String(form.get('value'))),
+          },
+          hub.viewer,
+        );
+        if (!result) {
+          throw data(null, { status: 404 });
         }
-        const value = JSON.parse(String(form.get('value')));
-        if (form.get('intent') === 'presentation') {
-          await hub.presentations.save(slug, value, by);
-          break;
+        if (!result.ok) {
+          return data({ error: result.error }, { status: 400 });
         }
-        return await hub.writeback.write(slug, value, by);
+        break;
       }
       case 'link':
         await profiles.setShortLink(
@@ -864,6 +864,21 @@ function HistoryTab({
 
 type EditedProject = Route.ComponentProps['loaderData']['projects'][number];
 
+const EDITED = [
+  'name',
+  'summary',
+  'tags',
+  'status',
+  'listed',
+  'pinOrder',
+  'coverUpload',
+  'accent',
+  'layout',
+  'feature',
+] as const satisfies readonly (keyof ProjectFields)[];
+
+type ProjectDraft = Pick<ProjectFields, (typeof EDITED)[number]>;
+
 function ProjectEditor({
   project,
   csrf,
@@ -873,40 +888,50 @@ function ProjectEditor({
   csrf: string;
   accents: string[];
 }) {
-  const server = project.presentation;
+  const server = Object.fromEntries(EDITED.map((key) => [key, project[key]])) as ProjectDraft;
   const serverKey = JSON.stringify(server);
-  const [draft, setDraft] = useState<Presentation>(server);
+  const [draft, setDraft] = useState(server);
+  const [tags, setTags] = useState(server.tags.join(', '));
   const [base, setBase] = useState(serverKey);
   const [dirty, setDirty] = useState(false);
-  const [registry, setRegistry] = useState<RegistryFields>(project.registry);
   if (serverKey !== base) {
     setBase(serverKey);
     if (!dirty) {
       setDraft(server);
+      setTags(server.tags.join(', '));
     }
   }
   const save = useFetcher<Result>();
-  const send = useFetcher<Result & { outcome?: string; pullRequest?: string | null }>();
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const hub = useHub();
+  const owner = useRoot()!.viewer?.owner;
   const linkable = hub.posts.filter(
     (post) => post.project === project.slug || draft.feature.posts.includes(post.id),
   );
   useEffect(() => () => clearTimeout(timer.current), []);
-  const change = (next: Presentation, delay = 700) => {
+  const change = (next: ProjectDraft, delay = 700) => {
     setDraft(next);
     setDirty(true);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       setDirty(false);
-      void save.submit(
-        { csrf, intent: 'presentation', slug: project.slug, value: JSON.stringify(next) },
-        { method: 'post' },
+      const changed = EDITED.filter(
+        (key) => JSON.stringify(next[key]) !== JSON.stringify(project[key]),
       );
+      if (changed.length > 0) {
+        void save.submit(
+          {
+            csrf,
+            intent: 'project',
+            slug: project.slug,
+            value: JSON.stringify(Object.fromEntries(changed.map((key) => [key, next[key]]))),
+          },
+          { method: 'post' },
+        );
+      }
     }, delay);
   };
   const state = dirty || save.state !== 'idle' ? 'saving' : save.data?.error ? 'error' : 'saved';
-  const unchanged = JSON.stringify(registry) === JSON.stringify(project.registry);
 
   return (
     <div className="grid gap-5">
@@ -914,6 +939,46 @@ function ProjectEditor({
         <span className="mono-sm grow text-faint">on the site</span>
         <SaveState state={state} error={save.data?.error} />
       </div>
+      <Field label="name">
+        <input
+          className="field"
+          value={draft.name}
+          maxLength={PROJECT_LIMITS.name.max}
+          onChange={(event) => change({ ...draft, name: event.target.value })}
+        />
+      </Field>
+      <Field label="summary">
+        <textarea
+          className="field"
+          value={draft.summary}
+          maxLength={PROJECT_LIMITS.summary.max}
+          onChange={(event) => change({ ...draft, summary: event.target.value })}
+        />
+      </Field>
+      <Field label="tags">
+        <input
+          className="field"
+          value={tags}
+          onChange={(event) => {
+            setTags(event.target.value);
+            change({
+              ...draft,
+              tags: event.target.value
+                .split(',')
+                .map((tag) => tag.trim())
+                .filter(Boolean),
+            });
+          }}
+        />
+      </Field>
+      <Field label="status">
+        <Segmented
+          label="Status"
+          options={STATUSES.map((status) => [status, status] as const)}
+          value={draft.status}
+          choose={(status) => change({ ...draft, status }, 0)}
+        />
+      </Field>
       <Field label="cover">
         <div className="editor-row">
           <Thumb src={draft.coverUpload && uploadUrl(draft.coverUpload, 'cover', 'small')} />
@@ -968,20 +1033,11 @@ function ProjectEditor({
           choose={(layout) => change({ ...draft, layout }, 0)}
         />
       </Field>
-      <Field label="summary on the site">
-        <textarea
-          className="field"
-          value={draft.summary ?? ''}
-          placeholder={project.registry.summary}
-          maxLength={240}
-          onChange={(event) => change({ ...draft, summary: event.target.value || null })}
-        />
-      </Field>
       <Field label="feature">
         <textarea
           className="field"
           value={draft.feature.note}
-          maxLength={600}
+          maxLength={PROJECT_LIMITS.note}
           placeholder="a note"
           onChange={(event) =>
             change({ ...draft, feature: { ...draft.feature, note: event.target.value } })
@@ -1022,7 +1078,7 @@ function ProjectEditor({
                   key={post.id}
                   type="button"
                   aria-pressed={on}
-                  disabled={!on && draft.feature.posts.length >= 3}
+                  disabled={!on && draft.feature.posts.length >= PROJECT_LIMITS.posts}
                   onClick={() =>
                     change(
                       {
@@ -1046,92 +1102,22 @@ function ProjectEditor({
         )}
       </Field>
 
-      <div className="registry">
-        <div className="editor-row">
-          <span className="mono-sm grow text-faint">in the repository · .graphite.yml</span>
-          {!unchanged && <SaveState state="saving" />}
-        </div>
-        <Field label="name">
-          <input
-            className="field"
-            value={registry.name}
-            maxLength={60}
-            onChange={(event) => setRegistry({ ...registry, name: event.target.value })}
-          />
-        </Field>
-        <Field label="summary">
-          <textarea
-            className="field"
-            value={registry.summary}
-            maxLength={240}
-            onChange={(event) => setRegistry({ ...registry, summary: event.target.value })}
-          />
-        </Field>
-        <Field label="tags">
-          <input
-            className="field"
-            value={registry.tags.join(', ')}
-            onChange={(event) =>
-              setRegistry({
-                ...registry,
-                tags: event.target.value
-                  .split(',')
-                  .map((tag) => tag.trim())
-                  .filter(Boolean),
-              })
-            }
-          />
-        </Field>
-        <Field label="status">
-          <Segmented
-            label="Status"
-            options={STATUSES.map((status) => [status, status] as const)}
-            value={registry.status}
-            choose={(status) => setRegistry({ ...registry, status })}
-          />
-        </Field>
+      {owner && (
         <Field label="pinned on the home page" row>
           <Switch
-            on={registry.pinned}
+            on={draft.pinOrder !== null}
             label="Pinned"
-            toggle={() => setRegistry({ ...registry, pinned: !registry.pinned })}
+            toggle={() => change({ ...draft, pinOrder: draft.pinOrder === null ? 0 : null }, 0)}
           />
         </Field>
-        <Field label="listed on the site" row>
-          <Switch
-            on={registry.listed}
-            label="Listed"
-            toggle={() => setRegistry({ ...registry, listed: !registry.listed })}
-          />
-        </Field>
-        <div className="editor-row">
-          <button
-            type="button"
-            className="chip-button"
-            disabled={send.state !== 'idle' || unchanged}
-            onClick={() =>
-              send.submit(
-                { csrf, intent: 'registry', slug: project.slug, value: JSON.stringify(registry) },
-                { method: 'post' },
-              )
-            }
-          >
-            {send.state !== 'idle' ? 'sending…' : 'send to the repository'}
-          </button>
-          <span className="mono-sm">
-            {send.data?.error && <span className="text-danger">{send.data.error}</span>}
-            {project.pending.length > 0 &&
-              !send.data?.error &&
-              (project.pullRequest ? (
-                <a href={project.pullRequest} className="rule-link">
-                  {project.pending.join(', ')} in a pull request
-                </a>
-              ) : (
-                <span className="text-faint">{project.pending.join(', ')} pending the sync</span>
-              ))}
-          </span>
-        </div>
-      </div>
+      )}
+      <Field label="listed on the site" row>
+        <Switch
+          on={draft.listed}
+          label="Listed"
+          toggle={() => change({ ...draft, listed: !draft.listed }, 0)}
+        />
+      </Field>
     </div>
   );
 }
@@ -1188,6 +1174,7 @@ export default function Editor({ loaderData }: Route.ComponentProps) {
   const { profile } = loaderData;
   const server: Draft = {
     fields: {
+      name: profile.name,
       alias: profile.alias,
       headline: profile.headline,
       bio: profile.bio,

@@ -11,7 +11,10 @@ export function openDatabase(file: string) {
     mkdirSync(path.dirname(file), { recursive: true });
   }
   const db = new DatabaseSync(file);
-  db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
+  db.exec(
+    `PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON;
+     PRAGMA busy_timeout = 5000; PRAGMA temp_store = MEMORY; PRAGMA cache_size = -16000;`,
+  );
   db.exec(
     'CREATE TABLE IF NOT EXISTS migrations (name TEXT PRIMARY KEY, applied_at TEXT NOT NULL)',
   );
@@ -35,6 +38,11 @@ export function openDatabase(file: string) {
     }
   }
   return db;
+}
+
+export function closeDatabase(db: Database) {
+  db.exec('PRAGMA optimize');
+  db.close();
 }
 
 export function transaction<T>(db: Database, work: () => T) {

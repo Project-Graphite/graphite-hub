@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Refused, type Block } from '../app/profile.ts';
+import { Refused, type Block, type Profile } from '../app/profile.ts';
+import { createBus, type Delivery } from './bus.ts';
 import { createProfiles, type ProfileChange } from './profiles.ts';
+import type { Redis } from './redis.ts';
 import { memoryDatabase, recordingBus } from './testing.ts';
 
 function setup() {
@@ -207,6 +209,78 @@ describe('profiles', () => {
     assert.equal(restored.handle, 'nier0o');
     assert.equal(restored.headline, 'Taken over');
     assert.deepEqual(victim(), before);
+  });
+
+  it('keeps a display name beside the one GitHub gives, and clears it with null', async () => {
+    const { profiles } = setup();
+    assert.equal(profiles.read('amrmscll').name, null);
+    assert.equal(
+      (await profiles.save('amrmscll', { fields: { name: 'Amr El-Sheraey' } }, 'x')).name,
+      'Amr El-Sheraey',
+    );
+    assert.equal(
+      (await profiles.save('amrmscll', { fields: { headline: 'H' } }, 'x')).name,
+      'Amr El-Sheraey',
+    );
+    await assert.rejects(profiles.save('amrmscll', { fields: { name: '  ' } }, 'x'), Refused);
+    await assert.rejects(
+      profiles.save('amrmscll', { fields: { name: 'x'.repeat(61) } }, 'x'),
+      Refused,
+    );
+    assert.equal((await profiles.save('amrmscll', { fields: { name: null } }, 'x')).name, null);
+  });
+
+  it('restores a version saved before profiles had a name', async () => {
+    const { db, profiles } = setup();
+    await profiles.save('amrmscll', { fields: { name: 'Amr', headline: 'Now' } }, 'x');
+    const before: Partial<Profile> = { ...profiles.read('amrmscll'), headline: 'Then' };
+    delete before.name;
+    db.prepare(
+      "INSERT INTO versions (kind, key, blob, by, at) VALUES ('profile', 'amrmscll', ?, 'x', '2026-01-01T00:00:00.000Z')",
+    ).run(JSON.stringify(before));
+    const restored = await profiles.revert('amrmscll', profiles.history('amrmscll')[0].id, 'x');
+    assert.equal(restored.headline, 'Then');
+    assert.equal(restored.name, null);
+  });
+
+  it('stops resolving the alias of a member who left, and resolves it again when they return', async () => {
+    const { db, profiles } = setup();
+    db.prepare(
+      "INSERT INTO members (handle, login, name, avatar_url, role, joined_at, synced_at) VALUES ('amrmscll', 'AmrMsCLL', 'Amr', '', 'owner', 'now', 'now')",
+    ).run();
+    await profiles.save('amrmscll', { fields: { alias: 'amr' } }, 'x');
+    assert.equal(profiles.handleForAlias('amr'), 'amrmscll');
+    db.prepare("UPDATE members SET left_at = '2026-11-18T00:00:00.000Z'").run();
+    assert.equal(profiles.handleForAlias('amr'), undefined);
+    await assert.rejects(
+      profiles.save('nier0o', { fields: { alias: 'amr' } }, 'x'),
+      /another member/,
+    );
+    db.prepare('UPDATE members SET left_at = NULL').run();
+    assert.equal(profiles.handleForAlias('amr'), 'amrmscll');
+  });
+
+  it('tells the console once a day that a listed member updated their page', async () => {
+    const db = memoryDatabase();
+    db.prepare(
+      "INSERT INTO members (handle, login, name, avatar_url, role, joined_at, synced_at) VALUES ('amrmscll', 'AmrMsCLL', 'Amr Mohamed', '', 'owner', 'now', 'now'), ('nier0o', 'Nier0o', 'Nier', '', 'member', 'now', 'now')",
+    ).run();
+    const bus = createBus(db, { xadd: async () => '1-0' } as unknown as Redis);
+    const heard: Delivery[] = [];
+    bus.listen((delivery) => heard.push(delivery));
+    const profiles = createProfiles(db, bus);
+    await profiles.save('amrmscll', { fields: { headline: 'One' } }, 'AmrMsCLL');
+    await profiles.save('amrmscll', { fields: { headline: 'Two' } }, 'AmrMsCLL');
+    await profiles.save('nier0o', { fields: { listed: false } }, 'Nier0o');
+    assert.deepEqual(
+      heard.map(({ line, event }) => [line, event.topic, event.kind, event.summary]),
+      [
+        [1, 'profiles', 'member', 'Amr updated their page'],
+        [undefined, 'profiles', 'profile', "amrmscll's page changed"],
+        [undefined, 'profiles', 'profile', "nier0o's page changed"],
+      ],
+    );
+    assert.deepEqual(heard[0].event.detail, { member: 'amrmscll', change: 'page' });
   });
 
   it('keeps one member’s short link apart from another’s of the same name', async () => {

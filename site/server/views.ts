@@ -10,6 +10,7 @@ const KEY = /^[a-z0-9-]{1,80}$/;
 const BOT =
   /bot|crawl|spider|slurp|headless|lighthouse|pagespeed|preview|fetch|curl|wget|python|java\/|go-http|okhttp|monitor|scan/i;
 const TWO_DAYS = 2 * 86_400;
+const MILESTONES = new Set([10, 50, 100, 500, 1000]);
 
 export function isViewKind(value: string): value is ViewKind {
   return KINDS.has(value);
@@ -32,6 +33,7 @@ export function createViews(
   bus: Bus,
   deps: {
     exists: (kind: ViewKind, key: string) => boolean;
+    title?: (kind: ViewKind, key: string) => string | undefined;
     allow: (addressHash: string) => Promise<boolean>;
     now?: () => number;
   },
@@ -92,6 +94,18 @@ export function createViews(
         detail: { kind, key, total },
         at: new Date(now()).toISOString(),
       });
+      const title = MILESTONES.has(total) && deps.title?.(kind, key);
+      if (title) {
+        await bus.record({
+          topic: kind === 'post' ? 'posts' : 'projects',
+          key,
+          kind: 'milestone',
+          public: true,
+          summary: `${title} passed ${total} views`,
+          detail: { [kind]: key, views: total },
+          at: new Date(now()).toISOString(),
+        });
+      }
       return 'counted';
     },
   };

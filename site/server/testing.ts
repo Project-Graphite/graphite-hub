@@ -77,7 +77,6 @@ export function recordingBus() {
   const listeners = new Set<(delivery: { event: HubEvent }) => void>();
   const link = { down: false };
   const bus = {
-    ready: Promise.resolve(),
     alive: async () => !link.down,
     record: async (event: HubEvent) => {
       recorded.push(event);

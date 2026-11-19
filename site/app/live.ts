@@ -10,7 +10,7 @@ export interface LiveMessage {
   topic: string;
   key?: string;
   kind: string;
-  console: Omit<ConsoleLine, 'id'> | null;
+  console: ConsoleLine | null;
   data?: Record<string, unknown>;
 }
 

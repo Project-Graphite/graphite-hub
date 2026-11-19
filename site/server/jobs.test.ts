@@ -42,8 +42,68 @@ describe('jobs', () => {
       await jobs.runDue(Date.parse(row().due_at as string));
     }
     assert.equal(errors.length, 8);
+    assert.equal(jobs.pending('bad', 'b'), false);
+    const closed = db
+      .prepare("SELECT attempts, last_error, done_at IS NOT NULL AS done FROM jobs WHERE ref = 'b'")
+      .get()!;
+    assert.deepEqual({ ...closed }, { attempts: 8, last_error: 'nope', done: 1 });
+    jobs.add('bad', 'b', '2026-01-04T00:00:00.000Z');
     assert.equal(jobs.pending('bad', 'b'), true);
     jobs.stop();
+  });
+
+  it('closes a job an older executor left exhausted and open, after one more try', async () => {
+    const db = memoryDatabase();
+    db.prepare(
+      "INSERT INTO jobs (kind, ref, due_at, attempts, last_error) VALUES ('digest', 'weekly', '2026-01-01T00:00:00.000Z', 8, 'nope')",
+    ).run();
+    const jobs = createJobs(
+      db,
+      {
+        digest: async () => {
+          throw new Error('still nope');
+        },
+      },
+      () => {},
+    );
+    assert.equal(jobs.pending('digest', 'weekly'), true);
+    await jobs.runDue(Date.parse('2026-01-03T00:00:00.000Z'));
+    assert.equal(jobs.pending('digest', 'weekly'), false);
+    jobs.stop();
+  });
+
+  it('runs each kind in its own lane, so a slow one does not hold the others', async () => {
+    const db = memoryDatabase();
+    const order: string[] = [];
+    let release = () => {};
+    const jobs = createJobs(
+      db,
+      {
+        email: () =>
+          new Promise<void>((resolve) => {
+            release = () => {
+              order.push('email');
+              resolve();
+            };
+          }),
+        publish: async (ref) => {
+          order.push(`publish:${ref}`);
+        },
+      },
+      () => {},
+    );
+    jobs.add('email', 'queue', '2026-01-01T00:00:00.000Z');
+    jobs.add('publish', 'p1', '2026-01-01T00:00:00.000Z');
+    const now = Date.parse('2026-01-01T00:00:01.000Z');
+    const first = jobs.runDue(now);
+    await new Promise((resolve) => setImmediate(resolve));
+    jobs.add('publish', 'p2', '2026-01-01T00:00:00.500Z');
+    assert.deepEqual(await jobs.runDue(now), ['publish:p2']);
+    assert.deepEqual(order, ['publish:p1', 'publish:p2']);
+    release();
+    assert.deepEqual(await first, ['email:queue', 'publish:p1']);
+    assert.deepEqual(order, ['publish:p1', 'publish:p2', 'email']);
+    await jobs.stop();
   });
 
   it('keeps the row of a job that cancels itself while it runs, so the outcome is recorded', async () => {
