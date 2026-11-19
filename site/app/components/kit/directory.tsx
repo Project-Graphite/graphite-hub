@@ -229,7 +229,7 @@ export function ProjectNode({
           </span>
         )}
         <span className="count">
-          {releases[0] ? `v${releases[0].version} · ${day(releases[0].date)}` : 'unreleased'}
+          {releases[0] ? `v${releases[0].version}, ${day(releases[0].date)}` : 'unreleased'}
         </span>
         <Pulse releases={releases} today={today} />
       </span>

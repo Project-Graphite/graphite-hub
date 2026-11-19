@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Hub } from '../../context';
 import { useRoot } from '../../hub';
-import { Field } from '../../motion/canvases';
 import { useCountUp } from '../../motion/motion';
 import type { ConsoleLine, Running } from '../../types';
 import { Console } from './live';
@@ -51,7 +50,6 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <header className="page-head">
-      <Field density={3600} reach={90} />
       {banner}
       <p className="path">{path}</p>
       <div className="row">

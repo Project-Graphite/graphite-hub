@@ -4,6 +4,7 @@ import { accentStyle, Avatar } from '../components/kit/basics';
 import { ProjectNode } from '../components/kit/directory';
 import { ReleaseTimeline } from '../components/kit/live';
 import { Fact, loadRail, PageHeader, StandardRail } from '../components/kit/page';
+import { Icon } from '../components/kit/icons';
 import Status from '../components/Status';
 import TagList from '../components/TagList';
 import { Page } from '../components/Shell';
@@ -46,7 +47,7 @@ function Epic({ epic, today }: { epic: Project; today: string }) {
           <span className="facts">
             <Fact value={children.length} label={plural(children.length, 'project')} />
             <Fact value={releases.length} label={plural(releases.length, 'release')} />
-            {latest && <Fact label="latest" value={`v${latest.version} · ${day(latest.date)}`} />}
+            {latest && <Fact label="latest" value={`v${latest.version}, ${day(latest.date)}`} />}
           </span>
           <TagList tags={epic.tags} />
         </div>
@@ -88,7 +89,8 @@ function Epic({ epic, today }: { epic: Project; today: string }) {
             </a>
           )}
           <a href={epic.repoUrl} className="rule-link">
-            source ↗
+            source
+            <Icon name="external" />
           </a>
         </span>
       </div>

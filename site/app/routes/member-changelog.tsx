@@ -1,6 +1,7 @@
 import Browse from '../components/Browse';
 import { accentStyle, Avatar, Button, Panel } from '../components/kit/basics';
 import { Fact, PageHeader } from '../components/kit/page';
+import { Icon } from '../components/kit/icons';
 import { Page } from '../components/Shell';
 import { Link } from 'react-router';
 import type { Route } from './+types/member-changelog';
@@ -57,7 +58,8 @@ export default function MemberChangelog({ loaderData }: Route.ComponentProps) {
             <nav className="jumps" aria-label="Project changelogs">
               {owned.map((project) => (
                 <Link key={project.path} to={changelogPath(project)}>
-                  {project.name} →
+                  {project.name}
+                  <Icon name="arrow" />
                 </Link>
               ))}
             </nav>

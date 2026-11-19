@@ -17,11 +17,12 @@ import { hubContext } from '../context';
 import type { EditorReport } from '../editor/PostEditor';
 import { day } from '../format';
 import { useHub, useRoot } from '../hub';
-import { Field } from '../motion/canvases';
 import { checkedForm, editablePost, viewerHandle } from '../pages/blog';
 import { POST_LIMITS, postPath, slugify, STATUS_LABEL, type PostFields } from '../posts';
 import { isRefused, uploadUrl } from '../profile';
 import { topicsFor } from '../topics';
+import '../styles/member.css';
+import '../styles/writing.css';
 
 export const handle = topicsFor('post-editor');
 
@@ -569,7 +570,6 @@ export default function PostEditorRoute({ loaderData }: Route.ComponentProps) {
     >
       <div className="blog editor" style={accentStyle(author?.accent)}>
         <header className="page-head">
-          <Field density={3600} reach={90} />
           <p className="path">
             <Link to="/blog" className="hover:text-ink hover:underline">
               /blog

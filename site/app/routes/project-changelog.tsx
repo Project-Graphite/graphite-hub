@@ -1,6 +1,7 @@
 import Browse from '../components/Browse';
 import { accentStyle, Button, Panel } from '../components/kit/basics';
 import { Fact, PageHeader } from '../components/kit/page';
+import { Icon } from '../components/kit/icons';
 import { Page } from '../components/Shell';
 import { Link } from 'react-router';
 import type { Route } from './+types/project-changelog';
@@ -66,7 +67,9 @@ export default function ProjectChangelog({ loaderData }: Route.ComponentProps) {
           actions={
             <>
               <Button to={project.path}>project page</Button>
-              <Button to={project.repoUrl}>source ↗</Button>
+              <Button to={project.repoUrl} arrow>
+                source
+              </Button>
             </>
           }
           facts={
@@ -93,12 +96,14 @@ export default function ProjectChangelog({ loaderData }: Route.ComponentProps) {
             <nav className="jumps" aria-label="Related changelogs">
               {epic && (
                 <Link to={changelogPath(epic)} className="up">
-                  ← {epic.name}
+                  <Icon name="back" />
+                  {epic.name}
                 </Link>
               )}
               {children.map((child) => (
                 <Link key={child.path} to={changelogPath(child)}>
-                  {child.name} →
+                  {child.name}
+                  <Icon name="arrow" />
                 </Link>
               ))}
             </nav>

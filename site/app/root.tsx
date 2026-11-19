@@ -20,8 +20,6 @@ import { structuredData } from './structured-data';
 import { ROOT_TOPICS, type LiveHandle } from './topics';
 import './styles/global.css';
 
-import.meta.glob('./styles/pages/*.css', { eager: true });
-
 export const handle: LiveHandle = { topics: ROOT_TOPICS };
 
 export const shouldRevalidate = shouldRevalidateRoot;
@@ -76,6 +74,13 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link
+          rel="preload"
+          href="/fonts/hanken-grotesk-v12-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <meta name="theme-color" content="#0c0c0e" />
         <Meta />
         <Links />
@@ -104,11 +109,13 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       {isRouteErrorResponse(error) && error.status === 404 ? (
         <NotFound />
       ) : (
-        <section className="pt-22 pb-5">
-          <h1 className="page-title">Something broke.</h1>
-          <p className="mt-5.5 mb-0 max-w-[52ch] text-muted">
-            The page could not be rendered. It has been recorded; try again in a moment.
-          </p>
+        <section className="hero gate">
+          <div>
+            <h1>Something broke.</h1>
+            <p className="lede">
+              The page could not be rendered. It has been recorded; try again in a moment.
+            </p>
+          </div>
         </section>
       )}
     </Shell>

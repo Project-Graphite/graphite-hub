@@ -1,0 +1,162 @@
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/hanken-grotesk-v12-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Hanken Grotesk Fallback';
+  src: local('Arial');
+  size-adjust: 101.67%;
+  ascent-override: 98.36%;
+  descent-override: 29.8%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-v24-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('Consolas');
+  size-adjust: 109.13%;
+  ascent-override: 93.47%;
+  descent-override: 27.49%;
+  line-gap-override: 0%;
+}
+
+@theme static {
+  --color-paper: #0c0c0e;
+  --color-surface: #131316;
+  --color-raised: #18181c;
+  --color-overlay: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  --color-scrim: color-mix(in srgb, var(--color-paper) 72%, transparent);
+  --color-shade: rgb(0 0 0 / 0.07);
+  --color-line: #26262c;
+  --color-line-soft: #1c1c21;
+  --color-line-strong: #666670;
+  --color-ink: #e8e8ea;
+  --color-bright: #ffffff;
+  --color-muted: #8b8b95;
+  --color-faint: #7d7d87;
+  --color-live: #46b97a;
+  --color-wip: #d7a54a;
+  --color-dormant: #6e6e78;
+  --color-danger: #f2a09a;
+  --color-highlight: #d7b24a;
+  --color-post: #8fb0ea;
+
+  --accent-1: #6f8fd1;
+  --accent-2: #c9a15f;
+  --accent-3: #8fb86a;
+  --accent-4: #a98fd6;
+  --accent-5: #d47a86;
+  --accent-6: #5fb3b3;
+  --accent-7: #d08a52;
+  --accent-8: #9aa7b8;
+
+  --font-sans:
+    'Hanken Grotesk', 'Hanken Grotesk Fallback', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, sans-serif;
+  --font-mono:
+    'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --text-hero: clamp(2.25rem, 4vw, 3.25rem);
+  --text-hero--line-height: 1.02;
+  --text-hero--font-weight: 680;
+  --text-hero--letter-spacing: -0.035em;
+  --text-display: clamp(1.75rem, 1.2rem + 2.2vw, 2.25rem);
+  --text-display--line-height: 1.1;
+  --text-display--font-weight: 640;
+  --text-display--letter-spacing: -0.028em;
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.2;
+  --text-title--font-weight: 600;
+  --text-title--letter-spacing: -0.02em;
+  --text-h2: 1.125rem;
+  --text-h2--line-height: 1.3;
+  --text-h2--font-weight: 600;
+  --text-h2--letter-spacing: -0.012em;
+  --text-lede: 1.0625rem;
+  --text-lede--line-height: 1.55;
+  --text-prose: 1rem;
+  --text-prose--line-height: 1.6;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.55;
+  --text-small: 0.8125rem;
+  --text-small--line-height: 1.5;
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1.4;
+  --text-code: 0.88em;
+
+  --tracking-tight: -0.02em;
+  --tracking-label: 0.01em;
+  --measure-prose: 68ch;
+  --measure-lede: 56ch;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  --frame-max: 104rem;
+  --frame-rail: 19rem;
+  --frame-gutter-start: max(1rem, 7vw);
+  --frame-gutter-end: max(1rem, 3.5vw);
+  --frame-foot: clamp(3rem, 8vh, 6rem);
+  --target-fine: 1.5rem;
+  --target-chip: 2rem;
+  --target-coarse: 2.75rem;
+
+  --radius-hair: 2px;
+  --radius-mark: 0.3rem;
+  --radius-field: 0.5rem;
+  --radius-panel: 0.75rem;
+  --radius-card: 1rem;
+  --radius-pill: 999px;
+
+  --ring-hair: 1px;
+  --ring-thin: 1.5px;
+  --ring-bold: 2px;
+  --ring-wide: 3px;
+
+  --shadow-popover: 0 18px 40px -12px rgb(0 0 0 / 0.7);
+  --shadow-raised: 0 10px 24px -14px rgb(0 0 0 / 0.8);
+
+  --z-backdrop: -1;
+  --z-raised: 1;
+  --z-sticky: 20;
+  --z-popover: 30;
+  --z-dialog: 40;
+  --z-bar: 50;
+
+  --ease-settle: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-base: 160ms;
+  --duration-slow: 240ms;
+  --duration-draw: 700ms;
+  --loop-pulse: 1.2s;
+  --loop-breathe: 2.4s;
+  --loop-orbit: 48s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --duration-draw: 0ms;
+  }
+}

@@ -5,7 +5,7 @@
   margin-top: 2rem;
 }
 .counter .n {
-  font-size: 1.7rem;
+  font-size: var(--text-title);
   font-weight: 640;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -13,7 +13,7 @@
 }
 .counter .l {
   font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-size: var(--text-small);
   color: var(--color-faint);
   margin-top: 0.25rem;
 }
@@ -32,7 +32,7 @@
 .pulse .window-count {
   flex: none;
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: var(--text-small);
   color: var(--color-faint);
   white-space: nowrap;
 }
@@ -48,7 +48,7 @@
 .pulse:not(:has(.timeline)) {
   border-bottom: 1px solid var(--color-line-soft);
 }
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .pulse .window-count {
     display: none;
   }
