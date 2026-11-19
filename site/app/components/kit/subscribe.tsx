@@ -1,10 +1,10 @@
 import { useId, useState } from 'react';
-import { useFetcher } from 'react-router';
+import { Link, useFetcher } from 'react-router';
 import { useHub } from '../../hub';
+import { useMagnetic } from '../../motion/motion';
 import { describeChoice, scopeKey, type Cadence, type Scope } from '../../subscribe';
 import { accentStyle, Avatar, Panel } from './basics';
 import { Chips } from './directory';
-import { Icon } from './icons';
 
 type Outcome = { sent: true } | { reason: string };
 
@@ -20,6 +20,7 @@ export function SubscribeForm({
   action?: string;
 }) {
   const fetcher = useFetcher<Outcome>();
+  const magnetic = useMagnetic<HTMLButtonElement>();
   const id = useId();
   const sent = fetcher.data && 'sent' in fetcher.data;
   const reason = fetcher.data && 'reason' in fetcher.data ? fetcher.data.reason : null;
@@ -60,9 +61,13 @@ export function SubscribeForm({
             placeholder="you@somewhere.com"
             className="field"
           />
-          <button type="submit" className="btn primary" disabled={fetcher.state !== 'idle'}>
-            subscribe
-            <Icon name="arrow" />
+          <button
+            ref={magnetic}
+            type="submit"
+            className="btn primary"
+            disabled={fetcher.state !== 'idle'}
+          >
+            subscribe <span className="arrow">→</span>
           </button>
         </>
       )}
@@ -202,5 +207,13 @@ export function Chooser({
         </p>
       </div>
     </div>
+  );
+}
+
+export function SubscribeLink() {
+  return (
+    <Link to="/subscribe" className="rule-link mono-sm">
+      choose what you get
+    </Link>
   );
 }

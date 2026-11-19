@@ -3,7 +3,6 @@ import type { Route } from './+types/messages';
 import { accentStyle, Panel } from '../components/kit/basics';
 import { Editable } from '../components/kit/Editable';
 import { Fact, PageHeader } from '../components/kit/page';
-import { Icon } from '../components/kit/icons';
 import { Page } from '../components/Shell';
 import { hubContext } from '../context';
 import { day } from '../format';
@@ -136,8 +135,7 @@ function Leave() {
               </label>
             </span>
             <button type="submit" className="btn primary" disabled={leave.state !== 'idle'}>
-              send
-              <Icon name="arrow" />
+              send <span className="arrow">→</span>
             </button>
           </div>
           {leave.data && 'reason' in leave.data && (

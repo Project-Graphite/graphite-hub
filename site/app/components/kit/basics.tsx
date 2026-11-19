@@ -1,19 +1,11 @@
-import { useId, type CSSProperties, type ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useFolded } from '../../folds';
+import { useMagnetic } from '../../motion/motion';
 import { Art } from './art';
-import { Icon } from './icons';
 
 export const accentStyle = (accent: string | undefined) =>
   ({ '--accent': accent }) as CSSProperties;
-
-const AVATAR = {
-  xs: { shown: 20, requested: 40 },
-  sm: { shown: 32, requested: 64 },
-  md: { shown: 40, requested: 96 },
-  lg: { shown: 64, requested: 160 },
-  base: { shown: 48, requested: 96 },
-};
 
 interface AvatarProps {
   member: { name: string; avatarUrl: string; accent: string };
@@ -22,7 +14,7 @@ interface AvatarProps {
 }
 
 export function Avatar({ member, size, online = false }: AvatarProps) {
-  const { shown, requested } = AVATAR[size ?? 'base'];
+  const pixels = size ? { xs: 20, sm: 32, md: 40, lg: 64 }[size] : 48;
   return (
     <span
       className={`avatar ${size ?? ''}`}
@@ -30,18 +22,7 @@ export function Avatar({ member, size, online = false }: AvatarProps) {
       data-online={online || undefined}
       aria-hidden="true"
     >
-      <img
-        src={
-          member.avatarUrl.startsWith('https://avatars.githubusercontent.com/')
-            ? `${member.avatarUrl}${member.avatarUrl.includes('?') ? '&' : '?'}s=${requested}`
-            : member.avatarUrl
-        }
-        alt=""
-        width={shown}
-        height={shown}
-        loading="lazy"
-        decoding="async"
-      />
+      <img src={member.avatarUrl} alt="" width={pixels} height={pixels} loading="lazy" />
     </span>
   );
 }
@@ -51,29 +32,15 @@ export function Cover({
   seed = name,
   accent,
   image,
-  priority = false,
 }: {
   name: string;
   seed?: string;
   accent: string;
   image?: string | null;
-  priority?: boolean;
 }) {
   return (
     <div className="cover" style={accentStyle(accent)}>
-      {image ? (
-        <img
-          src={image}
-          alt={`Cover of ${name}`}
-          width={1280}
-          height={640}
-          loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
-          decoding="async"
-        />
-      ) : (
-        <Art seed={seed} />
-      )}
+      {image ? <img src={image} alt="" loading="lazy" /> : <Art seed={seed} />}
     </div>
   );
 }
@@ -86,16 +53,21 @@ interface ButtonProps {
 }
 
 export function Button({ to, children, primary = false, arrow = false }: ButtonProps) {
+  const magnetic = useMagnetic<HTMLAnchorElement>();
   const className = `btn ${primary ? 'primary' : ''}`;
-  return /^https?:/.test(to) ? (
-    <a className={className} href={to}>
+  const body = (
+    <>
       {children}
-      {arrow && <Icon name="external" />}
+      {arrow && <span className="arrow">→</span>}
+    </>
+  );
+  return /^https?:/.test(to) ? (
+    <a ref={magnetic} className={className} href={to}>
+      {body}
     </a>
   ) : (
-    <Link className={className} to={to}>
-      {children}
-      {arrow && <Icon name="arrow" />}
+    <Link ref={magnetic} className={className} to={to}>
+      {body}
     </Link>
   );
 }
@@ -116,7 +88,7 @@ export function Band({ title, description, more, children }: BandProps) {
         {more && (
           <Link to={more.to} className="more">
             {more.label}
-            <Icon name="arrow" />
+            <span className="arrow">→</span>
           </Link>
         )}
         {description}
@@ -136,11 +108,10 @@ export function Panel({
   children: ReactNode;
 }) {
   const [folded, toggle] = useFolded(title);
-  const heading = useId();
   return (
-    <aside className="panel" aria-labelledby={heading} data-folded={folded || undefined}>
+    <aside className="panel" data-folded={folded || undefined}>
       <div className="panel-head">
-        <h2 id={heading}>
+        <h2>
           <Fold open={!folded} toggle={toggle}>
             {title}
           </Fold>

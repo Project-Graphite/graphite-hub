@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
 import type { Route } from './+types/members';
 import { accentStyle, Avatar, Band } from '../components/kit/basics';
@@ -9,7 +9,7 @@ import { hubContext } from '../context';
 import { plural } from '../format';
 import { useHub } from '../hub';
 import { useOnline } from '../live';
-import { useSpotlight } from '../motion/motion';
+import { useSpotlight, useTilt } from '../motion/motion';
 import { topicsFor } from '../topics';
 import type { Member } from '../types';
 
@@ -23,28 +23,33 @@ function Card({
   member,
   projects,
   releases,
+  index,
   online,
 }: {
   member: Member;
   projects: number;
   releases: number;
+  index: number;
   online: boolean;
 }) {
+  const tilt = useTilt<HTMLElement>();
   const spot = useSpotlight<HTMLElement>();
+  const pointer = useCallback(
+    (element: HTMLElement | null) => {
+      tilt(element);
+      spot(element);
+    },
+    [tilt, spot],
+  );
   const stack = member.stack.flatMap((group) => group.items).slice(0, 8);
   return (
-    <article ref={spot} className="member-card spot" style={accentStyle(member.accent)}>
-      <div className="banner">
-        {member.coverUrl && (
-          <img
-            src={member.coverUrl}
-            alt=""
-            width={640}
-            height={176}
-            loading="lazy"
-            decoding="async"
-          />
-        )}
+    <article
+      ref={pointer}
+      className="member spot tilt"
+      style={{ ...accentStyle(member.accent), '--i': index } as CSSProperties}
+    >
+      <div className="sky">
+        {member.coverUrl && <img src={member.coverUrl} alt="" loading="lazy" />}
       </div>
       <Link to={member.path} className="face" tabIndex={-1} aria-hidden="true">
         <Avatar member={member} size="lg" online={online} />
@@ -120,12 +125,13 @@ export default function Members({ loaderData }: Route.ComponentProps) {
       />
       <section className="band dir">
         <div className="roster">
-          {hub.members.map((member) => (
+          {hub.members.map((member, index) => (
             <Card
               key={member.handle}
               member={member}
               projects={creditsOf(member).length}
               releases={releasesOf(member)}
+              index={index}
               online={online.has(member.handle)}
             />
           ))}
@@ -168,7 +174,7 @@ export default function Members({ loaderData }: Route.ComponentProps) {
                         <Link
                           to={project.path}
                           className="dot"
-                          aria-label={`${member.name} on ${project.name}`}
+                          aria-label={`${member.name} · ${project.name}`}
                         />
                       ) : (
                         <i />

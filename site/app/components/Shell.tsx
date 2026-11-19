@@ -1,15 +1,14 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { useRoot } from '../hub';
-import { Sky } from '../motion/canvases';
+import { Backdrop } from '../motion/canvases';
 import { MotionContext } from '../motion/motion';
 import { defaults, visible, type NAV } from '../settings';
 import AccountMenu from './AccountMenu';
 import { Editable, useEditing } from './kit/Editable';
-import { Icon } from './kit/icons';
 import { LivePulse } from './kit/live';
 import { openSearch, Palette } from './kit/Palette';
-import { SubscribeForm } from './kit/subscribe';
+import { SubscribeForm, SubscribeLink } from './kit/subscribe';
 
 const NAV_TARGET: Record<(typeof NAV)[number], { to: string; label: string }> = {
   members: { to: '/members', label: 'members' },
@@ -19,7 +18,7 @@ const NAV_TARGET: Record<(typeof NAV)[number], { to: string; label: string }> = 
   changelog: { to: '/changelog', label: 'changelog' },
   messages: { to: '/messages', label: 'messages' },
   status: { to: '/status', label: 'status' },
-  github: { to: 'https://github.com/project-graphite', label: 'github' },
+  github: { to: 'https://github.com/project-graphite', label: 'github ↗' },
 };
 
 export default function Shell({ children }: { children: ReactNode }) {
@@ -27,43 +26,22 @@ export default function Shell({ children }: { children: ReactNode }) {
   const root = useRoot();
   const settings = root?.settings ?? defaults();
   const editing = useEditing();
-  const header = useRef<HTMLElement>(null);
-  const [menuAt, setMenuAt] = useState<string | null>(null);
-  const menuOpen = menuAt === pathname;
-
-  useEffect(() => {
-    if (!menuOpen) {
-      return;
-    }
-    const away = (event: PointerEvent) => {
-      if (!header.current?.contains(event.target as Node)) {
-        setMenuAt(null);
-      }
-    };
-    document.addEventListener('pointerdown', away);
-    return () => document.removeEventListener('pointerdown', away);
-  }, [menuOpen]);
 
   return (
     <MotionContext value={settings['site.motion']}>
-      <Sky />
+      <Backdrop />
       <a href="#content" className="skip-link">
         skip to content
       </a>
-      <header
-        ref={header}
-        className="frame-header"
-        onKeyDown={(event) => {
-          if (event.key === 'Escape' && menuOpen) {
-            setMenuAt(null);
-            header.current?.querySelector<HTMLElement>('.frame-menu')?.focus();
-          }
-        }}
-      >
+      <header className="frame-header">
         <div className="shell">
-          <Link to="/" className="brand">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 text-[1.02rem] font-[620] tracking-[-0.022em] text-ink"
+          >
             <svg
               aria-hidden="true"
+              className="h-[1.15em] w-[0.9em] shrink-0"
               viewBox="-3 -3 36 46"
               fill="none"
               stroke="currentColor"
@@ -76,18 +54,12 @@ export default function Shell({ children }: { children: ReactNode }) {
             </svg>
             {settings['site.name']}
           </Link>
-          <nav
-            id="primary-nav"
-            aria-label="Primary"
-            className="frame-nav"
-            data-open={menuOpen || undefined}
-          >
+          <nav aria-label="Primary" className="frame-nav">
             {visible(settings['site.nav']).map((id) => {
               const { to, label } = NAV_TARGET[id as keyof typeof NAV_TARGET];
               return to.startsWith('http') ? (
                 <a key={id} href={to}>
                   {label}
-                  <Icon name="external" />
                 </a>
               ) : (
                 <NavLink key={id} to={to}>
@@ -95,56 +67,40 @@ export default function Shell({ children }: { children: ReactNode }) {
                 </NavLink>
               );
             })}
-            <button
-              type="button"
-              className="frame-search"
-              onClick={() => {
-                setMenuAt(null);
-                openSearch();
-              }}
-            >
+            <button type="button" className="frame-search" onClick={openSearch}>
               search
               <span className="kbd">/</span>
             </button>
-          </nav>
-          <div className="frame-status">
             {root && <LivePulse />}
             <AccountMenu />
-            <button
-              type="button"
-              className="frame-menu"
-              aria-expanded={menuOpen}
-              aria-controls="primary-nav"
-              onClick={() => setMenuAt(menuOpen ? null : pathname)}
-            >
-              menu
-              <Icon name={menuOpen ? 'close' : 'menu'} />
-            </button>
-          </div>
+          </nav>
         </div>
       </header>
 
-      <main id="content" className="shell frame-content">
-        {children}
+      <main id="content" className="shell pb-12">
+        <div key={pathname} className="page-transition">
+          {children}
+        </div>
       </main>
 
       <footer className="frame-footer">
-        <div className="shell">
-          <p className="footer-line">
-            <Editable setting="site.footer" />
-            <Link to="/privacy">privacy</Link>
-          </p>
+        <div className="shell footer-grid">
           <div className="footer-subscribe">
-            <Link to="/subscribe" className="footer-lead">
-              new writing, by email
-            </Link>
+            <span className="footer-lead">new writing, by email</span>
             <SubscribeForm scope={{ kind: 'all' }} cadence="each" compact />
+            <SubscribeLink />
+          </div>
+          <div className="footer-line">
+            <Editable setting="site.footer" />
+            <Link to="/privacy" className="hover:text-ink">
+              privacy
+            </Link>
           </div>
         </div>
       </footer>
       <Palette />
       {editing && (
-        <div className="edit-bar">
+        <div className="edit-bar mono-sm">
           <span>editing the page</span>
           <Link to={pathname}>done</Link>
         </div>
@@ -153,31 +109,65 @@ export default function Shell({ children }: { children: ReactNode }) {
   );
 }
 
-export function Page({ rail, children }: { rail?: ReactNode; children: ReactNode }) {
-  const railBox = useRef<HTMLDivElement>(null);
-  const hasRail = Boolean(rail);
+const RAIL_GAP = 24;
+
+function useTwoWayRail(box: RefObject<HTMLDivElement | null>, hasRail: boolean) {
   useEffect(() => {
-    const element = railBox.current;
-    if (!element) {
+    const layout = box.current;
+    const content = layout?.querySelector<HTMLElement>(':scope > .frame-main');
+    const rail = layout?.querySelector<HTMLElement>(':scope > .frame-rail');
+    if (!layout || !content || !rail || !hasRail) {
       return;
     }
-    const observer = new ResizeObserver(([entry]) =>
-      element.style.setProperty(
-        '--rail-height',
-        `${Math.ceil(entry.borderBoxSize[0].blockSize)}px`,
-      ),
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [hasRail]);
+    let last = scrollY;
+    let down = false;
+    let offset = 0;
+    const place = () => {
+      if (getComputedStyle(rail).position === 'static') {
+        rail.style.transform = '';
+        return;
+      }
+      const y = scrollY;
+      if (y !== last) {
+        down = y > last;
+      }
+      last = y;
+      const top = rail.getBoundingClientRect().top - offset;
+      const height = rail.offsetHeight;
+      const room = innerHeight - RAIL_GAP * 2;
+      let visual = top + offset;
+      if (height <= room) {
+        visual = RAIL_GAP;
+      } else if (down) {
+        visual = Math.max(visual, innerHeight - RAIL_GAP - height);
+      } else {
+        visual = Math.min(visual, RAIL_GAP);
+      }
+      offset = Math.min(Math.max(visual - top, 0), Math.max(content.offsetHeight - height, 0));
+      rail.style.transform = offset ? `translateY(${offset}px)` : '';
+    };
+    const observer = new ResizeObserver(place);
+    observer.observe(rail);
+    observer.observe(content);
+    addEventListener('scroll', place, { passive: true });
+    addEventListener('resize', place);
+    place();
+    return () => {
+      observer.disconnect();
+      removeEventListener('scroll', place);
+      removeEventListener('resize', place);
+      rail.style.transform = '';
+    };
+  }, [box, hasRail]);
+}
+
+export function Page({ rail, children }: { rail?: ReactNode; children: ReactNode }) {
+  const box = useRef<HTMLDivElement>(null);
+  useTwoWayRail(box, Boolean(rail));
   return (
-    <div className={`frame-layout ${rail ? '' : 'solo'}`}>
+    <div ref={box} className={`frame-layout ${rail ? '' : 'solo'}`}>
       <div className="frame-main">{children}</div>
-      {rail && (
-        <div ref={railBox} className="frame-rail">
-          {rail}
-        </div>
-      )}
+      {rail && <div className="frame-rail">{rail}</div>}
     </div>
   );
 }

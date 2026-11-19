@@ -124,15 +124,10 @@ function Kind({ line }: { line: ConsoleLine }) {
 }
 
 export function Ticker({ lines }: { lines: ConsoleLine[] }) {
-  const [held, setHeld] = useState(false);
-  const index = useCycle(lines.length, 3500, held);
+  const index = useCycle(lines.length, 3500);
   const line = lines[index];
   return (
-    <div
-      className="ticker"
-      onPointerEnter={() => setHeld(true)}
-      onPointerLeave={() => setHeld(false)}
-    >
+    <div className="ticker">
       <Status status="live" />
       {line ? (
         <span className="cycle">

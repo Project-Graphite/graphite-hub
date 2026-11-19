@@ -43,15 +43,14 @@ export function RunningPanel({ running }: { running: Running[] }) {
             </Link>
             <Status status="live" />
             <span className="meta">
-              {project.deploy && (
-                <>
-                  <span>sha-{shortTag(project.deploy.tag)}</span>
-                  <time dateTime={project.deploy.at}>{day(project.deploy.at)}</time>
-                </>
-              )}
+              {project.deploy && `sha-${shortTag(project.deploy.tag)} · ${day(project.deploy.at)}`}
               <span className="week">
                 {project.week.map((state, index) => (
-                  <i key={index} className={state === 'none' ? '' : state} />
+                  <i
+                    key={index}
+                    className={state === 'none' ? '' : state}
+                    style={{ animationDelay: `${index * 60}ms` }}
+                  />
                 ))}
               </span>
             </span>

@@ -1,165 +1,147 @@
-@layer theme, base, kit, pages, utilities;
+@import 'tailwindcss';
 
-@import 'tailwindcss/theme.css' layer(theme);
-@import 'tailwindcss/preflight.css' layer(base);
-@import 'tailwindcss/utilities.css' layer(utilities);
-
-@import './tokens.css';
-@import './graphite.css' layer(kit);
-@import './pages/home.css' layer(pages);
-@import './pages/directories.css' layer(pages);
-@import './pages/profiles.css' layer(pages);
-@import './pages/live.css' layer(pages);
-@import './pages/blog.css' layer(pages);
-@import './pages/subscribe.css' layer(pages);
-
-@utility shell {
-  width: 100%;
-  max-width: var(--frame-max);
-  margin-inline: auto;
-  padding-left: var(--frame-gutter-start);
-  padding-right: var(--frame-gutter-end);
-}
+@import './graphite.css';
 
 @utility page-title {
   margin: 0;
-  font-size: var(--text-display);
-  font-weight: var(--text-display--font-weight);
-  line-height: var(--text-display--line-height);
-  letter-spacing: var(--text-display--letter-spacing);
+  font-size: clamp(1.95rem, 4.6vw, 2.6rem);
+  font-weight: 640;
+  line-height: 1.1;
+  letter-spacing: -0.036em;
 }
 
 @utility mono-sm {
   font-family: var(--font-mono);
-  font-size: var(--text-small);
+  font-size: 0.82rem;
 }
 
 @utility rule-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: var(--target-fine);
-  border-bottom: 1px solid var(--color-line-strong);
+  border-bottom: 1px solid var(--color-line);
   padding-bottom: 1px;
   color: var(--color-ink);
   text-decoration: none;
-  transition: border-color var(--duration-base) var(--ease-settle);
+  transition: border-color 0.2s ease;
 
   &:hover {
     border-bottom-color: var(--color-ink);
   }
 }
 
-@layer base {
-  :root {
-    color-scheme: dark;
-    scrollbar-gutter: stable;
-    scroll-padding-top: var(--space-16);
-    accent-color: var(--color-ink);
-    caret-color: var(--accent, var(--color-ink));
+html {
+  scroll-padding-top: 5rem;
+}
+
+:root {
+  color-scheme: dark;
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-line);
+  background-clip: padding-box;
+  border: 3px solid transparent;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent, var(--color-live));
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line) transparent;
   }
 
-  body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    min-height: 100dvh;
-    margin: 0;
-    background: var(--color-paper);
-    color: var(--color-ink);
-    font-family: var(--font-sans);
-    font-size: var(--text-body);
-    line-height: var(--text-body--line-height);
-    -webkit-font-smoothing: antialiased;
+  :hover {
+    scrollbar-color: var(--accent, var(--color-muted)) transparent;
   }
+}
 
-  h1,
-  h2,
-  h3 {
-    text-wrap: balance;
-  }
+:is(input, textarea, select):not([type='radio'], [type='checkbox']) {
+  transition: border-color 0.2s ease;
+}
 
-  p {
-    text-wrap: pretty;
-  }
+:is(input, textarea, select):not([type='radio'], [type='checkbox'], .field):focus {
+  outline: none;
+  border-color: var(--color-muted);
+}
 
-  ::selection {
-    background: color-mix(in srgb, var(--accent, var(--color-ink)) 30%, transparent);
-    color: var(--color-bright);
-  }
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 50;
+  transform: translateY(-200%);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-item);
+  background: var(--color-surface);
+  padding: 0.5rem 0.75rem;
+  color: var(--color-ink);
+}
 
-  :focus-visible {
-    outline: var(--ring-bold) solid var(--color-ink);
-    outline-offset: 3px;
-  }
+.skip-link:focus {
+  transform: translateY(0);
+}
 
-  a {
-    text-underline-offset: 0.2em;
-    text-decoration-thickness: 1px;
-  }
-
-  time {
-    font-variant-numeric: tabular-nums;
-  }
-
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  ::-webkit-scrollbar-track,
-  ::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: var(--color-line);
-    background-clip: padding-box;
-    border: 3px solid transparent;
-    border-radius: var(--radius-pill);
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-line-strong);
-  }
-
-  @supports not selector(::-webkit-scrollbar) {
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: var(--color-line) transparent;
-    }
-  }
-
-  :is(input, textarea, select):not([type='radio'], [type='checkbox']) {
-    transition: border-color var(--duration-base) var(--ease-settle);
-  }
-
-  :is(input, textarea, select):not([type='radio'], [type='checkbox'], .field):focus {
-    outline: none;
-    border-color: var(--color-ink);
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
 
   .skip-link {
-    position: fixed;
-    top: var(--space-3);
-    left: var(--space-3);
-    z-index: var(--z-bar);
-    transform: translateY(-200%);
-    border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-field);
-    background: var(--color-raised);
-    padding: var(--space-2) var(--space-3);
-    color: var(--color-ink);
-    transition: transform var(--duration-base) var(--ease-settle);
+    transition: transform 0.2s ease;
   }
 
-  .skip-link:focus {
+  .page-head .rule::after {
+    animation: hero-rule-draw 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .page-transition {
+    animation: page-fade-in 0.22s ease-out both;
+  }
+}
+
+@keyframes hero-rule-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0.5;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
     transform: translateY(0);
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    html {
-      scroll-behavior: smooth;
-    }
   }
 }

@@ -8,10 +8,9 @@ interface Props {
 
 export default function Section({ label, children, action }: Props) {
   return (
-    <section className="band section">
-      <div className="band-head">
+    <section className="section">
+      <div className="section-head">
         <h2>{label}</h2>
-        <div className="rule" />
         {action}
       </div>
       {children}

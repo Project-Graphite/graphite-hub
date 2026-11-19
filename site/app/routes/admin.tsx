@@ -24,7 +24,6 @@ import {
 } from '../settings';
 import { describeScope, parseScope, validEmail } from '../subscribe';
 import { topicsFor } from '../topics';
-import '../styles/member.css';
 
 export const handle = topicsFor('admin');
 

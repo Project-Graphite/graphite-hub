@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { plural } from '../../format';
 import { useOnline } from '../../live';
@@ -63,16 +63,9 @@ export function Orbit({
 }) {
   const online = useOnline();
   const spinning = useMotion('orbit');
-  const box = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(true);
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting));
-    observer.observe(box.current!);
-    return () => observer.disconnect();
-  }, []);
   return (
-    <div ref={box} className="orbit" data-still={spinning && inView ? undefined : ''}>
-      <div className="orbit-track">
+    <div className="orbit" data-still={spinning ? undefined : ''}>
+      <div className="ring">
         {members.map((member, index) => (
           <div
             key={member.handle}

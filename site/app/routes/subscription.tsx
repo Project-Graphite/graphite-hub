@@ -5,7 +5,6 @@ import { Button } from '../components/kit/basics';
 import { Confirm } from '../components/kit/controls';
 import { Fact, PageHeader } from '../components/kit/page';
 import { Chooser } from '../components/kit/subscribe';
-import { Icon } from '../components/kit/icons';
 import { Page } from '../components/Shell';
 import { hubContext, type Hub } from '../context';
 import { day } from '../format';
@@ -91,8 +90,7 @@ function Membership({
       disabled={disabled}
       onClick={() => act('resubscribe')}
     >
-      subscribe again
-      <Icon name="arrow" />
+      subscribe again <span className="arrow">→</span>
     </button>
   );
 }
@@ -145,8 +143,7 @@ export default function Subscription({ loaderData }: Route.ComponentProps) {
                   disabled={busy}
                   onClick={() => act('unsubscribe')}
                 >
-                  unsubscribe
-                  <Icon name="arrow" />
+                  unsubscribe <span className="arrow">→</span>
                 </button>
                 <Button to={hub.posts[0]?.path ?? '/blog'}>keep reading instead</Button>
               </>
@@ -184,16 +181,16 @@ export default function Subscription({ loaderData }: Route.ComponentProps) {
             <input type="hidden" name="scope" value={scopeKey(scope)} />
             <input type="hidden" name="cadence" value={cadence} />
             <button type="submit" className="btn primary" disabled={busy || !loaderData.active}>
-              save
-              <Icon name="arrow" />
+              save <span className="arrow">→</span>
             </button>
             <Membership active={loaderData.active} disabled={busy} act={act} />
             {reason && <span className="mono-sm text-danger">{reason}</span>}
           </fetcher.Form>
-          <p className="mono-sm flex flex-wrap gap-x-6 gap-y-1 text-faint">
+          <p className="mono-sm text-faint">
             <Link to="/blog" className="rule-link">
               the blog
             </Link>
+            {' · '}
             <Link to="/privacy" className="rule-link">
               what this site keeps
             </Link>

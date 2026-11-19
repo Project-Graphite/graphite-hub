@@ -31,7 +31,7 @@ function Group({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
       <h2 className="mono-sm m-0 mb-2 px-2.5 font-normal text-faint">{label}</h2>
-      <ul className="m-0 grid list-none gap-0.5 p-0">{children}</ul>
+      <ul className="m-0 grid list-none gap-0.5 p-0 text-[0.94rem]">{children}</ul>
     </div>
   );
 }
