@@ -96,9 +96,7 @@ Trending lists, particle cursors, a second replica, a staging host, a threat mod
 ### Language and code
 
 - React and Express code is TypeScript under strict mode. Scripts and tooling use whatever fits; do not rewrite a working script into TypeScript for its own sake.
-- No code comments. Names and structure carry intent; explanations go in the pull request.
 - No redundancy. A value is declared once: defaults in one place, overrides where they differ. If something equals its default, do not write it.
-- Inline a value used once. Do not create a variable to explain a value.
 
 ### Settings, not constants
 
@@ -146,14 +144,13 @@ Structured logs through `pino` with request ids. Unhandled errors are captured, 
 
 ### Tests
 
-Run the spec files that cover the change, never the whole suite. Every route must pass the live audit: fire each topic it subscribes to and assert the DOM changed without navigation. `toPublicEvent` keeps its forbidden-field test. The client bundle has a size budget checked in the PR workflow.
+Every route must pass the live audit: fire each topic it subscribes to and assert the DOM changed without navigation. `toPublicEvent` keeps its forbidden-field test. The client bundle has a size budget checked in the PR workflow.
 
 ### Pull requests and deploys
 
 - Branches `type/short-summary`; squash merges; the PR title becomes the commit.
 - CI publishes a `sha-` image and writes `IMAGE_TAG` into `platform/deploy/graphite-hub/values`. Never deploy a floating tag.
 - Secrets are entered in the console. Never put one in this repository, a workflow, or a log.
-- Documentation edits need Amr's permission per file.
 
 ## Off limits
 
